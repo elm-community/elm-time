@@ -7,17 +7,25 @@ module UTC.Zone
         , unpack
         )
 
+{-| FIXME
+
+# Zone values
+@docs Zone, name, abbreviation, offset
+
+# Constructing Zones
+@docs unpack
+-}
+
 import Char
 import Combine exposing (Parser)
 import Combine.Infix exposing ((<$>), (<*>), (<*), (*>))
 import Combine.Num
 import String
-import UTC.Instant exposing (Instant, Minutes)
+import Time exposing (Time)
 
 
 {-| Zone represents the opaque type of timezone values.  These are
-generally loaded from an external source via the `unpack`
-function.
+generally loaded from an external source via `unpack`.
 
 See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/.
 -}
@@ -29,10 +37,10 @@ type Zone
 
 
 type alias Span =
-    { start : Instant
-    , end : Instant
+    { start : Time
+    , end : Time
     , abbreviation : String
-    , offset : Minutes
+    , offset : Int
     }
 
 
@@ -43,26 +51,26 @@ name (Zone { name }) =
     name
 
 
-{-| Given an arbitrary Instant and a Zone, abbreviation returns Just
-the Zone's abbreviation at that Instant or Nothing.
+{-| Given an arbitrary Time and a Zone, abbreviation returns Just
+the Zone's abbreviation at that Time or Nothing.
 -}
-abbreviation : Instant -> Zone -> Maybe String
-abbreviation instant (Zone { spans }) =
-    find instant spans
+abbreviation : Time -> Zone -> Maybe String
+abbreviation time (Zone { spans }) =
+    find time spans
         |> Maybe.map .abbreviation
 
 
-{-| Given an arbitrary Instant and a Zone, offset returns Just the
-Zone's UTC offset in minutes at that Instant or Nothing.
+{-| Given an arbitrary Time and a Zone, offset returns Just the
+Zone's UTC offset in minutes at that Time or Nothing.
 -}
-offset : Instant -> Zone -> Maybe Int
-offset instant (Zone { spans }) =
-    find instant spans
+offset : Time -> Zone -> Maybe Int
+offset time (Zone { spans }) =
+    find time spans
         |> Maybe.map .offset
 
 
-find : Instant -> List Span -> Maybe Span
-find instant spans =
+find : Time -> List Span -> Maybe Span
+find time spans =
     let
         go xs =
             case xs of
@@ -70,7 +78,7 @@ find instant spans =
                     Nothing
 
                 x :: xs ->
-                    if instant >= x.start && instant < x.end then
+                    if time >= x.start && time < x.end then
                         Just x
                     else
                         go xs
@@ -128,7 +136,6 @@ packedZone =
         diffs =
             List.map ((*) 60000)
                 <$> Combine.sepBy1 (Combine.string " ") base60
-                <* Combine.end
 
         decode =
             PackedZone
@@ -159,25 +166,25 @@ packedZone =
                 else
                     Combine.succeed data
 
-        span instants data i idx =
-            { start = instants !! i
-            , end = instants !! (i + 1)
+        span times data i idx =
+            { start = times !! i
+            , end = times !! (i + 1)
             , abbreviation = data.abbrevs !! idx
             , offset = data.offsets !! idx
             }
 
         convert data =
             let
-                instants =
+                times =
                     List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
 
-                -- surround instants with 0 and infinity
-                instants' =
-                    [ 0 ] ++ instants ++ [ 1 / 0 ]
+                -- surround times with - and +infinity
+                times' =
+                    [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
             in
                 Zone
                     { name = data.name
-                    , spans = List.indexedMap (span instants' data) data.indices
+                    , spans = List.indexedMap (span times' data) data.indices
                     }
     in
         convert <$> (decode `Combine.andThen` validate)

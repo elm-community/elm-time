@@ -1,6 +1,7 @@
 module Calendar.Date
     exposing
         ( Date
+        , DateDelta
         , date
         , year
         , month
@@ -11,7 +12,7 @@ module Calendar.Date
         , addYears
         , addMonths
         , addDays
-        , diff
+        , delta
         , toTuple
         , fromTuple
         , isValidDate
@@ -28,12 +29,15 @@ represent any date of the Gregorian calendar.
 # Manipulating Dates
 @docs setYear, setMonth, setDay, addYears, addMonths, addDays
 
+# Subtracting Dates
+@docs DateDelta, delta
+
 # Helper functions
-@docs diff, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 -}
 
 
-{-| Date is the opaque type for all Date values. Values of this type
+{-| Date is the opaque type for all Date values.  Values of this type
 are guaranteed to represent valid Gregorian calendar dates.
 -}
 type Date
@@ -42,6 +46,15 @@ type Date
         , month : Int
         , day : Int
         }
+
+
+{-| DateDelta represents a delta between two dates.
+-}
+type alias DateDelta =
+    { years : Int
+    , months : Int
+    , days : Int
+    }
 
 
 {-| date constructs a Date value given a year, a month and a day.  If
@@ -151,11 +164,16 @@ addDays days (Date ({ year, month, day } as date)) =
         |> dateFromDays
 
 
-{-| diff returns the number of days between two Dates.
+{-| delta returns the relative number of years, months and days between two Dates.
 -}
-diff : Date -> Date -> Int
-diff (Date d1) (Date d2) =
-    daysFromYearMonthDay d1.year d1.month d1.day - daysFromYearMonthDay d2.year d2.month d2.day
+delta : Date -> Date -> DateDelta
+delta (Date d1) (Date d2) =
+    { years = d1.year - d2.year
+    , months = (abs d1.year * 12 + d1.month) - (abs d2.year * 12 + d2.month)
+    , days =
+        daysFromYearMonthDay d1.year d1.month d1.day
+            - daysFromYearMonthDay d2.year d2.month d2.day
+    }
 
 
 {-| toTuple converts a Date value into a (year, month, day) tuple.
