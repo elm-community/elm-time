@@ -1,6 +1,6 @@
 module UTC.Zone
     exposing
-        ( Zone
+        ( Zone(..)
         , name
         , abbreviation
         , offset
@@ -24,8 +24,8 @@ import String
 import Time exposing (Time)
 
 
-{-| Zone represents the opaque type of timezone values.  These are
-generally loaded from an external source via `unpack`.
+{-| Zone represents the type of timezone values.  These are generally
+loaded from an external source via `unpack`.
 
 See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/.
 -}
@@ -40,7 +40,7 @@ type alias Span =
     { start : Time
     , end : Time
     , abbreviation : String
-    , offset : Int
+    , offset : Float
     }
 
 
@@ -63,7 +63,7 @@ abbreviation time (Zone { spans }) =
 {-| Given an arbitrary Time and a Zone, offset returns Just the
 Zone's UTC offset in minutes at that Time or Nothing.
 -}
-offset : Time -> Zone -> Maybe Int
+offset : Time -> Zone -> Maybe Float
 offset time (Zone { spans }) =
     find time spans
         |> Maybe.map .offset
@@ -103,7 +103,7 @@ unpack data =
 type alias PackedZone =
     { name : String
     , abbrevs : List String
-    , offsets : List Int
+    , offsets : List Float
     , indices : List Int
     , diffs : List Float
     }
@@ -120,22 +120,21 @@ packedZone =
                 <* Combine.string "|"
 
         abbrevs =
-            Combine.sepBy1 (Combine.string " ") (Combine.regex "[A-Z]+")
+            Combine.sepBy1 (Combine.string " ") (Combine.regex "[^ |]+")
                 <* Combine.string "|"
 
         offsets =
-            List.map floor
-                <$> Combine.sepBy1 (Combine.string " ") base60
+            Combine.sepBy1 (Combine.string " ") base60
                 <* Combine.string "|"
 
         indices =
-            List.map (\n -> floor <| unsafeBase60 1 n "")
-                <$> Combine.many1 (Combine.regex "[0-9a-zA-Z]")
+            (\s -> List.map (\n -> floor <| unsafeBase60 1 n "") (String.split "" s))
+                <$> Combine.regex "[^|]+"
                 <* Combine.string "|"
 
         diffs =
             List.map ((*) 60000)
-                <$> Combine.sepBy1 (Combine.string " ") base60
+                <$> Combine.sepBy (Combine.string " ") base60
 
         decode =
             PackedZone
@@ -161,8 +160,6 @@ packedZone =
                     Combine.fail [ "abbrevs and offsets have different lengths" ]
                 else if maxIndex >= abbrevs then
                     Combine.fail [ "highest index is longer than both abbrevs and offsets" ]
-                else if List.isEmpty data.diffs then
-                    Combine.fail [ "diffs is empty" ]
                 else
                     Combine.succeed data
 
@@ -176,7 +173,10 @@ packedZone =
         convert data =
             let
                 times =
-                    List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
+                    if not <| List.isEmpty data.diffs then
+                        List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
+                    else
+                        []
 
                 -- surround times with - and +infinity
                 times' =
@@ -194,7 +194,7 @@ base60 : Parser Float
 base60 =
     unsafeBase60
         <$> Combine.Num.sign
-        <*> base60String
+        <*> Combine.optional "" base60String
         <*> Combine.optional "" (Combine.string "." *> base60String)
 
 
