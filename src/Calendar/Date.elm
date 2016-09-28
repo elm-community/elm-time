@@ -21,7 +21,7 @@ module Calendar.Date
         )
 
 {-| This module defines a timezone-independent Date type which can
-represent any date of the Gregorian calendar.
+represent any date of the proleptic Gregorian calendar.
 
 # Dates
 @docs Date, date, year, month, day
@@ -38,7 +38,7 @@ represent any date of the Gregorian calendar.
 
 
 {-| Date is the opaque type for all Date values.  Values of this type
-are guaranteed to represent valid Gregorian calendar dates.
+are guaranteed to represent valid proleptic Gregorian calendar dates.
 -}
 type Date
     = Date
@@ -210,7 +210,7 @@ rules for leap years are as follows:
 -}
 isLeapYear : Int -> Bool
 isLeapYear y =
-    y `rem` 100 == 0 && y `rem` 400 == 0 || y `rem` 4 == 0
+    y `rem` 400 == 0 || y `rem` 100 /= 0 && y `rem` 4 == 0
 
 
 {-| daysInMonth returns the number of days in a month given a specific
