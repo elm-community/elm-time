@@ -33,7 +33,6 @@ module UTC.Time
         , toTuple
         , fromTuple
         , toISO8601
-        , fromISO8601
         )
 
 {-| This module defines a time representation based on a Date and the
@@ -49,7 +48,7 @@ time of day.
 @docs UTCTimeDelta, delta
 
 # Helper functions
-@docs toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+@docs toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601
 -}
 
 import Calendar.Date exposing (Date)
@@ -62,7 +61,7 @@ type represent valid Date and a time offset from midnight.
 type UTCTime
     = UTCTime
         { date : Date
-        , millisecond : Float
+        , offset : Float
         }
 
 
@@ -90,7 +89,7 @@ utcTime date hour minute second millisecond =
         Just <|
             UTCTime
                 { date = date
-                , millisecond =
+                , offset =
                     toFloat hour
                         * 3600000
                         + toFloat minute
@@ -117,7 +116,7 @@ epoch =
                 Just d ->
                     d
     in
-        UTCTime { date = date, millisecond = 0 }
+        UTCTime { date = date, offset = 0 }
 
 
 {-| date returns a UTCTime's Date.
@@ -151,38 +150,38 @@ day (UTCTime { date }) =
 {-| hour returns a UTCTime's hour.
 -}
 hour : UTCTime -> Int
-hour (UTCTime { millisecond }) =
-    round millisecond // 3600000
+hour (UTCTime { offset }) =
+    round offset // 3600000
 
 
 {-| minute returns a UTCTime's minute.
 -}
 minute : UTCTime -> Int
-minute (UTCTime { millisecond }) =
-    (round millisecond `rem` 3600000) // 60000
+minute (UTCTime { offset }) =
+    (round offset `rem` 3600000) // 60000
 
 
 {-| second returns a UTCTime's second.
 -}
 second : UTCTime -> Int
-second (UTCTime { millisecond }) =
-    (round millisecond `rem` 3600000 `rem` 60000) // 1000
+second (UTCTime { offset }) =
+    (round offset `rem` 3600000 `rem` 60000) // 1000
 
 
 {-| millisecond returns a UTCTime's millisecond.
 -}
 millisecond : UTCTime -> Int
-millisecond (UTCTime { millisecond }) =
-    round millisecond `rem` 3600000 `rem` 60000 `rem` 1000
+millisecond (UTCTime { offset }) =
+    round offset `rem` 3600000 `rem` 60000 `rem` 1000
 
 
 {-| setDate sets a UTCTime's Date.
 -}
 setDate : Date -> UTCTime -> UTCTime
-setDate date (UTCTime { millisecond }) =
+setDate date (UTCTime { offset }) =
     UTCTime
         { date = date
-        , millisecond = millisecond
+        , offset = offset
         }
 
 
@@ -192,9 +191,9 @@ time is invalid or Just the new UTCTime.
 See also `Calendar.Date.setYear`.
 -}
 setYear : Int -> UTCTime -> Maybe UTCTime
-setYear year (UTCTime { date, millisecond }) =
+setYear year (UTCTime { date, offset }) =
     Calendar.Date.setYear year date
-        |> Maybe.map (\d -> UTCTime { date = d, millisecond = millisecond })
+        |> Maybe.map (\d -> UTCTime { date = d, offset = offset })
 
 
 {-| setMonth sets a UTCTime's month, returning Nothing if the updated
@@ -203,9 +202,9 @@ time is invalid or Just the new UTCTime.
 See also `Calendar.Date.setMonth`.
 -}
 setMonth : Int -> UTCTime -> Maybe UTCTime
-setMonth month (UTCTime { date, millisecond }) =
+setMonth month (UTCTime { date, offset }) =
     Calendar.Date.setMonth month date
-        |> Maybe.map (\d -> UTCTime { date = d, millisecond = millisecond })
+        |> Maybe.map (\d -> UTCTime { date = d, offset = offset })
 
 
 {-| setDay sets a UTCTime's day, returning Nothing if the updated
@@ -214,9 +213,9 @@ time is invalid or Just the new UTCTime.
 See also `Calendar.Date.setDay`.
 -}
 setDay : Int -> UTCTime -> Maybe UTCTime
-setDay day (UTCTime { date, millisecond }) =
+setDay day (UTCTime { date, offset }) =
     Calendar.Date.setDay day date
-        |> Maybe.map (\d -> UTCTime { date = d, millisecond = millisecond })
+        |> Maybe.map (\d -> UTCTime { date = d, offset = offset })
 
 
 {-| setHour sets a UTCTime's hour, returning Nothing if the updated
@@ -256,10 +255,10 @@ setMillisecond millisecond ((UTCTime { date }) as t) =
 See also `Calendar.Date.addYears`.
 -}
 addYears : Int -> UTCTime -> UTCTime
-addYears years (UTCTime { date, millisecond }) =
+addYears years (UTCTime { date, offset }) =
     UTCTime
         { date = Calendar.Date.addYears years date
-        , millisecond = millisecond
+        , offset = offset
         }
 
 
@@ -268,10 +267,10 @@ addYears years (UTCTime { date, millisecond }) =
 See also `Calendar.Date.addMonths`.
 -}
 addMonths : Int -> UTCTime -> UTCTime
-addMonths months (UTCTime { date, millisecond }) =
+addMonths months (UTCTime { date, offset }) =
     UTCTime
         { date = Calendar.Date.addMonths months date
-        , millisecond = millisecond
+        , offset = offset
         }
 
 
@@ -280,10 +279,10 @@ addMonths months (UTCTime { date, millisecond }) =
 See also `Calendar.Date.addDays`.
 -}
 addDays : Int -> UTCTime -> UTCTime
-addDays days (UTCTime { date, millisecond }) =
+addDays days (UTCTime { date, offset }) =
     UTCTime
         { date = Calendar.Date.addDays days date
-        , millisecond = millisecond
+        , offset = offset
         }
 
 
@@ -312,14 +311,14 @@ addSeconds seconds time =
 UTCTime value.
 -}
 addMilliseconds : Int -> UTCTime -> UTCTime
-addMilliseconds ms (UTCTime { date, millisecond }) =
+addMilliseconds ms (UTCTime { date, offset }) =
     let
-        millisecond' =
-            ms + round millisecond
+        offset' =
+            ms + round offset
     in
         UTCTime
-            { date = Calendar.Date.addDays (millisecond' // 86400000) date
-            , millisecond = toFloat <| millisecond' `rem` 86400000
+            { date = Calendar.Date.addDays (offset' // 86400000) date
+            , offset = toFloat <| offset' `rem` 86400000
             }
 
 
@@ -332,7 +331,7 @@ delta (UTCTime t1) (UTCTime t2) =
             Calendar.Date.delta t1.date t2.date
 
         milliseconds =
-            days * 86400000 + round (t1.millisecond - t2.millisecond)
+            days * 86400000 + round (t1.offset - t2.offset)
 
         hours =
             milliseconds // 3600000
@@ -416,11 +415,3 @@ toISO8601 time =
             ++ ":"
             ++ padded (second time)
             ++ "Z"
-
-
-{-| fromISO8601 parses an ISO8601-formatted string into a (UTCTime,
-offset) pair.  The offset is represented in minutes.
--}
-fromISO8601 : String -> Result String ( UTCTime, Int )
-fromISO8601 time =
-    Err "FIXME"
