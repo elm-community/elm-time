@@ -1,7 +1,7 @@
 module UTC.Zone
     exposing
-        ( Zone(..)
-        , name
+        ( Zone
+        , Span
         , abbreviation
         , offset
         , unpack
@@ -10,7 +10,7 @@ module UTC.Zone
 {-| FIXME
 
 # Zone values
-@docs Zone, name, abbreviation, offset
+@docs Zone, Span, abbreviation, offset
 
 # Constructing Zones
 @docs unpack
@@ -29,13 +29,13 @@ loaded from an external source via `unpack`.
 
 See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/.
 -}
-type Zone
-    = Zone
-        { name : String
-        , spans : List Span
-        }
+type alias Zone =
+    { name : String
+    , spans : List Span
+    }
 
 
+{-| -}
 type alias Span =
     { start : Time
     , end : Time
@@ -44,18 +44,11 @@ type alias Span =
     }
 
 
-{-| Given a Zone, name returns its unique name.
--}
-name : Zone -> String
-name (Zone { name }) =
-    name
-
-
 {-| Given an arbitrary Time and a Zone, abbreviation returns Just
 the Zone's abbreviation at that Time or Nothing.
 -}
 abbreviation : Time -> Zone -> Maybe String
-abbreviation time (Zone { spans }) =
+abbreviation time { spans } =
     find time spans
         |> Maybe.map .abbreviation
 
@@ -64,7 +57,7 @@ abbreviation time (Zone { spans }) =
 Zone's UTC offset in minutes at that Time or Nothing.
 -}
 offset : Time -> Zone -> Maybe Float
-offset time (Zone { spans }) =
+offset time { spans } =
     find time spans
         |> Maybe.map .offset
 
@@ -182,10 +175,9 @@ packedZone =
                 times' =
                     [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
             in
-                Zone
-                    { name = data.name
-                    , spans = List.indexedMap (span times' data) data.indices
-                    }
+                { name = data.name
+                , spans = List.indexedMap (span times' data) data.indices
+                }
     in
         convert <$> (decode `Combine.andThen` validate)
 
