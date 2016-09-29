@@ -57,12 +57,12 @@ import UTC.Internal exposing (..)
 
 
 {-| DateTime is the opaque type for all DateTime values.  Values of this
-type represent valid Date and a time offset from midnight.
+type represent a valid Date and a time offset from midnight.
 -}
 type DateTime
     = DateTime
         { date : Date
-        , offset : Float
+        , offset : Int
         }
 
 
@@ -91,10 +91,10 @@ dateTime date hour minute second millisecond =
             DateTime
                 { date = date
                 , offset =
-                    toFloat (hour * hourMs)
-                        + (toFloat minute * minuteMs)
-                        + (toFloat second * secondMs)
-                        + toFloat millisecond
+                    (hour * hourMs)
+                        + (minute * minuteMs)
+                        + (second * secondMs)
+                        + millisecond
                 }
     else
         Nothing
@@ -149,28 +149,28 @@ day (DateTime { date }) =
 -}
 hour : DateTime -> Int
 hour (DateTime { offset }) =
-    round offset // hourMs
+    offset // hourMs
 
 
 {-| minute returns a DateTime's minute.
 -}
 minute : DateTime -> Int
 minute (DateTime { offset }) =
-    (round offset `rem` hourMs) // minuteMs
+    (offset `rem` hourMs) // minuteMs
 
 
 {-| second returns a DateTime's second.
 -}
 second : DateTime -> Int
 second (DateTime { offset }) =
-    (round offset `rem` hourMs `rem` minuteMs) // secondMs
+    (offset `rem` hourMs `rem` minuteMs) // secondMs
 
 
 {-| millisecond returns a DateTime's millisecond.
 -}
 millisecond : DateTime -> Int
 millisecond (DateTime { offset }) =
-    round offset `rem` hourMs `rem` minuteMs `rem` secondMs
+    offset `rem` hourMs `rem` minuteMs `rem` secondMs
 
 
 {-| setDate sets a DateTime's Date.
@@ -311,12 +311,28 @@ DateTime value.
 addMilliseconds : Int -> DateTime -> DateTime
 addMilliseconds ms (DateTime { date, offset }) =
     let
-        offset' =
-            ms + round offset
+        total =
+            ms + offset
+
+        ( days, offset' ) =
+            if total < 0 then
+                let
+                    days =
+                        -(abs total // dayMs + 1)
+
+                    offset =
+                        total `rem` dayMs
+                in
+                    if offset == 0 then
+                        ( days + 1, 0 )
+                    else
+                        ( days, dayMs + offset `rem` dayMs )
+            else
+                ( total // dayMs, total `rem` dayMs )
     in
         DateTime
-            { date = Calendar.Date.addDays (offset' // dayMs) date
-            , offset = toFloat <| offset' `rem` dayMs
+            { date = Calendar.Date.addDays days date
+            , offset = offset'
             }
 
 
@@ -329,7 +345,7 @@ delta (DateTime t1) (DateTime t2) =
             Calendar.Date.delta t1.date t2.date
 
         milliseconds =
-            days * dayMs + round (t1.offset - t2.offset)
+            days * dayMs + (t1.offset - t2.offset)
 
         hours =
             milliseconds // hourMs
@@ -394,22 +410,15 @@ fromTuple ( y, m, d, h, mi, s, ms ) =
 -}
 toISO8601 : DateTime -> String
 toISO8601 time =
-    let
-        padded n =
-            if n < 10 then
-                "0" ++ toString n
-            else
-                toString n
-    in
-        toString (year time)
-            ++ "-"
-            ++ padded (month time)
-            ++ "-"
-            ++ padded (day time)
-            ++ "T"
-            ++ padded (hour time)
-            ++ ":"
-            ++ padded (minute time)
-            ++ ":"
-            ++ padded (second time)
-            ++ "Z"
+    toString (year time)
+        ++ "-"
+        ++ padded (month time)
+        ++ "-"
+        ++ padded (day time)
+        ++ "T"
+        ++ padded (hour time)
+        ++ ":"
+        ++ padded (minute time)
+        ++ ":"
+        ++ padded (second time)
+        ++ "Z"

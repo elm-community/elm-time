@@ -1,18 +1,22 @@
-module UTC.Zone
+module UTC.TimeZone
     exposing
-        ( Zone
-        , Span
+        ( TimeZone
         , abbreviation
         , offset
+        , offsetString
+        , setName
         , unpack
         )
 
 {-| This module defines a representations for Timezone information.
 
-# Zone values
-@docs Zone, Span, abbreviation, offset
+# TimeZone values
+@docs TimeZone, abbreviation, offset, offsetString
 
-# Constructing Zones
+# Manipulating TimeZones
+@docs setName
+
+# Constructing TimeZones
 @docs unpack
 -}
 
@@ -22,20 +26,22 @@ import Combine.Infix exposing ((<$>), (<*>), (<*), (*>))
 import Combine.Num
 import String
 import Time exposing (Time)
+import UTC.Internal exposing (..)
 
 
-{-| Zone represents the type of timezone values.  These are generally
-loaded from an external source via `unpack`.
+{-| TimeZone represents the opaque type of timezone values.  These are
+generally loaded from an external source via `unpack`.
 
 See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/.
 -}
-type alias Zone =
-    { name : String
-    , spans : List Span
-    }
+type TimeZone
+    = TimeZone
+        { name : String
+        , spans : List Span
+        }
 
 
-{-| Spans represent variations within a Zone.  A Time has an
+{-| Spans represent variations within a TimeZone.  A Time has an
 associated Span if `.from <= t < .until`.
 
 `offset` is the Span's UTC offset in minutes.
@@ -48,48 +54,77 @@ type alias Span =
     }
 
 
-{-| Given an arbitrary Time and a Zone, abbreviation returns Just
-the Zone's abbreviation at that Time or Nothing.
+{-| Given an arbitrary Time and a TimeZone, abbreviation returns the
+TimeZone's abbreviation at that Time.
 -}
-abbreviation : Time -> Zone -> Maybe String
-abbreviation time { spans } =
-    find time spans
-        |> Maybe.map .abbreviation
+abbreviation : Time -> TimeZone -> String
+abbreviation time (TimeZone { spans }) =
+    find time spans |> .abbreviation
 
 
-{-| Given an arbitrary Time and a Zone, offset returns Just the
-Zone's UTC offset in minutes at that Time or Nothing.
+{-| Given an arbitrary Time and a TimeZone, offset returns the
+TimeZone's UTC offset in minutes at that Time.
 -}
-offset : Time -> Zone -> Maybe Float
-offset time { spans } =
-    find time spans
-        |> Maybe.map .offset
+offset : Time -> TimeZone -> Float
+offset time (TimeZone { spans }) =
+    find time spans |> .offset
 
 
-find : Time -> List Span -> Maybe Span
+{-| Given an arbitrary Time and TimeZone, offset returns an
+ISO8601-formatted UTC offset for at that Time.
+-}
+offsetString : Time -> TimeZone -> String
+offsetString time timeZone =
+    let
+        utcOffset =
+            round <| offset time timeZone
+
+        hours =
+            abs utcOffset // 60
+
+        minutes =
+            abs utcOffset `rem` 60
+
+        string =
+            padded hours ++ ":" ++ padded minutes
+    in
+        if utcOffset < 0 then
+            "+" ++ string
+        else
+            "-" ++ string
+
+
+find : Time -> List Span -> Span
 find time spans =
     let
         go xs =
             case xs of
                 [] ->
-                    Nothing
+                    Debug.crash "find: invalid span list"
 
                 x :: xs ->
                     if time >= x.from && time < x.until then
-                        Just x
+                        x
                     else
                         go xs
     in
         go spans
 
 
-{-| unpack decodes a packed zone data object into a Zone value.
+{-| setName updates a TimeZone's name.
+-}
+setName : String -> TimeZone -> TimeZone
+setName name (TimeZone tz) =
+    TimeZone { tz | name = name }
+
+
+{-| unpack decodes a packed zone data object into a TimeZone value.
 
 See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/
 -}
-unpack : String -> Result (List String) Zone
+unpack : String -> Result (List String) TimeZone
 unpack data =
-    case Combine.parse packedZone data of
+    case Combine.parse packedTimeZone data of
         ( Err errors, _ ) ->
             Err errors
 
@@ -97,7 +132,7 @@ unpack data =
             Ok zone
 
 
-type alias PackedZone =
+type alias PackedTimeZone =
     { name : String
     , abbrevs : List String
     , offsets : List Float
@@ -106,11 +141,11 @@ type alias PackedZone =
     }
 
 
-{-| packedZone parses a zone data string into a Zone, validating that
+{-| packedTimeZone parses a zone data string into a TimeZone, validating that
 the data fromat invariants hold.
 -}
-packedZone : Parser Zone
-packedZone =
+packedTimeZone : Parser TimeZone
+packedTimeZone =
     let
         name =
             Combine.regex "[^|]+"
@@ -134,7 +169,7 @@ packedZone =
                 <$> Combine.sepBy (Combine.string " ") base60
 
         decode =
-            PackedZone
+            PackedTimeZone
                 <$> name
                 <*> abbrevs
                 <*> offsets
@@ -179,9 +214,10 @@ packedZone =
                 times' =
                     [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
             in
-                { name = data.name
-                , spans = List.indexedMap (span times' data) data.indices
-                }
+                TimeZone
+                    { name = data.name
+                    , spans = List.indexedMap (span times' data) data.indices
+                    }
     in
         convert <$> (decode `Combine.andThen` validate)
 

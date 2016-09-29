@@ -1,4 +1,4 @@
-(("ZoneData.elm" . ((nil . ((elm-format-on-save . nil)
-                            (elm-tags-on-save . nil)))))
- ("Zones.elm" . ((nil . ((elm-format-on-save . nil)
-                         (elm-tags-on-save . nil))))))
+(("TimeZoneData.elm" . ((nil . ((elm-format-on-save . nil)
+                                (elm-tags-on-save . nil)))))
+ ("TimeZones.elm" . ((nil . ((elm-format-on-save . nil)
+                             (elm-tags-on-save . nil))))))

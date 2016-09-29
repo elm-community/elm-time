@@ -9,6 +9,7 @@
     "exposed-modules": [
         "Calendar.Date",
         "UTC.DateTime",
+        "UTC.ZonedDateTime",
         "UTC.Zone",
         "UTC.Zones"
     ],

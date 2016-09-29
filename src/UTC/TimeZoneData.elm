@@ -1,15 +1,15 @@
-module UTC.ZoneData exposing (..)
+module UTC.TimeZoneData exposing (..)
 
 import Lazy exposing (Lazy, force, lazy)
 import String
-import UTC.Zone exposing (Zone)
+import UTC.TimeZone exposing (TimeZone, setName)
 
 
-unpack : String -> Lazy Zone
+unpack : String -> Lazy TimeZone
 unpack data =
     let
         unpack' () =
-            case UTC.Zone.unpack data of
+            case UTC.TimeZone.unpack data of
                 Err errors ->
                     let
                         messages =
@@ -23,9 +23,9 @@ unpack data =
         lazy unpack'
 
 
-link : String -> Lazy Zone -> Lazy Zone
+link : String -> Lazy TimeZone -> Lazy TimeZone
 link link lz =
-    Lazy.map (\z -> { z | name = link }) lz
+    Lazy.map (setName link) lz
 
 
 -- Data
