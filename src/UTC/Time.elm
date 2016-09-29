@@ -90,12 +90,9 @@ utcTime date hour minute second millisecond =
             UTCTime
                 { date = date
                 , offset =
-                    toFloat hour
-                        * 3600000
-                        + toFloat minute
-                        * 60000
-                        + toFloat second
-                        * 1000
+                    toFloat (hour * hourMs)
+                        + (toFloat minute * minuteMs)
+                        + (toFloat second * secondMs)
                         + toFloat millisecond
                 }
     else
@@ -151,28 +148,28 @@ day (UTCTime { date }) =
 -}
 hour : UTCTime -> Int
 hour (UTCTime { offset }) =
-    round offset // 3600000
+    round offset // hourMs
 
 
 {-| minute returns a UTCTime's minute.
 -}
 minute : UTCTime -> Int
 minute (UTCTime { offset }) =
-    (round offset `rem` 3600000) // 60000
+    (round offset `rem` hourMs) // minuteMs
 
 
 {-| second returns a UTCTime's second.
 -}
 second : UTCTime -> Int
 second (UTCTime { offset }) =
-    (round offset `rem` 3600000 `rem` 60000) // 1000
+    (round offset `rem` hourMs `rem` minuteMs) // secondMs
 
 
 {-| millisecond returns a UTCTime's millisecond.
 -}
 millisecond : UTCTime -> Int
 millisecond (UTCTime { offset }) =
-    round offset `rem` 3600000 `rem` 60000 `rem` 1000
+    round offset `rem` hourMs `rem` minuteMs `rem` secondMs
 
 
 {-| setDate sets a UTCTime's Date.
@@ -290,21 +287,21 @@ addDays days (UTCTime { date, offset }) =
 -}
 addHours : Int -> UTCTime -> UTCTime
 addHours hours time =
-    addMilliseconds (hours * 3600000) time
+    addMilliseconds (hours * hourMs) time
 
 
 {-| addMinutes adds a relative number of minutes to a UTCTime value.
 -}
 addMinutes : Int -> UTCTime -> UTCTime
 addMinutes minutes time =
-    addMilliseconds (minutes * 60000) time
+    addMilliseconds (minutes * minuteMs) time
 
 
 {-| addSeconds adds a relative number of seconds to a UTCTime value.
 -}
 addSeconds : Int -> UTCTime -> UTCTime
 addSeconds seconds time =
-    addMilliseconds (seconds * 1000) time
+    addMilliseconds (seconds * secondMs) time
 
 
 {-| addMilliseconds adds an absolute number of milliseconds to a
@@ -317,8 +314,8 @@ addMilliseconds ms (UTCTime { date, offset }) =
             ms + round offset
     in
         UTCTime
-            { date = Calendar.Date.addDays (offset' // 86400000) date
-            , offset = toFloat <| offset' `rem` 86400000
+            { date = Calendar.Date.addDays (offset' // dayMs) date
+            , offset = toFloat <| offset' `rem` dayMs
             }
 
 
@@ -331,16 +328,16 @@ delta (UTCTime t1) (UTCTime t2) =
             Calendar.Date.delta t1.date t2.date
 
         milliseconds =
-            days * 86400000 + round (t1.offset - t2.offset)
+            days * dayMs + round (t1.offset - t2.offset)
 
         hours =
-            milliseconds // 3600000
+            milliseconds // hourMs
 
         minutes =
-            milliseconds // 60000
+            milliseconds // minuteMs
 
         seconds =
-            milliseconds // 1000
+            milliseconds // secondMs
     in
         { years = years
         , months = months
@@ -415,3 +412,23 @@ toISO8601 time =
             ++ ":"
             ++ padded (second time)
             ++ "Z"
+
+
+dayMs : number
+dayMs =
+    86400000
+
+
+hourMs : number
+hourMs =
+    3600000
+
+
+minuteMs : number
+minuteMs =
+    60000
+
+
+secondMs : number
+secondMs =
+    1000
