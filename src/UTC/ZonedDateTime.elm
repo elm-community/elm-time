@@ -97,7 +97,7 @@ fromDateTime timeZone dateTime =
     in
         ZonedDateTime
             { timeZone = timeZone
-            , dateTime = DateTime.addMinutes (round -offset) dateTime
+            , dateTime = DateTime.addMinutes -offset dateTime
             }
 
 
@@ -112,7 +112,7 @@ toDateTime (ZonedDateTime { timeZone, dateTime }) =
         offset =
             TimeZone.offset timestamp timeZone
     in
-        DateTime.addMinutes (round offset) dateTime
+        DateTime.addMinutes offset dateTime
 
 
 {-| timeZone returns a ZonedDatetime's TimeZone.
@@ -179,10 +179,10 @@ abbreviation (ZonedDateTime { timeZone, dateTime }) =
         |> flip TimeZone.abbreviation timeZone
 
 
-{-| utcOffset returns a ZonedDateTime's offset from UTC in minutes at
-that time.
+{-| utcOffset returns a ZonedDateTime's offset from UTC in
+milliseconds at that time.
 -}
-utcOffset : ZonedDateTime -> Float
+utcOffset : ZonedDateTime -> Int
 utcOffset (ZonedDateTime { timeZone, dateTime }) =
     DateTime.toTimestamp dateTime
         |> flip TimeZone.offset timeZone

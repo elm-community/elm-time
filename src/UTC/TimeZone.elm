@@ -44,13 +44,13 @@ type TimeZone
 {-| Spans represent variations within a TimeZone.  A Time has an
 associated Span if `.from <= t < .until`.
 
-`offset` is the Span's UTC offset in minutes.
+`offset` is the Span's UTC offset in milliseconds.
 -}
 type alias Span =
     { from : Time
     , until : Time
     , abbreviation : String
-    , offset : Float
+    , offset : Int
     }
 
 
@@ -63,9 +63,9 @@ abbreviation time (TimeZone { spans }) =
 
 
 {-| Given an arbitrary Time and a TimeZone, offset returns the
-TimeZone's UTC offset in minutes at that Time.
+TimeZone's UTC offset in milliseconds at that Time.
 -}
-offset : Time -> TimeZone -> Float
+offset : Time -> TimeZone -> Int
 offset time (TimeZone { spans }) =
     find time spans |> .offset
 
@@ -77,7 +77,7 @@ offsetString : Time -> TimeZone -> String
 offsetString time timeZone =
     let
         utcOffset =
-            round <| offset time timeZone
+            offset time timeZone // minuteMs
 
         hours =
             abs utcOffset // 60
@@ -199,7 +199,7 @@ packedTimeZone =
             { from = times !! i
             , until = times !! (i + 1)
             , abbreviation = data.abbrevs !! idx
-            , offset = data.offsets !! idx
+            , offset = round (data.offsets !! idx * minuteMs)
             }
 
         convert data =
