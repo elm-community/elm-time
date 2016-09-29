@@ -1,8 +1,8 @@
-module UTC.Time
+module UTC.DateTime
     exposing
-        ( UTCTime
-        , UTCTimeDelta
-        , utcTime
+        ( DateTime
+        , DateTimeDelta
+        , dateTime
         , epoch
         , date
         , year
@@ -38,14 +38,14 @@ module UTC.Time
 {-| This module defines a time representation based on a Date and the
 time of day.
 
-# UTCTimes
-@docs UTCTime, epoch, utcTime, date, year, month, day, hour, minute, second, millisecond
+# DateTimes
+@docs DateTime, epoch, dateTime, date, year, month, day, hour, minute, second, millisecond
 
-# Manipulating UTCTimes
+# Manipulating DateTimes
 @docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
-# Subtracting UTCTimes
-@docs UTCTimeDelta, delta
+# Subtracting DateTimes
+@docs DateTimeDelta, delta
 
 # Helper functions
 @docs toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601
@@ -55,20 +55,20 @@ import Calendar.Date exposing (Date)
 import Time exposing (Time)
 
 
-{-| UTCTime is the opaque type for all UTCTime values.  Values of this
+{-| DateTime is the opaque type for all DateTime values.  Values of this
 type represent valid Date and a time offset from midnight.
 -}
-type UTCTime
-    = UTCTime
+type DateTime
+    = DateTime
         { date : Date
         , offset : Float
         }
 
 
-{-| UTCTimeDelta represents the relative difference between two
-UTCTime values.
+{-| DateTimeDelta represents the relative difference between two
+DateTime values.
 -}
-type alias UTCTimeDelta =
+type alias DateTimeDelta =
     { years : Int
     , months : Int
     , days : Int
@@ -79,15 +79,15 @@ type alias UTCTimeDelta =
     }
 
 
-{-| utcTime constructs a UTCTime value give a date, an hour, a minute,
+{-| dateTime constructs a DateTime value give a date, an hour, a minute,
 a second and a millisecond.  If the constructed value is invalid,
 Nothing is returned.
 -}
-utcTime : Date -> Int -> Int -> Int -> Int -> Maybe UTCTime
-utcTime date hour minute second millisecond =
+dateTime : Date -> Int -> Int -> Int -> Int -> Maybe DateTime
+dateTime date hour minute second millisecond =
     if hour >= 0 && hour < 24 && minute >= 0 && minute < 60 && second >= 0 && second < 60 && millisecond >= 0 && millisecond < 1000 then
         Just <|
-            UTCTime
+            DateTime
                 { date = date
                 , offset =
                     toFloat (hour * hourMs)
@@ -102,7 +102,7 @@ utcTime date hour minute second millisecond =
 {-| epoch is the instant in time that represents the first millisecond
 of the UNIX Epoch.
 -}
-epoch : UTCTime
+epoch : DateTime
 epoch =
     let
         date =
@@ -113,216 +113,216 @@ epoch =
                 Just d ->
                     d
     in
-        UTCTime { date = date, offset = 0 }
+        DateTime { date = date, offset = 0 }
 
 
-{-| date returns a UTCTime's Date.
+{-| date returns a DateTime's Date.
 -}
-date : UTCTime -> Date
-date (UTCTime { date }) =
+date : DateTime -> Date
+date (DateTime { date }) =
     date
 
 
-{-| year returns a UTCTime's year.
+{-| year returns a DateTime's year.
 -}
-year : UTCTime -> Int
-year (UTCTime { date }) =
+year : DateTime -> Int
+year (DateTime { date }) =
     Calendar.Date.year date
 
 
-{-| month returns a UTCTime's month.
+{-| month returns a DateTime's month.
 -}
-month : UTCTime -> Int
-month (UTCTime { date }) =
+month : DateTime -> Int
+month (DateTime { date }) =
     Calendar.Date.month date
 
 
-{-| day returns a UTCTime's day.
+{-| day returns a DateTime's day.
 -}
-day : UTCTime -> Int
-day (UTCTime { date }) =
+day : DateTime -> Int
+day (DateTime { date }) =
     Calendar.Date.day date
 
 
-{-| hour returns a UTCTime's hour.
+{-| hour returns a DateTime's hour.
 -}
-hour : UTCTime -> Int
-hour (UTCTime { offset }) =
+hour : DateTime -> Int
+hour (DateTime { offset }) =
     round offset // hourMs
 
 
-{-| minute returns a UTCTime's minute.
+{-| minute returns a DateTime's minute.
 -}
-minute : UTCTime -> Int
-minute (UTCTime { offset }) =
+minute : DateTime -> Int
+minute (DateTime { offset }) =
     (round offset `rem` hourMs) // minuteMs
 
 
-{-| second returns a UTCTime's second.
+{-| second returns a DateTime's second.
 -}
-second : UTCTime -> Int
-second (UTCTime { offset }) =
+second : DateTime -> Int
+second (DateTime { offset }) =
     (round offset `rem` hourMs `rem` minuteMs) // secondMs
 
 
-{-| millisecond returns a UTCTime's millisecond.
+{-| millisecond returns a DateTime's millisecond.
 -}
-millisecond : UTCTime -> Int
-millisecond (UTCTime { offset }) =
+millisecond : DateTime -> Int
+millisecond (DateTime { offset }) =
     round offset `rem` hourMs `rem` minuteMs `rem` secondMs
 
 
-{-| setDate sets a UTCTime's Date.
+{-| setDate sets a DateTime's Date.
 -}
-setDate : Date -> UTCTime -> UTCTime
-setDate date (UTCTime { offset }) =
-    UTCTime
+setDate : Date -> DateTime -> DateTime
+setDate date (DateTime { offset }) =
+    DateTime
         { date = date
         , offset = offset
         }
 
 
-{-| setYear sets a UTCTime's year, returning Nothing if the updated
-time is invalid or Just the new UTCTime.
+{-| setYear sets a DateTime's year, returning Nothing if the updated
+time is invalid or Just the new DateTime.
 
 See also `Calendar.Date.setYear`.
 -}
-setYear : Int -> UTCTime -> Maybe UTCTime
-setYear year (UTCTime { date, offset }) =
+setYear : Int -> DateTime -> Maybe DateTime
+setYear year (DateTime { date, offset }) =
     Calendar.Date.setYear year date
-        |> Maybe.map (\d -> UTCTime { date = d, offset = offset })
+        |> Maybe.map (\d -> DateTime { date = d, offset = offset })
 
 
-{-| setMonth sets a UTCTime's month, returning Nothing if the updated
-time is invalid or Just the new UTCTime.
+{-| setMonth sets a DateTime's month, returning Nothing if the updated
+time is invalid or Just the new DateTime.
 
 See also `Calendar.Date.setMonth`.
 -}
-setMonth : Int -> UTCTime -> Maybe UTCTime
-setMonth month (UTCTime { date, offset }) =
+setMonth : Int -> DateTime -> Maybe DateTime
+setMonth month (DateTime { date, offset }) =
     Calendar.Date.setMonth month date
-        |> Maybe.map (\d -> UTCTime { date = d, offset = offset })
+        |> Maybe.map (\d -> DateTime { date = d, offset = offset })
 
 
-{-| setDay sets a UTCTime's day, returning Nothing if the updated
-time is invalid or Just the new UTCTime.
+{-| setDay sets a DateTime's day, returning Nothing if the updated
+time is invalid or Just the new DateTime.
 
 See also `Calendar.Date.setDay`.
 -}
-setDay : Int -> UTCTime -> Maybe UTCTime
-setDay day (UTCTime { date, offset }) =
+setDay : Int -> DateTime -> Maybe DateTime
+setDay day (DateTime { date, offset }) =
     Calendar.Date.setDay day date
-        |> Maybe.map (\d -> UTCTime { date = d, offset = offset })
+        |> Maybe.map (\d -> DateTime { date = d, offset = offset })
 
 
-{-| setHour sets a UTCTime's hour, returning Nothing if the updated
-time is invalid or Just the new UTCTime.
+{-| setHour sets a DateTime's hour, returning Nothing if the updated
+time is invalid or Just the new DateTime.
 -}
-setHour : Int -> UTCTime -> Maybe UTCTime
-setHour hour ((UTCTime { date }) as t) =
-    utcTime date hour (minute t) (second t) (millisecond t)
+setHour : Int -> DateTime -> Maybe DateTime
+setHour hour ((DateTime { date }) as t) =
+    dateTime date hour (minute t) (second t) (millisecond t)
 
 
-{-| setMinute sets a UTCTime's minute, returning Nothing if the
-updated time is invalid or Just the new UTCTime.
+{-| setMinute sets a DateTime's minute, returning Nothing if the
+updated time is invalid or Just the new DateTime.
 -}
-setMinute : Int -> UTCTime -> Maybe UTCTime
-setMinute minute ((UTCTime { date }) as t) =
-    utcTime date (hour t) minute (second t) (millisecond t)
+setMinute : Int -> DateTime -> Maybe DateTime
+setMinute minute ((DateTime { date }) as t) =
+    dateTime date (hour t) minute (second t) (millisecond t)
 
 
-{-| setSecond sets a UTCTime's second, returning Nothing if the
-updated time is invalid or Just the new UTCTime.
+{-| setSecond sets a DateTime's second, returning Nothing if the
+updated time is invalid or Just the new DateTime.
 -}
-setSecond : Int -> UTCTime -> Maybe UTCTime
-setSecond second ((UTCTime { date }) as t) =
-    utcTime date (hour t) (minute t) second (millisecond t)
+setSecond : Int -> DateTime -> Maybe DateTime
+setSecond second ((DateTime { date }) as t) =
+    dateTime date (hour t) (minute t) second (millisecond t)
 
 
-{-| setMillisecond sets a UTCTime's millisecond, returning Nothing if
-the updated time is invalid or Just the new UTCTime.
+{-| setMillisecond sets a DateTime's millisecond, returning Nothing if
+the updated time is invalid or Just the new DateTime.
 -}
-setMillisecond : Int -> UTCTime -> Maybe UTCTime
-setMillisecond millisecond ((UTCTime { date }) as t) =
-    utcTime date (hour t) (minute t) (second t) millisecond
+setMillisecond : Int -> DateTime -> Maybe DateTime
+setMillisecond millisecond ((DateTime { date }) as t) =
+    dateTime date (hour t) (minute t) (second t) millisecond
 
 
-{-| addYears adds a relative number of years to a UTCTime value.
+{-| addYears adds a relative number of years to a DateTime value.
 
 See also `Calendar.Date.addYears`.
 -}
-addYears : Int -> UTCTime -> UTCTime
-addYears years (UTCTime { date, offset }) =
-    UTCTime
+addYears : Int -> DateTime -> DateTime
+addYears years (DateTime { date, offset }) =
+    DateTime
         { date = Calendar.Date.addYears years date
         , offset = offset
         }
 
 
-{-| addMonths adds a relative number of months to a UTCTime value.
+{-| addMonths adds a relative number of months to a DateTime value.
 
 See also `Calendar.Date.addMonths`.
 -}
-addMonths : Int -> UTCTime -> UTCTime
-addMonths months (UTCTime { date, offset }) =
-    UTCTime
+addMonths : Int -> DateTime -> DateTime
+addMonths months (DateTime { date, offset }) =
+    DateTime
         { date = Calendar.Date.addMonths months date
         , offset = offset
         }
 
 
-{-| addDays adds an absolute number of days to a UTCTime value.
+{-| addDays adds an absolute number of days to a DateTime value.
 
 See also `Calendar.Date.addDays`.
 -}
-addDays : Int -> UTCTime -> UTCTime
-addDays days (UTCTime { date, offset }) =
-    UTCTime
+addDays : Int -> DateTime -> DateTime
+addDays days (DateTime { date, offset }) =
+    DateTime
         { date = Calendar.Date.addDays days date
         , offset = offset
         }
 
 
-{-| addHours adds a relative number of hours to a UTCTime value.
+{-| addHours adds a relative number of hours to a DateTime value.
 -}
-addHours : Int -> UTCTime -> UTCTime
+addHours : Int -> DateTime -> DateTime
 addHours hours time =
     addMilliseconds (hours * hourMs) time
 
 
-{-| addMinutes adds a relative number of minutes to a UTCTime value.
+{-| addMinutes adds a relative number of minutes to a DateTime value.
 -}
-addMinutes : Int -> UTCTime -> UTCTime
+addMinutes : Int -> DateTime -> DateTime
 addMinutes minutes time =
     addMilliseconds (minutes * minuteMs) time
 
 
-{-| addSeconds adds a relative number of seconds to a UTCTime value.
+{-| addSeconds adds a relative number of seconds to a DateTime value.
 -}
-addSeconds : Int -> UTCTime -> UTCTime
+addSeconds : Int -> DateTime -> DateTime
 addSeconds seconds time =
     addMilliseconds (seconds * secondMs) time
 
 
 {-| addMilliseconds adds an absolute number of milliseconds to a
-UTCTime value.
+DateTime value.
 -}
-addMilliseconds : Int -> UTCTime -> UTCTime
-addMilliseconds ms (UTCTime { date, offset }) =
+addMilliseconds : Int -> DateTime -> DateTime
+addMilliseconds ms (DateTime { date, offset }) =
     let
         offset' =
             ms + round offset
     in
-        UTCTime
+        DateTime
             { date = Calendar.Date.addDays (offset' // dayMs) date
             , offset = toFloat <| offset' `rem` dayMs
             }
 
 
-{-| delta computes the relative difference between two UTCTime values.
+{-| delta computes the relative difference between two DateTime values.
 -}
-delta : UTCTime -> UTCTime -> UTCTimeDelta
-delta (UTCTime t1) (UTCTime t2) =
+delta : DateTime -> DateTime -> DateTimeDelta
+delta (DateTime t1) (DateTime t2) =
     let
         { years, months, days } =
             Calendar.Date.delta t1.date t2.date
@@ -349,10 +349,10 @@ delta (UTCTime t1) (UTCTime t2) =
         }
 
 
-{-| toTimestamp converts a UTCTime value to its UNIX timestamp
+{-| toTimestamp converts a DateTime value to its UNIX timestamp
 representation as milliseconds.
 -}
-toTimestamp : UTCTime -> Time
+toTimestamp : DateTime -> Time
 toTimestamp time =
     delta time epoch
         |> .milliseconds
@@ -360,18 +360,18 @@ toTimestamp time =
 
 
 {-| fromTimestamp converts the millisecond representation of a
-UNIX timestamp into a UTCTime value.
+UNIX timestamp into a DateTime value.
 -}
-fromTimestamp : Time -> UTCTime
+fromTimestamp : Time -> DateTime
 fromTimestamp timestamp =
     addMilliseconds (round timestamp) epoch
 
 
-{-| toTuple converts a UTCTime into a (year, month, day, hour, miunte,
+{-| toTuple converts a DateTime into a (year, month, day, hour, miunte,
 second, millisecond) tuple.
 -}
-toTuple : UTCTime -> ( Int, Int, Int, Int, Int, Int, Int )
-toTuple ((UTCTime { date }) as t) =
+toTuple : DateTime -> ( Int, Int, Int, Int, Int, Int, Int )
+toTuple ((DateTime { date }) as t) =
     let
         ( y, m, d ) =
             Calendar.Date.toTuple date
@@ -380,18 +380,18 @@ toTuple ((UTCTime { date }) as t) =
 
 
 {-| fromTuple converts a (year, month, day, hour, minute, second,
-millisecond) tuple into a UTCTime.  If the tuple represents an invalid
-UTCTime then Nothing is returned.
+millisecond) tuple into a DateTime.  If the tuple represents an invalid
+DateTime then Nothing is returned.
 -}
-fromTuple : ( Int, Int, Int, Int, Int, Int, Int ) -> Maybe UTCTime
+fromTuple : ( Int, Int, Int, Int, Int, Int, Int ) -> Maybe DateTime
 fromTuple ( y, m, d, h, mi, s, ms ) =
     Calendar.Date.date y m d
-        `Maybe.andThen` \d -> utcTime d h mi s ms
+        `Maybe.andThen` \d -> dateTime d h mi s ms
 
 
-{-| toISO8601 renders a UTCTime in ISO8601 format.
+{-| toISO8601 renders a DateTime in ISO8601 format.
 -}
-toISO8601 : UTCTime -> String
+toISO8601 : DateTime -> String
 toISO8601 time =
     let
         padded n =
