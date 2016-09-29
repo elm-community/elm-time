@@ -52,7 +52,7 @@ type ZonedDateTime
 
 
 {-| zero represents the first millisecond of the first day of the
-current era.  Use it to build `DateTime` values:
+current era.  Use it to build `ZonedDateTime` values:
 
     -- 0-01-01T00:00:00+02:00
     zonedDateTime (europe_bucharest ()) zero
@@ -84,7 +84,8 @@ zonedDateTime timeZone dateTimeData =
             )
 
 
-{-| fromDateTime constructs a ZonedDateTime value from a TimeZone and a DateTime.
+{-| fromDateTime constructs a ZonedDateTime value from a TimeZone and
+a DateTime.
 -}
 fromDateTime : TimeZone -> DateTime -> ZonedDateTime
 fromDateTime timeZone dateTime =
@@ -188,8 +189,8 @@ utcOffset (ZonedDateTime { timeZone, dateTime }) =
         |> flip TimeZone.offset timeZone
 
 
-{-| utcOffsetString returns a ZonedDateTime's offsetString from UTC in minutes at
-that time.
+{-| utcOffsetString returns a ZonedDateTime's UTC offset at that time
+as a string.
 -}
 utcOffsetString : ZonedDateTime -> String
 utcOffsetString (ZonedDateTime { timeZone, dateTime }) =
