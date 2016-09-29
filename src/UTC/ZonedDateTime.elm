@@ -97,7 +97,7 @@ fromDateTime timeZone dateTime =
     in
         ZonedDateTime
             { timeZone = timeZone
-            , dateTime = DateTime.addMinutes -offset dateTime
+            , dateTime = DateTime.addMilliseconds -offset dateTime
             }
 
 
@@ -112,7 +112,7 @@ toDateTime (ZonedDateTime { timeZone, dateTime }) =
         offset =
             TimeZone.offset timestamp timeZone
     in
-        DateTime.addMinutes offset dateTime
+        DateTime.addMilliseconds offset dateTime
 
 
 {-| timeZone returns a ZonedDatetime's TimeZone.
