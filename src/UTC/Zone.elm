@@ -184,10 +184,20 @@ packedZone =
 
 base60 : Parser Float
 base60 =
-    unsafeBase60
-        <$> Combine.Num.sign
-        <*> Combine.optional "" base60String
-        <*> Combine.optional "" (Combine.string "." *> base60String)
+    let
+        decode =
+            (,,)
+                <$> Combine.Num.sign
+                <*> Combine.optional "" base60String
+                <*> Combine.optional "" (Combine.string "." *> base60String)
+
+        convert ( sign, whole, frac ) =
+            if whole == "" && frac == "" then
+                Combine.fail [ "expected an alphanumeric character or ." ]
+            else
+                Combine.succeed <| unsafeBase60 sign whole frac
+    in
+        decode `Combine.andThen` convert
 
 
 base60String : Parser String
