@@ -1,6 +1,8 @@
 module UTC.ZonedDateTime
     exposing
         ( ZonedDateTime
+        , zero
+        , zonedDateTime
         , fromDateTime
         , toDateTime
         , timeZone
@@ -28,7 +30,7 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs ZonedDateTime
 
 # Constructing ZonedDateTimes
-@docs fromDateTime, toDateTime
+@docs zero, zonedDateTime, fromDateTime, toDateTime
 
 # Inspecting ZonedDateTimes
 @docs timeZone, year, month, day, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString, toISO8601
@@ -47,6 +49,39 @@ type ZonedDateTime
         { timeZone : TimeZone
         , dateTime : DateTime
         }
+
+
+{-| zero represents the first millisecond of the first day of the
+current era.  Use it to build `DateTime` values:
+
+    -- 0-01-01T00:00:00+02:00
+    zonedDateTime (europe_bucharest ()) zero
+
+    -- 2016-01-01T00:00:00+02:00
+    zonedDateTime (europe_bucharest ()) { zero | year = 2016 }
+
+    -- 2016-05-29T13:00:00+02:00
+    zonedDateTime (europe_bucharest ()) { zero | year = 2016, month = 5, day = 29, hour = 13 }
+-}
+zero : DateTimeData
+zero =
+    UTC.Internal.zero
+
+
+{-| zonedDateTime constructs a ZonedDateTime value given a TimeZone, a
+date and a time.  If the constructed value is invalid, Nothing is
+returned.
+-}
+zonedDateTime : TimeZone -> DateTimeData -> Maybe ZonedDateTime
+zonedDateTime timeZone dateTimeData =
+    DateTime.dateTime dateTimeData
+        |> Maybe.map
+            (\dateTime ->
+                ZonedDateTime
+                    { timeZone = timeZone
+                    , dateTime = dateTime
+                    }
+            )
 
 
 {-| fromDateTime constructs a ZonedDateTime value from a TimeZone and a DateTime.

@@ -3,6 +3,7 @@ module UTC.DateTime
         ( DateTime
         , DateTimeDelta
         , dateTime
+        , zero
         , epoch
         , date
         , year
@@ -39,7 +40,7 @@ module UTC.DateTime
 time of day.
 
 # DateTimes
-@docs DateTime, epoch, dateTime, date, year, month, day, hour, minute, second, millisecond
+@docs DateTime, zero, epoch, dateTime, date, year, month, day, hour, minute, second, millisecond
 
 # Manipulating DateTimes
 @docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
@@ -80,24 +81,21 @@ type alias DateTimeDelta =
     }
 
 
-{-| dateTime constructs a DateTime value give a date, an hour, a minute,
-a second and a millisecond.  If the constructed value is invalid,
-Nothing is returned.
+{-| zero represents the first millisecond of the first day of the
+current era.  Use it to build `DateTime` values:
+
+    -- 0-01-01T00:00:00Z
+    dateTime zero
+
+    -- 2016-01-01T00:00:00Z
+    dateTime { zero | year = 2016 }
+
+    -- 2016-05-29T13:00:00Z
+    dateTime { zero | year = 2016, month = 5, day = 29, hour = 13 }
 -}
-dateTime : Date -> Int -> Int -> Int -> Int -> Maybe DateTime
-dateTime date hour minute second millisecond =
-    if hour >= 0 && hour < 24 && minute >= 0 && minute < 60 && second >= 0 && second < 60 && millisecond >= 0 && millisecond < 1000 then
-        Just <|
-            DateTime
-                { date = date
-                , offset =
-                    (hour * hourMs)
-                        + (minute * minuteMs)
-                        + (second * secondMs)
-                        + millisecond
-                }
-    else
-        Nothing
+zero : DateTimeData
+zero =
+    UTC.Internal.zero
 
 
 {-| epoch is the instant in time that represents the first millisecond
@@ -105,16 +103,29 @@ of the UNIX Epoch.
 -}
 epoch : DateTime
 epoch =
-    let
-        date =
-            case Calendar.Date.date 1970 1 1 of
-                Nothing ->
-                    Debug.crash "epoch: failed to construct epoch date"
+    case dateTime { zero | year = 1970 } of
+        Nothing ->
+            Debug.crash "epoch: failed to construct epoch date"
 
-                Just d ->
-                    d
-    in
-        DateTime { date = date, offset = 0 }
+        Just d ->
+            d
+
+
+{-| dateTime constructs a DateTime value given a date and a time.  If
+the constructed value is invalid, Nothing is returned.
+-}
+dateTime : DateTimeData -> Maybe DateTime
+dateTime ({ year, month, day } as data) =
+    Maybe.map2
+        (\date offset -> DateTime { date = date, offset = offset })
+        (Calendar.Date.date year month day)
+        (offsetFromTimeData data)
+
+
+dateTime' : Date -> TimeData d -> Maybe DateTime
+dateTime' date time =
+    offsetFromTimeData time
+        |> Maybe.map (\offset -> DateTime { date = date, offset = offset })
 
 
 {-| date returns a DateTime's Date.
@@ -221,7 +232,12 @@ time is invalid or Just the new DateTime.
 -}
 setHour : Int -> DateTime -> Maybe DateTime
 setHour hour ((DateTime { date }) as t) =
-    dateTime date hour (minute t) (second t) (millisecond t)
+    dateTime' date
+        { hour = hour
+        , minute = minute t
+        , second = second t
+        , millisecond = millisecond t
+        }
 
 
 {-| setMinute sets a DateTime's minute, returning Nothing if the
@@ -229,7 +245,12 @@ updated time is invalid or Just the new DateTime.
 -}
 setMinute : Int -> DateTime -> Maybe DateTime
 setMinute minute ((DateTime { date }) as t) =
-    dateTime date (hour t) minute (second t) (millisecond t)
+    dateTime' date
+        { hour = hour t
+        , minute = minute
+        , second = second t
+        , millisecond = millisecond t
+        }
 
 
 {-| setSecond sets a DateTime's second, returning Nothing if the
@@ -237,7 +258,12 @@ updated time is invalid or Just the new DateTime.
 -}
 setSecond : Int -> DateTime -> Maybe DateTime
 setSecond second ((DateTime { date }) as t) =
-    dateTime date (hour t) (minute t) second (millisecond t)
+    dateTime' date
+        { hour = hour t
+        , minute = minute t
+        , second = second
+        , millisecond = millisecond t
+        }
 
 
 {-| setMillisecond sets a DateTime's millisecond, returning Nothing if
@@ -245,7 +271,12 @@ the updated time is invalid or Just the new DateTime.
 -}
 setMillisecond : Int -> DateTime -> Maybe DateTime
 setMillisecond millisecond ((DateTime { date }) as t) =
-    dateTime date (hour t) (minute t) (second t) millisecond
+    dateTime' date
+        { hour = hour t
+        , minute = minute t
+        , second = second t
+        , millisecond = millisecond
+        }
 
 
 {-| addYears adds a relative number of years to a DateTime value.
@@ -390,10 +421,10 @@ second, millisecond) tuple.
 toTuple : DateTime -> ( Int, Int, Int, Int, Int, Int, Int )
 toTuple ((DateTime { date }) as t) =
     let
-        ( y, m, d ) =
+        ( year, month, day ) =
             Calendar.Date.toTuple date
     in
-        ( y, m, d, hour t, minute t, second t, millisecond t )
+        ( year, month, day, hour t, minute t, second t, millisecond t )
 
 
 {-| fromTuple converts a (year, month, day, hour, minute, second,
@@ -401,9 +432,16 @@ millisecond) tuple into a DateTime.  If the tuple represents an invalid
 DateTime then Nothing is returned.
 -}
 fromTuple : ( Int, Int, Int, Int, Int, Int, Int ) -> Maybe DateTime
-fromTuple ( y, m, d, h, mi, s, ms ) =
-    Calendar.Date.date y m d
-        `Maybe.andThen` \d -> dateTime d h mi s ms
+fromTuple ( year, month, day, hour, minute, second, millisecond ) =
+    dateTime
+        { year = year
+        , month = month
+        , day = day
+        , hour = hour
+        , minute = minute
+        , second = second
+        , millisecond = millisecond
+        }
 
 
 {-| toISO8601 renders a DateTime in ISO8601 format.
