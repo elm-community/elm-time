@@ -53,6 +53,7 @@ time of day.
 
 import Calendar.Date exposing (Date)
 import Time exposing (Time)
+import UTC.Internal exposing (..)
 
 
 {-| DateTime is the opaque type for all DateTime values.  Values of this
@@ -412,23 +413,3 @@ toISO8601 time =
             ++ ":"
             ++ padded (second time)
             ++ "Z"
-
-
-dayMs : number
-dayMs =
-    86400000
-
-
-hourMs : number
-hourMs =
-    3600000
-
-
-minuteMs : number
-minuteMs =
-    60000
-
-
-secondMs : number
-secondMs =
-    1000
