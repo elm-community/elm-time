@@ -7,7 +7,7 @@ module UTC.Zone
         , unpack
         )
 
-{-| FIXME
+{-| This module defines a representations for Timezone information.
 
 # Zone values
 @docs Zone, Span, abbreviation, offset
@@ -35,10 +35,14 @@ type alias Zone =
     }
 
 
-{-| -}
+{-| Spans represent variations within a Zone.  A Time has an
+associated Span if `.from <= t < .until`.
+
+`offset` is the Span's UTC offset in minutes.
+-}
 type alias Span =
-    { start : Time
-    , end : Time
+    { from : Time
+    , until : Time
     , abbreviation : String
     , offset : Float
     }
@@ -71,7 +75,7 @@ find time spans =
                     Nothing
 
                 x :: xs ->
-                    if time >= x.start && time < x.end then
+                    if time >= x.from && time < x.until then
                         Just x
                     else
                         go xs
@@ -157,8 +161,8 @@ packedZone =
                     Combine.succeed data
 
         span times data i idx =
-            { start = times !! i
-            , end = times !! (i + 1)
+            { from = times !! i
+            , until = times !! (i + 1)
             , abbreviation = data.abbrevs !! idx
             , offset = data.offsets !! idx
             }
