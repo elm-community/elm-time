@@ -34,6 +34,7 @@ module UTC.DateTime
         , toTuple
         , fromTuple
         , toISO8601
+        , fromISO8601
         )
 
 {-| This module defines a time representation based on a Date and the
@@ -49,10 +50,14 @@ time of day.
 @docs DateTimeDelta, delta
 
 # Helper functions
-@docs toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601
+@docs toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
 -}
 
 import Calendar.Date exposing (Date)
+import Combine
+import Combine.Infix exposing (..)
+import Combine.Num
+import String
 import Time exposing (Time)
 import UTC.Internal exposing (..)
 
@@ -460,3 +465,70 @@ toISO8601 time =
         ++ ":"
         ++ padded (second time)
         ++ "Z"
+
+
+{-| fromISO8601 parses an ISO8601-formatted date time string into a
+DateTime object, adjusting for its offset.
+-}
+fromISO8601 : String -> Result String DateTime
+fromISO8601 input =
+    let
+        paddedInt =
+            Combine.optional "" (Combine.string "0") *> Combine.Num.int
+
+        intRange lo hi =
+            paddedInt
+                `Combine.andThen`
+                    (\n ->
+                        if n >= lo && n <= hi then
+                            Combine.succeed n
+                        else
+                            Combine.fail [ "expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]" ]
+                    )
+
+        date =
+            (,,)
+                <$> Combine.Num.int
+                <*> (Combine.string "-" *> intRange 1 12)
+                <*> (Combine.string "-" *> intRange 1 31)
+
+        time =
+            (,,)
+                <$> (Combine.string "T" *> intRange 0 23)
+                <*> (Combine.string ":" *> intRange 0 59)
+                <*> (Combine.string ":" *> intRange 0 59)
+
+        minutes =
+            (\s h m -> s * h * 60 + s * m)
+                <$> Combine.Num.sign
+                <*> intRange 0 23
+                <*> (Combine.string ":" *> intRange 0 59)
+
+        offset =
+            (0 <$ Combine.string "Z") <|> minutes
+
+        datetime =
+            (,,)
+                <$> date
+                <*> time
+                <*> offset
+                <* Combine.end
+
+        convert ( ( year, month, day ), ( hour, minute, second ), offset ) =
+            case dateTime (DateTimeData year month day hour minute second 0) of
+                Nothing ->
+                    Combine.fail [ "invalid date" ]
+
+                Just datetime ->
+                    Combine.succeed <| addMinutes -offset datetime
+    in
+        case Combine.parse (datetime `Combine.andThen` convert) input of
+            ( Err es, { position } ) ->
+                let
+                    messages =
+                        String.join " or " es
+                in
+                    Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)
+
+            ( Ok dt, _ ) ->
+                Ok dt
