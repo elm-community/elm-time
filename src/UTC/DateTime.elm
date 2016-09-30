@@ -172,21 +172,21 @@ hour (DateTime { offset }) =
 -}
 minute : DateTime -> Int
 minute (DateTime { offset }) =
-    (offset `rem` hourMs) // minuteMs
+    (offset % hourMs) // minuteMs
 
 
 {-| second returns a DateTime's second.
 -}
 second : DateTime -> Int
 second (DateTime { offset }) =
-    (offset `rem` hourMs `rem` minuteMs) // secondMs
+    (offset % hourMs % minuteMs) // secondMs
 
 
 {-| millisecond returns a DateTime's millisecond.
 -}
 millisecond : DateTime -> Int
 millisecond (DateTime { offset }) =
-    offset `rem` hourMs `rem` minuteMs `rem` secondMs
+    offset % hourMs % minuteMs % secondMs
 
 
 {-| setDate sets a DateTime's Date.
@@ -357,14 +357,14 @@ addMilliseconds ms (DateTime { date, offset }) =
                         -(abs total // dayMs + 1)
 
                     offset =
-                        total `rem` dayMs
+                        rem total dayMs
                 in
                     if offset == 0 then
                         ( days + 1, 0 )
                     else
-                        ( days, dayMs + offset `rem` dayMs )
+                        ( days, dayMs + rem offset dayMs )
             else
-                ( total // dayMs, total `rem` dayMs )
+                ( total // dayMs, rem total dayMs )
     in
         DateTime
             { date = Calendar.Date.addDays days date

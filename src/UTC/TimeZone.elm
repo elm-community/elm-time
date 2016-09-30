@@ -83,7 +83,7 @@ offsetString time timeZone =
             abs utcOffset // 60
 
         minutes =
-            abs utcOffset `rem` 60
+            abs utcOffset % 60
 
         string =
             padded hours ++ ":" ++ padded minutes

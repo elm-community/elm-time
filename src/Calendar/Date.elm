@@ -150,7 +150,7 @@ addMonths months (Date ({ year, month, day } as date)) =
         ms =
             abs year * 12 + month - 1 + months
     in
-        firstValid (sign * ms // 12) ((ms `rem` 12) + 1) day
+        firstValid (sign * ms // 12) ((ms % 12) + 1) day
 
 
 {-| days adds an exact number (positive or negative) of days to a
@@ -210,7 +210,7 @@ rules for leap years are as follows:
 -}
 isLeapYear : Int -> Bool
 isLeapYear y =
-    y `rem` 400 == 0 || y `rem` 100 /= 0 && y `rem` 4 == 0
+    y % 400 == 0 || y % 100 /= 0 && y % 4 == 0
 
 
 {-| daysInMonth returns the number of days in a month given a specific
@@ -344,7 +344,7 @@ dateFromDays ds =
             ds // d400
 
         d =
-            ds `rem` d400
+            rem ds d400
 
         year =
             yearFromDays (d + 1)
