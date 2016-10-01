@@ -57,12 +57,12 @@ time of day.
 @docs toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
 -}
 
-import Calendar.Date exposing (Date)
 import Combine
 import Combine.Infix exposing (..)
 import Combine.Num
 import String
 import Time exposing (Time)
+import UTC.Date exposing (Date)
 import UTC.Internal exposing (..)
 
 
@@ -127,7 +127,7 @@ dateTime : DateTimeData -> Maybe DateTime
 dateTime ({ year, month, day } as data) =
     Maybe.map2
         (\date offset -> DateTime { date = date, offset = offset })
-        (Calendar.Date.date year month day)
+        (UTC.Date.date year month day)
         (offsetFromTimeData data)
 
 
@@ -148,21 +148,21 @@ date (DateTime { date }) =
 -}
 year : DateTime -> Int
 year (DateTime { date }) =
-    Calendar.Date.year date
+    UTC.Date.year date
 
 
 {-| month returns a DateTime's month.
 -}
 month : DateTime -> Int
 month (DateTime { date }) =
-    Calendar.Date.month date
+    UTC.Date.month date
 
 
 {-| day returns a DateTime's day.
 -}
 day : DateTime -> Int
 day (DateTime { date }) =
-    Calendar.Date.day date
+    UTC.Date.day date
 
 
 {-| hour returns a DateTime's hour.
@@ -206,33 +206,33 @@ setDate date (DateTime { offset }) =
 {-| setYear sets a DateTime's year, returning Nothing if the updated
 time is invalid or Just the new DateTime.
 
-See also `Calendar.Date.setYear`.
+See also `UTC.Date.setYear`.
 -}
 setYear : Int -> DateTime -> Maybe DateTime
 setYear year (DateTime { date, offset }) =
-    Calendar.Date.setYear year date
+    UTC.Date.setYear year date
         |> Maybe.map (\d -> DateTime { date = d, offset = offset })
 
 
 {-| setMonth sets a DateTime's month, returning Nothing if the updated
 time is invalid or Just the new DateTime.
 
-See also `Calendar.Date.setMonth`.
+See also `UTC.Date.setMonth`.
 -}
 setMonth : Int -> DateTime -> Maybe DateTime
 setMonth month (DateTime { date, offset }) =
-    Calendar.Date.setMonth month date
+    UTC.Date.setMonth month date
         |> Maybe.map (\d -> DateTime { date = d, offset = offset })
 
 
 {-| setDay sets a DateTime's day, returning Nothing if the updated
 time is invalid or Just the new DateTime.
 
-See also `Calendar.Date.setDay`.
+See also `UTC.Date.setDay`.
 -}
 setDay : Int -> DateTime -> Maybe DateTime
 setDay day (DateTime { date, offset }) =
-    Calendar.Date.setDay day date
+    UTC.Date.setDay day date
         |> Maybe.map (\d -> DateTime { date = d, offset = offset })
 
 
@@ -290,36 +290,36 @@ setMillisecond millisecond ((DateTime { date }) as t) =
 
 {-| addYears adds a relative number of years to a DateTime value.
 
-See also `Calendar.Date.addYears`.
+See also `UTC.Date.addYears`.
 -}
 addYears : Int -> DateTime -> DateTime
 addYears years (DateTime { date, offset }) =
     DateTime
-        { date = Calendar.Date.addYears years date
+        { date = UTC.Date.addYears years date
         , offset = offset
         }
 
 
 {-| addMonths adds a relative number of months to a DateTime value.
 
-See also `Calendar.Date.addMonths`.
+See also `UTC.Date.addMonths`.
 -}
 addMonths : Int -> DateTime -> DateTime
 addMonths months (DateTime { date, offset }) =
     DateTime
-        { date = Calendar.Date.addMonths months date
+        { date = UTC.Date.addMonths months date
         , offset = offset
         }
 
 
 {-| addDays adds an absolute number of days to a DateTime value.
 
-See also `Calendar.Date.addDays`.
+See also `UTC.Date.addDays`.
 -}
 addDays : Int -> DateTime -> DateTime
 addDays days (DateTime { date, offset }) =
     DateTime
-        { date = Calendar.Date.addDays days date
+        { date = UTC.Date.addDays days date
         , offset = offset
         }
 
@@ -371,7 +371,7 @@ addMilliseconds ms (DateTime { date, offset }) =
                 ( total // dayMs, rem total dayMs )
     in
         DateTime
-            { date = Calendar.Date.addDays days date
+            { date = UTC.Date.addDays days date
             , offset = offset'
             }
 
@@ -390,7 +390,7 @@ delta : DateTime -> DateTime -> DateTimeDelta
 delta (DateTime t1) (DateTime t2) =
     let
         { years, months, days } =
-            Calendar.Date.delta t1.date t2.date
+            UTC.Date.delta t1.date t2.date
 
         milliseconds =
             days * dayMs + (t1.offset - t2.offset)
@@ -439,7 +439,7 @@ toTuple : DateTime -> ( Int, Int, Int, Int, Int, Int, Int )
 toTuple ((DateTime { date }) as t) =
     let
         ( year, month, day ) =
-            Calendar.Date.toTuple date
+            UTC.Date.toTuple date
     in
         ( year, month, day, hour t, minute t, second t, millisecond t )
 

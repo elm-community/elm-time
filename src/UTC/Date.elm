@@ -1,4 +1,4 @@
-module Calendar.Date
+module UTC.Date
     exposing
         ( Date
         , DateDelta
