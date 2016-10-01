@@ -1,29 +1,44 @@
 module TestDateTime exposing (..)
 
 import Expect exposing (Expectation)
-import Fuzz exposing (intRange)
+import Fuzz exposing (Fuzzer, int, intRange)
 import Test exposing (..)
-import Time.DateTime exposing (..)
+import Time.Date as Date
+import Time.DateTime as DateTime exposing (..)
+
+
+posInt : Fuzzer Int
+posInt =
+    Fuzz.map abs int
+
+
+dateTimesEqual : DateTime -> ( Int, Int, Int, Int, Int, Int, Int ) -> Expect.Expectation
+dateTimesEqual dateTime dateTimeTuple =
+    Expect.equal (toTuple dateTime) dateTimeTuple
 
 
 dateTimes : Test
 dateTimes =
     describe "Time.DateTime.{dateTime,epoch}"
         [ test "epoch is the epoch" <|
-            \() -> Expect.equal (dateTime { zero | year = 1970 }) (Just epoch)
+            \() ->
+                Expect.equal
+                    epoch
+                    (dateTime { zero | year = 1970 })
         , test "can construt valid dates" <|
             \() ->
                 let
-                    (( year, month, day, hour, minute, second, millisecond ) as dateTimeTuple1) =
+                    (( year, month, day, hour, minute, second, millisecond ) as dateTimeTuple) =
                         ( 1992, 5, 29, 23, 29, 50, 920 )
-
-                    dateTimeTuple2 =
-                        dateTime { year = year, month = month, day = day, hour = hour, minute = minute, second = second, millisecond = millisecond }
-                            |> Maybe.map toTuple
                 in
-                    Expect.equal (Just dateTimeTuple1) dateTimeTuple2
-        , test "fails to construct invalid dates" <|
-            \() -> Expect.equal Nothing (dateTime { zero | year = 1993, month = 2, day = 29 })
+                    dateTimesEqual
+                        (dateTime { year = year, month = month, day = day, hour = hour, minute = minute, second = second, millisecond = millisecond })
+                        dateTimeTuple
+        , test "clamps invalid dates" <|
+            \() ->
+                dateTimesEqual
+                    (dateTime { zero | year = 1993, month = 2, day = 29 })
+                    ( 1993, 2, 28, 0, 0, 0, 0 )
         ]
 
 
@@ -33,97 +48,90 @@ setters =
         [ test "can set year" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setYear 1992)
-                    |> Maybe.map year
-                    |> Expect.equal (Just 1992)
+                    |> setYear 1992
+                    |> year
+                    |> Expect.equal 1992
         , test "can set month" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setMonth 5)
-                    |> Maybe.map month
-                    |> Expect.equal (Just 5)
+                    |> setMonth 5
+                    |> month
+                    |> Expect.equal 5
         , test "can set month given the current year and day" <|
             \() ->
                 dateTime { zero | year = 1992, month = 1, day = 29 }
-                    |> flip Maybe.andThen (setMonth 2)
-                    |> Maybe.map month
-                    |> Expect.equal (Just 2)
-        , test "fails to set invalid months" <|
-            \() ->
-                dateTime zero
-                    |> flip Maybe.andThen (setMonth 31)
-                    |> Expect.equal Nothing
-        , test "fails to set invalid months given the current year and day" <|
-            \() ->
-                dateTime { zero | year = 1993, month = 1, day = 31 }
-                    |> flip Maybe.andThen (setMonth 2)
-                    |> Expect.equal Nothing
+                    |> setMonth 2
+                    |> month
+                    |> Expect.equal 2
         , test "can set day" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setDay 15)
-                    |> Maybe.map day
-                    |> Expect.equal (Just 15)
+                    |> setDay 15
+                    |> day
+                    |> Expect.equal 15
         , test "can set day given the current year and month" <|
             \() ->
                 dateTime { zero | year = 1992, month = 2 }
-                    |> flip Maybe.andThen (setDay 29)
-                    |> Maybe.map day
-                    |> Expect.equal (Just 29)
-        , test "fails to set invalid days given the current year and month" <|
-            \() ->
-                dateTime { zero | year = 1991, month = 2 }
-                    |> flip Maybe.andThen (setDay 29)
-                    |> Expect.equal Nothing
-        , test "fails to set invalid days " <|
-            \() ->
-                dateTime zero
-                    |> flip Maybe.andThen (setDay 105)
-                    |> Expect.equal Nothing
+                    |> setDay 29
+                    |> day
+                    |> Expect.equal 29
         , test "can set hour" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setHour 23)
-                    |> Maybe.map hour
-                    |> Expect.equal (Just 23)
-        , test "fails to set invalid hours" <|
-            \() ->
-                dateTime zero
-                    |> flip Maybe.andThen (setHour 49)
-                    |> Expect.equal Nothing
+                    |> setHour 23
+                    |> hour
+                    |> Expect.equal 23
         , test "can set minute" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setMinute 23)
-                    |> Maybe.map minute
-                    |> Expect.equal (Just 23)
-        , test "fails to set invalid minutes" <|
-            \() ->
-                dateTime zero
-                    |> flip Maybe.andThen (setMinute 69)
-                    |> Expect.equal Nothing
+                    |> setMinute 23
+                    |> minute
+                    |> Expect.equal 23
         , test "can set second" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setSecond 23)
-                    |> Maybe.map second
-                    |> Expect.equal (Just 23)
-        , test "fails to set invalid seconds" <|
-            \() ->
-                dateTime zero
-                    |> flip Maybe.andThen (setSecond 69)
-                    |> Expect.equal Nothing
+                    |> setSecond 23
+                    |> second
+                    |> Expect.equal 23
         , test "can set millisecond" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setMillisecond 230)
-                    |> Maybe.map millisecond
-                    |> Expect.equal (Just 230)
-        , test "fails to set invalid milliseconds" <|
+                    |> setMillisecond 230
+                    |> millisecond
+                    |> Expect.equal 230
+        , test "invalid months are clamped" <|
             \() ->
                 dateTime zero
-                    |> flip Maybe.andThen (setMillisecond 6000)
-                    |> Expect.equal Nothing
+                    |> setMonth 31
+                    |> month
+                    |> Expect.equal 12
+        , test "invalid days are clamped" <|
+            \() ->
+                dateTime zero
+                    |> setDay 105
+                    |> day
+                    |> Expect.equal 31
+        , test "invalid months given the current year and day are clamped to the nearest valid date" <|
+            \() ->
+                dateTime { zero | year = 1993, month = 1, day = 31 }
+                    |> setMonth 2
+                    |> date
+                    |> Expect.equal (Date.date 1993 2 28)
+        , test "invalid days given the current year and month are clamped to the nearest valid date" <|
+            \() ->
+                dateTime { zero | year = 1991, month = 2 }
+                    |> setDay 29
+                    |> date
+                    |> Expect.equal (Date.date 1991 2 28)
+        , fuzz4 int int int int "invalid times are clamped" <|
+            \hour minute second millisecond ->
+                dateTime zero
+                    |> setHour hour
+                    |> setMinute minute
+                    |> setSecond second
+                    |> setMillisecond millisecond
+                    |> (\d -> ( DateTime.hour d, DateTime.minute d, DateTime.second d, DateTime.millisecond d ))
+                    |> Expect.equal ( clamp 0 23 hour, clamp 0 59 minute, clamp 0 59 second, clamp 0 999 millisecond )
         ]
 
 
@@ -198,20 +206,14 @@ toFromISO8601 =
     let
         parseEq input dateTime =
             case ( fromISO8601 input, dateTime ) of
-                ( Err _, Nothing ) ->
-                    Expect.pass
+                ( Err message, _ ) ->
+                    Expect.fail (message ++ " in input '" ++ input ++ "'")
 
-                ( Ok date1, Just date2 ) ->
+                ( Ok date1, date2 ) ->
                     if date1 == date2 then
                         Expect.pass
                     else
                         Expect.fail ("expected '" ++ toISO8601 date1 ++ "' to equal '" ++ toISO8601 date2 ++ "' from input '" ++ input ++ "'")
-
-                ( Err message, _ ) ->
-                    Expect.fail (message ++ " in input '" ++ input ++ "'")
-
-                ( Ok _, Nothing ) ->
-                    Expect.fail ("parsing '" ++ input ++ "' should have failed")
 
         parseFails input =
             case fromISO8601 input of
@@ -223,9 +225,13 @@ toFromISO8601 =
     in
         describe "Time.DateTime.{to,from}ISO8601"
             [ test "toISO8601 of epoch is correct" <|
-                \() -> toISO8601 epoch |> Expect.equal "1970-01-01T00:00:00Z"
+                \() ->
+                    toISO8601 epoch
+                        |> Expect.equal "1970-01-01T00:00:00Z"
             , test "fromISO8601 is the inverse of toISO8601" <|
-                \() -> toISO8601 epoch |> flip parseEq (Just epoch)
+                \() ->
+                    toISO8601 epoch
+                        |> flip parseEq epoch
             , test "formISO8601 fails to parse invalid strings" <|
                 \() -> parseFails "foo"
             , test "formISO8601 fails to parse invalid UTC datetimes" <|
@@ -252,8 +258,8 @@ toFromISO8601 =
 
                         output =
                             dateTime { zero | year = 1992, month = 5, day = 29, hour = 12, minute = 25, second = 12 }
-                                |> Maybe.map (addHours hour)
-                                |> Maybe.map (addMinutes <| sign * minute)
+                                |> addHours hour
+                                |> addMinutes (sign * minute)
                     in
                         parseEq input output
             ]

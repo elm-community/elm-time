@@ -21,12 +21,9 @@ type alias TimeData d =
     }
 
 
-offsetFromTimeData : TimeData d -> Maybe Int
+offsetFromTimeData : TimeData d -> Int
 offsetFromTimeData { hour, minute, second, millisecond } =
-    if hour >= 0 && hour < 24 && minute >= 0 && minute < 60 && second >= 0 && second < 60 && millisecond >= 0 && millisecond < 1000 then
-        Just <| hour * hourMs + minute * minuteMs + second * secondMs + millisecond
-    else
-        Nothing
+    (clamp 0 23 hour) * hourMs + (clamp 0 59 minute) * minuteMs + (clamp 0 59 second) * secondMs + (clamp 0 999 millisecond)
 
 
 zero : DateTimeData

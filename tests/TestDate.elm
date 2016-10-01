@@ -8,18 +8,12 @@ import Time.Date exposing (..)
 
 someDate : Date
 someDate =
-    case date 1992 5 29 of
-        Nothing ->
-            Debug.crash "someDate: failed to create valid date"
-
-        Just date ->
-            date
+    date 1992 5 29
 
 
-dateEquals : Maybe Date -> ( Int, Int, Int ) -> Expect.Expectation
-dateEquals md d =
-    Maybe.map toTuple md
-        |> Expect.equal (Just d)
+datesEqual : Date -> ( Int, Int, Int ) -> Expect.Expectation
+datesEqual date dateTuple =
+    Expect.equal (toTuple date) dateTuple
 
 
 validLeapYears : List Int
@@ -66,16 +60,16 @@ constructing =
                     day' =
                         clamp 1 day (monthDays year month)
                 in
-                    dateEquals (date year month day') ( year, month, day' )
+                    datesEqual (date year month day') ( year, month, day' )
         , test "constructs valid dates" <|
             always <|
-                dateEquals (date 1992 5 29) ( 1992, 5, 29 )
+                datesEqual (date 1992 5 29) ( 1992, 5, 29 )
         , test "accounts for leap years" <|
             always <|
-                dateEquals (date 1992 2 29) ( 1992, 2, 29 )
-        , test "fails to construct invalid dates" <|
+                datesEqual (date 1992 2 29) ( 1992, 2, 29 )
+        , test "clamps invalid dates" <|
             always <|
-                Expect.equal Nothing (date 1993 2 29)
+                datesEqual (date 1993 2 29) ( 1993, 2, 28 )
         ]
 
 
@@ -107,7 +101,7 @@ adders =
                 let
                     date1 =
                         date 1992 2 29
-                            |> Maybe.map (addYears 1)
+                            |> addYears 1
 
                     date2 =
                         date 1993 2 28
@@ -118,7 +112,7 @@ adders =
                 let
                     date1 =
                         date 1992 1 31
-                            |> Maybe.map (addMonths 1)
+                            |> addMonths 1
 
                     date2 =
                         date 1992 2 29
@@ -150,8 +144,9 @@ toFromTuple =
                         date year month day
 
                     date2 =
-                        Maybe.map toTuple date1
-                            |> flip Maybe.andThen fromTuple
+                        date1
+                            |> toTuple
+                            |> fromTuple
                 in
                     Expect.equal date1 date2
         ]

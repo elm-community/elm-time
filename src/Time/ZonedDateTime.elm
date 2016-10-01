@@ -73,19 +73,15 @@ zero =
 
 
 {-| zonedDateTime constructs a ZonedDateTime value given a TimeZone, a
-date and a time.  If the constructed value is invalid, Nothing is
-returned.
+date and a time.  Invalid values are clamped to the nearest valid date
+and time.
 -}
-zonedDateTime : TimeZone -> DateTimeData -> Maybe ZonedDateTime
+zonedDateTime : TimeZone -> DateTimeData -> ZonedDateTime
 zonedDateTime timeZone dateTimeData =
-    DateTime.dateTime dateTimeData
-        |> Maybe.map
-            (\dateTime ->
-                ZonedDateTime
-                    { timeZone = timeZone
-                    , dateTime = dateTime
-                    }
-            )
+    ZonedDateTime
+        { timeZone = timeZone
+        , dateTime = DateTime.dateTime dateTimeData
+        }
 
 
 {-| fromDateTime constructs a ZonedDateTime value from a TimeZone and

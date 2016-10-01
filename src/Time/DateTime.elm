@@ -30,6 +30,7 @@ module Time.DateTime
         , addMilliseconds
         , compare
         , delta
+        , isValidTime
         , toTimestamp
         , fromTimestamp
         , toTuple
@@ -54,7 +55,7 @@ time of day.
 @docs DateTimeDelta, delta
 
 # Helper functions
-@docs toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
 -}
 
 import Combine
@@ -62,7 +63,7 @@ import Combine.Infix exposing (..)
 import Combine.Num
 import String
 import Time exposing (Time)
-import Time.Date exposing (Date)
+import Time.Date exposing (Date, isValidDate)
 import Time.Internal exposing (..)
 
 
@@ -101,6 +102,7 @@ current era.  Use it to construct `DateTime` values:
 
     -- 2016-05-29T13:00:00Z
     dateTime { zero | year = 2016, month = 5, day = 29, hour = 13 }
+
 -}
 zero : DateTimeData
 zero =
@@ -112,29 +114,23 @@ of the UNIX Epoch.
 -}
 epoch : DateTime
 epoch =
-    case dateTime { zero | year = 1970 } of
-        Nothing ->
-            Debug.crash "epoch: failed to construct epoch date"
-
-        Just d ->
-            d
+    dateTime { zero | year = 1970 }
 
 
-{-| dateTime constructs a DateTime value given a date and a time.  If
-the constructed value is invalid, Nothing is returned.
+{-| dateTime constructs a DateTime value given a date and a time.
+Invalid values are clamped to the nearest valid date and time.
 -}
-dateTime : DateTimeData -> Maybe DateTime
+dateTime : DateTimeData -> DateTime
 dateTime ({ year, month, day } as data) =
-    Maybe.map2
-        (\date offset -> DateTime { date = date, offset = offset })
-        (Time.Date.date year month day)
-        (offsetFromTimeData data)
+    DateTime
+        { date = Time.Date.date year month day
+        , offset = offsetFromTimeData data
+        }
 
 
-dateTime' : Date -> TimeData d -> Maybe DateTime
+dateTime' : Date -> TimeData d -> DateTime
 dateTime' date time =
-    offsetFromTimeData time
-        |> Maybe.map (\offset -> DateTime { date = date, offset = offset })
+    DateTime { date = date, offset = offsetFromTimeData time }
 
 
 {-| date returns a DateTime's Date.
@@ -203,43 +199,45 @@ setDate date (DateTime { offset }) =
         }
 
 
-{-| setYear sets a DateTime's year, returning Nothing if the updated
-time is invalid or Just the new DateTime.
+{-| setYear sets a DateTime's year.
 
 See also `Time.Date.setYear`.
 -}
-setYear : Int -> DateTime -> Maybe DateTime
+setYear : Int -> DateTime -> DateTime
 setYear year (DateTime { date, offset }) =
-    Time.Date.setYear year date
-        |> Maybe.map (\d -> DateTime { date = d, offset = offset })
+    DateTime
+        { date = Time.Date.setYear year date
+        , offset = offset
+        }
 
 
-{-| setMonth sets a DateTime's month, returning Nothing if the updated
-time is invalid or Just the new DateTime.
+{-| setMonth sets a DateTime's month.
 
 See also `Time.Date.setMonth`.
 -}
-setMonth : Int -> DateTime -> Maybe DateTime
+setMonth : Int -> DateTime -> DateTime
 setMonth month (DateTime { date, offset }) =
-    Time.Date.setMonth month date
-        |> Maybe.map (\d -> DateTime { date = d, offset = offset })
+    DateTime
+        { date = Time.Date.setMonth month date
+        , offset = offset
+        }
 
 
-{-| setDay sets a DateTime's day, returning Nothing if the updated
-time is invalid or Just the new DateTime.
+{-| setDay sets a DateTime's day.
 
 See also `Time.Date.setDay`.
 -}
-setDay : Int -> DateTime -> Maybe DateTime
+setDay : Int -> DateTime -> DateTime
 setDay day (DateTime { date, offset }) =
-    Time.Date.setDay day date
-        |> Maybe.map (\d -> DateTime { date = d, offset = offset })
+    DateTime
+        { date = Time.Date.setDay day date
+        , offset = offset
+        }
 
 
-{-| setHour sets a DateTime's hour, returning Nothing if the updated
-time is invalid or Just the new DateTime.
+{-| setHour sets a DateTime's hour.
 -}
-setHour : Int -> DateTime -> Maybe DateTime
+setHour : Int -> DateTime -> DateTime
 setHour hour ((DateTime { date }) as t) =
     dateTime' date
         { hour = hour
@@ -252,7 +250,7 @@ setHour hour ((DateTime { date }) as t) =
 {-| setMinute sets a DateTime's minute, returning Nothing if the
 updated time is invalid or Just the new DateTime.
 -}
-setMinute : Int -> DateTime -> Maybe DateTime
+setMinute : Int -> DateTime -> DateTime
 setMinute minute ((DateTime { date }) as t) =
     dateTime' date
         { hour = hour t
@@ -265,7 +263,7 @@ setMinute minute ((DateTime { date }) as t) =
 {-| setSecond sets a DateTime's second, returning Nothing if the
 updated time is invalid or Just the new DateTime.
 -}
-setSecond : Int -> DateTime -> Maybe DateTime
+setSecond : Int -> DateTime -> DateTime
 setSecond second ((DateTime { date }) as t) =
     dateTime' date
         { hour = hour t
@@ -278,7 +276,7 @@ setSecond second ((DateTime { date }) as t) =
 {-| setMillisecond sets a DateTime's millisecond, returning Nothing if
 the updated time is invalid or Just the new DateTime.
 -}
-setMillisecond : Int -> DateTime -> Maybe DateTime
+setMillisecond : Int -> DateTime -> DateTime
 setMillisecond millisecond ((DateTime { date }) as t) =
     dateTime' date
         { hour = hour t
@@ -414,6 +412,14 @@ delta (DateTime t1) (DateTime t2) =
         }
 
 
+{-| isValidTime returns True if the given hour, minute, second and
+millisecond represent a valid time of day.
+-}
+isValidTime : Int -> Int -> Int -> Time -> Bool
+isValidTime hour minute second millisecond =
+    hour >= 0 && hour < 24 && minute >= 0 && minute < 60 && second >= 0 && second < 60 && millisecond >= 0 && millisecond < 1000
+
+
 {-| toTimestamp converts a DateTime value to its UNIX timestamp
 representation as milliseconds.
 -}
@@ -445,10 +451,9 @@ toTuple ((DateTime { date }) as t) =
 
 
 {-| fromTuple converts a (year, month, day, hour, minute, second,
-millisecond) tuple into a DateTime.  If the tuple represents an invalid
-DateTime then Nothing is returned.
+millisecond) tuple into a DateTime.
 -}
-fromTuple : ( Int, Int, Int, Int, Int, Int, Int ) -> Maybe DateTime
+fromTuple : ( Int, Int, Int, Int, Int, Int, Int ) -> DateTime
 fromTuple ( year, month, day, hour, minute, second, millisecond ) =
     dateTime
         { year = year
@@ -527,12 +532,13 @@ fromISO8601 input =
                 <* Combine.end
 
         convert ( ( year, month, day ), ( hour, minute, second ), offset ) =
-            case dateTime (DateTimeData year month day hour minute second 0) of
-                Nothing ->
-                    Combine.fail [ "invalid date" ]
-
-                Just datetime ->
-                    Combine.succeed <| addMinutes -offset datetime
+            if isValidDate year month day && isValidTime hour minute second 0 then
+                DateTimeData year month day hour minute second 0
+                    |> dateTime
+                    |> addMinutes -offset
+                    |> Combine.succeed
+            else
+                Combine.fail [ "invalid date" ]
     in
         case Combine.parse (datetime `Combine.andThen` convert) input of
             ( Err es, { position } ) ->

@@ -14,44 +14,43 @@ import Time.Date as Date exposing (Date, date)
 
 ### Constructing Dates
 
-Use `date` to construct `Date` values.  If given a valid date, the
-function returns `Just` that date, otherwise it returns `Nothing`.
+Use `date` to construct `Date` values.  If given invalid values for
+the month and day, they are both clamped and the nearest valid date is
+returned.
 
 ``` elm
 > date 1992 2 28
-Just (Date { year = 1992, month = 2, day = 28 }) : Maybe Date
+Date { year = 1992, month = 2, day = 28 } : Date
 
 > date 1992 2 31
-Nothing : Maybe Date
-```
+Date { year = 1992, month = 2, day = 29 } : Date
 
-``` elm
-> let
-|   birthday : Maybe Date
-|   birthday = date 1992 5 29
-| in
-|   Maybe.map Date.toString birthday
-Just "1992-05-29" : Maybe String
+> date 1992 2 128
+Date { year = 1992, month = 2, day = 29 } : Date
 ```
 
 Use `year`, `month`, and `day` to inspect `Date`s.
 
 ``` elm
-> Maybe.map Date.year birthday
-Just 1992 : Maybe Int
+> birthday = date 1992 5 29
+Date { year = 1992, month = 2, day = 29 } : Date
 
-> Maybe.map Date.month birthday
-Just 5 : Maybe Int
+> Date.year birthday
+1992 : Int
 
-> Maybe.map Date.day birthday
-Just 29 : Maybe Int
+> Date.month birthday
+5 : Int
+
+> Date.day birthday
+29 : Int
 ```
 
 ### Manipulating Dates
 
 `setYear`, `setMonth` and `setDay` can be used to create new `Dates`
-containing updated values for each respective field.  These functions
-return `Nothing` if the target date is invalid.
+containing updated values for each respective field.  Like `date`,
+these functions clamp their parameters and return the nearest valid
+date.
 
 `addDays` can be used to add an exact number of days to a `Date`.
 
@@ -61,19 +60,19 @@ subtract one day until a valid date is found.
 
 ``` elm
 > date 1992 1 31
-|   > Maybe.map Date.addYears 1
-|   > Maybe.map Date.toString
-Just "1993-01-31" : Maybe String
+|   > Date.addYears 1
+|   > Date.toString
+"1993-01-31" : String
 
 > date 1992 2 29
-|   > Maybe.map Date.addYears 1
-|   > Maybe.map Date.toString
-Just "1993-02-28" : Maybe String
+|   > Date.addYears 1
+|   > Date.toString
+"1993-02-28" : String
 
 > date 1992 1 31
-|   > Maybe.map Date.addMonths 1
-|   > Maybe.map Date.toString
-Just "1992-02-28" : Maybe String
+|   > Date.addMonths 1
+|   > Date.toString
+"1992-02-28" : String
 ```
 
 ## DateTimes
@@ -94,10 +93,10 @@ containing fields for `year`, `month`, `day`, `hour`, `minute`,
 
 ``` elm
 > dateTime { year = 1992, month = 5, day = 29, hour = 0, minute = 0, second = 0, millisecond = 0 }
-Just (DateTime { date = Date { year = 1992, month = 5, day = 29 }, offset = 0 }) : Maybe Date
+DateTime { date = Date { year = 1992, month = 5, day = 29 }, offset = 0 } : Date
 
 > dateTime { year = 1992, month = 2, day = 31, hour = 0, minute = 0, second = 0, millisecond = 0 }
-Nothing : Maybe Date
+DateTime { date = Date { year = 1992, month = 2, day = 29 }, offset = 0 } : Date
 ```
 
 To make constructing `DateTimes` less tedious, the library provides
@@ -107,12 +106,12 @@ To make constructing `DateTimes` less tedious, the library provides
 > import Time.DateTime as DateTime exposing (DateTime, dateTime, zero)
 
 > dateTime { zero | year = 1992 }
-|   > Maybe.map DateTime.toISO8601
-Just "1992-01-01T00:00:00Z" : Maybe String
+|   > DateTime.toISO8601
+"1992-01-01T00:00:00Z" : String
 
 > dateTime { zero | year = 1992, month = 2, day = 28, hour = 5 }
-|   > Maybe.map DateTime.toISO8601
-Just "1992-02-28T05:00:00Z" : Maybe String
+|   > DateTime.toISO8601
+"1992-02-28T05:00:00Z" : String
 ```
 
 Use `fromTimestamp` to construct a `DateTime` from a UTC timestamp in

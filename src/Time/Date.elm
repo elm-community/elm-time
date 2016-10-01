@@ -64,15 +64,12 @@ type alias DateDelta =
     }
 
 
-{-| date constructs a Date value given a year, a month and a day.  If
-the constructed value is invalid, Nothing is returned.
+{-| date constructs a Date value given a year, a month and a day.
+Invalid values are clamped to the nearest valid date.
 -}
-date : Int -> Int -> Int -> Maybe Date
+date : Int -> Int -> Int -> Date
 date year month day =
-    if isValidDate year month day then
-        Just <| Date { year = year, month = month, day = day }
-    else
-        Nothing
+    firstValid year (clampMonth month) (clampDay day)
 
 
 {-| year returns a Date's year as an Int.
@@ -98,37 +95,28 @@ day (Date { day }) =
     day
 
 
-{-| setYear updates a Date's year, returning Nothing if the updated
-date is invalid or Just the new Date.
+{-| setYear updates a Date's year.  Invalid values are clamped to the
+nearest valid date.
 -}
-setYear : Int -> Date -> Maybe Date
+setYear : Int -> Date -> Date
 setYear year (Date ({ month, day } as date)) =
-    if isValidDate year month day then
-        Just <| Date { date | year = year }
-    else
-        Nothing
+    firstValid year month day
 
 
-{-| setMonth updates a Date's month, returning Nothing if the updated
-date is invalid or Just the new Date.
+{-| setMonth updates a Date's month.  Invalid values are clamped to the
+nearest valid date.
 -}
-setMonth : Int -> Date -> Maybe Date
+setMonth : Int -> Date -> Date
 setMonth month (Date ({ year, day } as date)) =
-    if isValidDate year month day then
-        Just <| Date { date | month = month }
-    else
-        Nothing
+    firstValid year (clampMonth month) day
 
 
-{-| setDay updates a Date's day, returning Nothing if the updated
-date is invalid or Just the new Date.
+{-| setDay updates a Date's day.  Invalid values are clamped to the
+nearest valid date.
 -}
-setDay : Int -> Date -> Maybe Date
+setDay : Int -> Date -> Date
 setDay day (Date ({ year, month } as date)) =
-    if isValidDate year month day then
-        Just <| Date { date | day = day }
-    else
-        Nothing
+    firstValid year month (clampDay day)
 
 
 {-| addYears adds a relative number (positive or negative) of years to
@@ -207,7 +195,7 @@ toTuple (Date { year, month, day }) =
 
 {-| fromTuple converts a (year, month, day) tuple into a Date value.
 -}
-fromTuple : ( Int, Int, Int ) -> Maybe Date
+fromTuple : ( Int, Int, Int ) -> Date
 fromTuple ( year, month, day ) =
     date year month day
 
@@ -410,3 +398,13 @@ dateFromDays ds =
             , month = month
             , day = day
             }
+
+
+clampMonth : Int -> Int
+clampMonth month =
+    clamp 1 12 month
+
+
+clampDay : Int -> Int
+clampDay day =
+    clamp 1 31 day
