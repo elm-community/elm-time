@@ -61,17 +61,17 @@ subtract one day until a valid date is found.
 ``` elm
 > date 1992 1 31
 |   > Date.addYears 1
-|   > Date.toString
+|   > Date.toISO8601
 "1993-01-31" : String
 
 > date 1992 2 29
 |   > Date.addYears 1
-|   > Date.toString
+|   > Date.toISO8601
 "1993-02-28" : String
 
 > date 1992 1 31
 |   > Date.addMonths 1
-|   > Date.toString
+|   > Date.toISO8601
 "1992-02-28" : String
 ```
 

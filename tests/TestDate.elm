@@ -80,9 +80,9 @@ leapYears =
             [ fuzz (intRange -400 2020) "is correct given any year" <|
                 \year ->
                     if List.member year validLeapYears then
-                        Expect.true ("Expected " ++ Basics.toString year ++ " to be a leap year") (isLeapYear year)
+                        Expect.true ("Expected " ++ toString year ++ " to be a leap year") (isLeapYear year)
                     else
-                        Expect.false (Basics.toString year ++ " is not a leap year") (isLeapYear year)
+                        Expect.false (toString year ++ " is not a leap year") (isLeapYear year)
             ]
         , describe "daysInMonth"
             [ fuzz2 (intRange -400 2020) (intRange 1 12) "is correct given any year, month pair" <|
