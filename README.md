@@ -4,8 +4,6 @@
 elm package install -y Bogdanp/elm-time
 ```
 
-# Usage
-
 ## Dates
 
 `Date`s may represent any date in the [proleptic Gregorian calendar][cal].
