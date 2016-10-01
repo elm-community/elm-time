@@ -1,4 +1,4 @@
-module TestCalendar exposing (..)
+module TestDate exposing (..)
 
 import Calendar.Date exposing (..)
 import Expect exposing (Expectation)

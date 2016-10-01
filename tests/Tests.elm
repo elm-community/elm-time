@@ -1,13 +1,13 @@
 module Tests exposing (..)
 
 import Test exposing (..)
-import TestCalendar
+import TestDate
 import TestDateTime
 
 
 all : Test
 all =
     describe "elm-utc"
-        [ TestCalendar.all
+        [ TestDate.all
         , TestDateTime.all
         ]
