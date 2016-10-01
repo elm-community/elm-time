@@ -17,6 +17,7 @@ module UTC.ZonedDateTime
         , utcOffset
         , utcOffsetString
         , toISO8601
+        , fromISO8601
         )
 
 {-| This module defines a time representation based on a Date, the
@@ -33,7 +34,10 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs zero, zonedDateTime, fromDateTime, toDateTime
 
 # Inspecting ZonedDateTimes
-@docs timeZone, year, month, day, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString, toISO8601
+@docs timeZone, year, month, day, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString
+
+# Helper functions
+@docs toISO8601, fromISO8601
 -}
 
 import UTC.DateTime as DateTime exposing (DateTime)
@@ -214,3 +218,12 @@ toISO8601 dateTime =
         ++ ":"
         ++ padded (second dateTime)
         ++ utcOffsetString dateTime
+
+
+{-| fromISO8601 parses an ISO8601-formatted string into a
+ZonedDateTime object, adjusting for its offset.
+-}
+fromISO8601 : TimeZone -> String -> Result String ZonedDateTime
+fromISO8601 timeZone input =
+    DateTime.fromISO8601 input
+        |> Result.map (fromDateTime timeZone)
