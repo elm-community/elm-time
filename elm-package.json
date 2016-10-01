@@ -1,17 +1,17 @@
 {
     "version": "1.0.0",
     "summary": "A library for working with timezone-aware dates",
-    "repository": "https://github.com/Bogdanp/elm-utc.git",
+    "repository": "https://github.com/Bogdanp/elm-time.git",
     "license": "BSD3",
     "source-directories": [
         "src"
     ],
     "exposed-modules": [
         "Calendar.Date",
-        "UTC.DateTime",
-        "UTC.ZonedDateTime",
-        "UTC.Zone",
-        "UTC.Zones"
+        "Time.DateTime",
+        "Time.ZonedDateTime",
+        "Time.Zone",
+        "Time.Zones"
     ],
     "dependencies": {
         "Bogdanp/elm-combine": "2.2.1 <= v < 3.0.0",

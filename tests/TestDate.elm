@@ -3,7 +3,7 @@ module TestDate exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (int, intRange)
 import Test exposing (..)
-import UTC.Date exposing (..)
+import Time.Date exposing (..)
 
 
 someDate : Date
@@ -59,7 +59,7 @@ fuzzDate =
 
 constructing : Test
 constructing =
-    describe "UTC.Date.date"
+    describe "Time.Date.date"
         [ fuzzDate "constructs dates" <|
             \year month day ->
                 let
@@ -81,7 +81,7 @@ constructing =
 
 leapYears : Test
 leapYears =
-    describe "UTC.Date.isLeapYear"
+    describe "Time.Date.isLeapYear"
         [ describe "isLeapYear"
             [ fuzz (intRange -400 2020) "is correct given any year" <|
                 \year ->
@@ -101,7 +101,7 @@ leapYears =
 
 adders : Test
 adders =
-    describe "UTC.Date.add{Years,Months,Days}"
+    describe "Time.Date.add{Years,Months,Days}"
         [ test "addYears is relative" <|
             \() ->
                 let
@@ -142,7 +142,7 @@ adders =
 
 toFromTuple : Test
 toFromTuple =
-    describe "UTC.Date.{to,from}Tuple"
+    describe "Time.Date.{to,from}Tuple"
         [ fuzzDate "they have an inverse relationship" <|
             \year month day ->
                 let
@@ -159,7 +159,7 @@ toFromTuple =
 
 all : Test
 all =
-    describe "UTC.Date"
+    describe "Time.Date"
         [ constructing
         , leapYears
         , adders

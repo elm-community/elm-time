@@ -3,12 +3,12 @@ module TestDateTime exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (intRange)
 import Test exposing (..)
-import UTC.DateTime exposing (..)
+import Time.DateTime exposing (..)
 
 
 dateTimes : Test
 dateTimes =
-    describe "UTC.DateTime.{dateTime,epoch}"
+    describe "Time.DateTime.{dateTime,epoch}"
         [ test "epoch is the epoch" <|
             \() -> Expect.equal (dateTime { zero | year = 1970 }) (Just epoch)
         , test "can construt valid dates" <|
@@ -29,7 +29,7 @@ dateTimes =
 
 setters : Test
 setters =
-    describe "UTC.DateTime.set{Year,Month,Day,Hour,Minute,Second,Millisecond}"
+    describe "Time.DateTime.set{Year,Month,Day,Hour,Minute,Second,Millisecond}"
         [ test "can set year" <|
             \() ->
                 dateTime zero
@@ -129,7 +129,7 @@ setters =
 
 addition : Test
 addition =
-    describe "UTC.DateTime.add{Hours,Minutes,Seconds,Milliseconds}"
+    describe "Time.DateTime.add{Hours,Minutes,Seconds,Milliseconds}"
         [ test "can add a positive number of hours" <|
             \() ->
                 epoch
@@ -221,7 +221,7 @@ toFromISO8601 =
                 Ok _ ->
                     Expect.fail ("parsing '" ++ input ++ "' should have failed")
     in
-        describe "UTC.DateTime.{to,from}ISO8601"
+        describe "Time.DateTime.{to,from}ISO8601"
             [ test "toISO8601 of epoch is correct" <|
                 \() -> toISO8601 epoch |> Expect.equal "1970-01-01T00:00:00Z"
             , test "fromISO8601 is the inverse of toISO8601" <|
@@ -261,7 +261,7 @@ toFromISO8601 =
 
 all : Test
 all =
-    describe "UTC.DateTime"
+    describe "Time.DateTime"
         [ dateTimes
         , setters
         , addition

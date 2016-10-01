@@ -1,4 +1,4 @@
-module UTC.Internal exposing (..)
+module Time.Internal exposing (..)
 
 
 type alias DateTimeData =

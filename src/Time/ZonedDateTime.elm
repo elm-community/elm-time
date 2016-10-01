@@ -1,4 +1,4 @@
-module UTC.ZonedDateTime
+module Time.ZonedDateTime
     exposing
         ( ZonedDateTime
         , zero
@@ -40,9 +40,9 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs toISO8601, fromISO8601
 -}
 
-import UTC.DateTime as DateTime exposing (DateTime)
-import UTC.Internal exposing (..)
-import UTC.TimeZone as TimeZone exposing (TimeZone)
+import Time.DateTime as DateTime exposing (DateTime)
+import Time.Internal exposing (..)
+import Time.TimeZone as TimeZone exposing (TimeZone)
 
 
 {-| ZoneDateTime is the opaque type for all ZonedDateTime values.
@@ -69,7 +69,7 @@ current era.  Use it to build `ZonedDateTime` values:
 -}
 zero : DateTimeData
 zero =
-    UTC.Internal.zero
+    Time.Internal.zero
 
 
 {-| zonedDateTime constructs a ZonedDateTime value given a TimeZone, a

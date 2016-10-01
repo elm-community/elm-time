@@ -6,10 +6,10 @@ import Html.Attributes as A
 import Html.Events as E
 import Json.Decode as JD
 import Time exposing (Time)
-import UTC.DateTime as DateTime exposing (DateTime)
-import UTC.TimeZone exposing (TimeZone)
-import UTC.TimeZones as TimeZones
-import UTC.ZonedDateTime as ZonedDateTime
+import Time.DateTime as DateTime exposing (DateTime)
+import Time.TimeZone exposing (TimeZone)
+import Time.TimeZones as TimeZones
+import Time.ZonedDateTime as ZonedDateTime
 
 
 type alias Flags =

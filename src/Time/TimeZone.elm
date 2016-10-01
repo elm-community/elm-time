@@ -1,4 +1,4 @@
-module UTC.TimeZone
+module Time.TimeZone
     exposing
         ( TimeZone
         , abbreviation
@@ -26,7 +26,7 @@ import Combine.Infix exposing ((<$>), (<*>), (<*), (*>))
 import Combine.Num
 import String
 import Time exposing (Time)
-import UTC.Internal exposing (..)
+import Time.Internal exposing (..)
 
 
 {-| TimeZone represents the opaque type of timezone values.  These are

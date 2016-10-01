@@ -6,7 +6,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Json.Decode as JD
 import Time exposing (Time)
-import UTC.DateTime as DateTime exposing (DateTime)
+import Time.DateTime as DateTime exposing (DateTime)
 
 
 type alias Flags =

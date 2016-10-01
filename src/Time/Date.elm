@@ -1,4 +1,4 @@
-module UTC.Date
+module Time.Date
     exposing
         ( Date
         , DateDelta

@@ -1,4 +1,4 @@
-module UTC.TimeZones exposing (..)
+module Time.TimeZones exposing (..)
 
 {-| This module contains TimeZone definitions for all Timezones as they
 are defined in the IANA zoneinfo database.
@@ -6,9 +6,9 @@ are defined in the IANA zoneinfo database.
 TimeZone data is parsed lazily so, in order to retrieve a zone's value you
 must apply `()` to it.  For example:
 
-    import UTC.DateTime exposing (epoch, toTimestamp)
-    import UTC.TimeZone exposing (abbreviation)
-    import UTC.TimeZones exposing (europe_bucharest)
+    import Time.DateTime exposing (epoch, toTimestamp)
+    import Time.TimeZone exposing (abbreviation)
+    import Time.TimeZones exposing (europe_bucharest)
 
     let
         timezone = europe_bucharest ()
@@ -19,8 +19,8 @@ must apply `()` to it.  For example:
 -}
 
 import Lazy exposing (Lazy, force)
-import UTC.TimeZone exposing (TimeZone)
-import UTC.TimeZoneData exposing (..)
+import Time.TimeZone exposing (TimeZone)
+import Time.TimeZoneData exposing (..)
 
 
 -- TimeZones

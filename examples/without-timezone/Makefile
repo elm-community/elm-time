@@ -1,4 +1,4 @@
-SOURCES = $(shell find ../src -type f -name "*.elm" -print)
+SOURCES = $(shell find ../../src -type f -name "*.elm" -print)
 
 index.js: Main.elm $(SOURCES)
 	elm make --output=index.js Main.elm
