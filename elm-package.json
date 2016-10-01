@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "A library for working with timezone-aware dates",
+    "summary": "A pure Elm date and time library.",
     "repository": "https://github.com/Bogdanp/elm-time.git",
     "license": "BSD3",
     "source-directories": [
