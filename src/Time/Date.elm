@@ -14,6 +14,7 @@ module Time.Date
         , addDays
         , compare
         , delta
+        , toString
         , toTuple
         , fromTuple
         , isValidDate
@@ -37,8 +38,10 @@ represent any date of the proleptic Gregorian calendar.
 @docs DateDelta, delta
 
 # Helper functions
-@docs toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs toString, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 -}
+
+import Time.Internal exposing (padded)
 
 
 {-| Date is the opaque type for all Date values.  Values of this type
@@ -187,6 +190,13 @@ delta (Date d1) (Date d2) =
     }
 
 
+{-| toString converts a Date into its string representation.
+-}
+toString : Date -> String
+toString d =
+    Basics.toString (year d) ++ "-" ++ padded (month d) ++ "-" ++ padded (day d)
+
+
 {-| toTuple converts a Date value into a (year, month, day) tuple.
 This is useful if you want to use Dates as Dict keys.
 -}
@@ -267,7 +277,7 @@ unsafeDaysInMonth y m =
     else if m == 12 then
         31
     else
-        Debug.crash <| "invalid call to unsafeDaysInMonth: year=" ++ toString y ++ " month=" ++ toString m
+        Debug.crash <| "invalid call to unsafeDaysInMonth: year=" ++ Basics.toString y ++ " month=" ++ Basics.toString m
 
 
 firstValid : Int -> Int -> Int -> Date
