@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>elm-utc Example</title>
+  </head>
+  <body>
+    <div id="app">
+    </div>
+    <script src="index.min.js"></script>
+    <script>
+      var el = document.getElementById("app");
+      var app = Elm.Main.embed(el, {
+        now: (new Date()).getTime()
+      });
+    </script>
+  </body>
+</html>
