@@ -28,6 +28,7 @@ module UTC.DateTime
         , addMinutes
         , addSeconds
         , addMilliseconds
+        , compare
         , delta
         , toTimestamp
         , fromTimestamp
@@ -45,6 +46,9 @@ time of day.
 
 # Manipulating DateTimes
 @docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
+
+# Comparing DateTimes
+@docs compare
 
 # Subtracting DateTimes
 @docs DateTimeDelta, delta
@@ -87,7 +91,7 @@ type alias DateTimeDelta =
 
 
 {-| zero represents the first millisecond of the first day of the
-current era.  Use it to build `DateTime` values:
+current era.  Use it to construct `DateTime` values:
 
     -- 0-01-01T00:00:00Z
     dateTime zero
@@ -370,6 +374,14 @@ addMilliseconds ms (DateTime { date, offset }) =
             { date = Calendar.Date.addDays days date
             , offset = offset'
             }
+
+
+{-| compare two DateTimes.
+-}
+compare : DateTime -> DateTime -> Order
+compare dt1 dt2 =
+    -- comparison of 7-tuples is not supported so we use toISO8601 instead
+    Basics.compare (toISO8601 dt1) (toISO8601 dt2)
 
 
 {-| delta computes the relative difference between two DateTime values.

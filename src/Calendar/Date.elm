@@ -12,6 +12,7 @@ module Calendar.Date
         , addYears
         , addMonths
         , addDays
+        , compare
         , delta
         , toTuple
         , fromTuple
@@ -28,6 +29,9 @@ represent any date of the proleptic Gregorian calendar.
 
 # Manipulating Dates
 @docs setYear, setMonth, setDay, addYears, addMonths, addDays
+
+# Comparing Dates
+@docs compare
 
 # Subtracting Dates
 @docs DateDelta, delta
@@ -162,6 +166,13 @@ addDays days (Date ({ year, month, day } as date)) =
     daysFromYearMonthDay year month day
         |> ((+) days)
         |> dateFromDays
+
+
+{-| compare two Dates.
+-}
+compare : Date -> Date -> Order
+compare d1 d2 =
+    Basics.compare (toTuple d1) (toTuple d2)
 
 
 {-| delta returns the relative number of years, months and days between two Dates.
