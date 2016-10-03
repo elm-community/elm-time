@@ -60,18 +60,18 @@ subtract one day until a valid date is found.
 
 ``` elm
 > date 1992 1 31
-|   > Date.addYears 1
-|   > Date.toISO8601
+|   |> Date.addYears 1
+|   |> Date.toISO8601
 "1993-01-31" : String
 
 > date 1992 2 29
-|   > Date.addYears 1
-|   > Date.toISO8601
+|   |> Date.addYears 1
+|   |> Date.toISO8601
 "1993-02-28" : String
 
 > date 1992 1 31
-|   > Date.addMonths 1
-|   > Date.toISO8601
+|   |> Date.addMonths 1
+|   |> Date.toISO8601
 "1992-02-28" : String
 ```
 
@@ -106,11 +106,11 @@ To make constructing `DateTimes` less tedious, the library provides
 > import Time.DateTime as DateTime exposing (DateTime, dateTime, zero)
 
 > dateTime { zero | year = 1992 }
-|   > DateTime.toISO8601
+|   |> DateTime.toISO8601
 "1992-01-01T00:00:00Z" : String
 
 > dateTime { zero | year = 1992, month = 2, day = 28, hour = 5 }
-|   > DateTime.toISO8601
+|   |> DateTime.toISO8601
 "1992-02-28T05:00:00Z" : String
 ```
 
@@ -119,7 +119,7 @@ milliseconds:
 
 ``` elm
 > fromTimestamp 0
-|   > DateTime.toISO8601
+|   |> DateTime.toISO8601
 "1970-01-01T00:00:00Z" : String
 ```
 
