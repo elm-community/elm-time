@@ -32,7 +32,7 @@ Date { year = 1992, month = 2, day = 29 } : Date
 Use `year`, `month`, and `day` to inspect `Date`s.
 
 ``` elm
-> birthday = date 1992 5 29
+> birthday = date 1992 2 29
 Date { year = 1992, month = 2, day = 29 } : Date
 
 > Date.year birthday
