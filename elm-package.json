@@ -7,11 +7,11 @@
         "src"
     ],
     "exposed-modules": [
-        "Calendar.Date",
+        "Time.Date",
         "Time.DateTime",
         "Time.ZonedDateTime",
-        "Time.Zone",
-        "Time.Zones"
+        "Time.TimeZone",
+        "Time.TimeZones"
     ],
     "dependencies": {
         "Bogdanp/elm-combine": "2.2.1 <= v < 3.0.0",
