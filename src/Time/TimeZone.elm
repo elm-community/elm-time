@@ -88,7 +88,7 @@ offsetString time timeZone =
         string =
             padded hours ++ ":" ++ padded minutes
     in
-        if utcOffset < 0 then
+        if utcOffset <= 0 then
             "+" ++ string
         else
             "-" ++ string
