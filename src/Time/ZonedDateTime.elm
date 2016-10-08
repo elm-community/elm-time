@@ -105,15 +105,17 @@ fromDateTime timeZone dateTime =
 {-| toDateTime converts a ZonedDateTime to a UTC DateTime value.
 -}
 toDateTime : ZonedDateTime -> DateTime
-toDateTime (ZonedDateTime { timeZone, dateTime }) =
-    let
-        timestamp =
-            DateTime.toTimestamp dateTime
+toDateTime ((ZonedDateTime { dateTime }) as zonedDateTime) =
+    utcOffset zonedDateTime
+        |> flip DateTime.addMilliseconds dateTime
 
-        offset =
-            TimeZone.offset timestamp timeZone
-    in
-        DateTime.addMilliseconds offset dateTime
+
+toTimestamp : ZonedDateTime -> Float
+toTimestamp (ZonedDateTime { timeZone, dateTime }) =
+    DateTime.toTimestamp dateTime
+        |> flip TimeZone.offset timeZone
+        |> flip DateTime.addMilliseconds dateTime
+        |> DateTime.toTimestamp
 
 
 {-| timeZone returns a ZonedDatetime's TimeZone.
@@ -175,8 +177,8 @@ millisecond (ZonedDateTime { dateTime }) =
 {-| abbreviation returns a ZonedDateTime's abbreviation at that time.
 -}
 abbreviation : ZonedDateTime -> String
-abbreviation (ZonedDateTime { timeZone, dateTime }) =
-    DateTime.toTimestamp dateTime
+abbreviation ((ZonedDateTime { timeZone }) as zonedDateTime) =
+    toTimestamp zonedDateTime
         |> flip TimeZone.abbreviation timeZone
 
 
@@ -184,8 +186,8 @@ abbreviation (ZonedDateTime { timeZone, dateTime }) =
 milliseconds at that time.
 -}
 utcOffset : ZonedDateTime -> Int
-utcOffset (ZonedDateTime { timeZone, dateTime }) =
-    DateTime.toTimestamp dateTime
+utcOffset ((ZonedDateTime { timeZone }) as zonedDateTime) =
+    toTimestamp zonedDateTime
         |> flip TimeZone.offset timeZone
 
 
@@ -193,8 +195,8 @@ utcOffset (ZonedDateTime { timeZone, dateTime }) =
 as a string.
 -}
 utcOffsetString : ZonedDateTime -> String
-utcOffsetString (ZonedDateTime { timeZone, dateTime }) =
-    DateTime.toTimestamp dateTime
+utcOffsetString ((ZonedDateTime { timeZone }) as zonedDateTime) =
+    toTimestamp zonedDateTime
         |> flip TimeZone.offsetString timeZone
 
 
