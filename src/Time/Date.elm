@@ -109,7 +109,7 @@ day (Date { day }) =
     day
 
 
-{-|
+{-| weekday returns the day of week for a given Date.
 
 This uses Gauss' algorithm to determine the day of week.
 -}
