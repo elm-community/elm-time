@@ -111,24 +111,45 @@ day (Date { day }) =
 
 {-| weekday returns the day of week for a given Date.
 
-This uses Gauss' algorithm to determine the day of week.
+This uses Sakamoto's method to determine the day of week.
 -}
 weekday : Date -> Weekday
 weekday (Date { year, month, day }) =
     let
-        yy =
-            year // 100
+        m =
+            if month == 1 then
+                0
+            else if month == 2 then
+                3
+            else if month == 3 then
+                2
+            else if month == 4 then
+                5
+            else if month == 5 then
+                0
+            else if month == 6 then
+                3
+            else if month == 7 then
+                5
+            else if month == 8 then
+                1
+            else if month == 9 then
+                4
+            else if month == 10 then
+                6
+            else if month == 11 then
+                2
+            else
+                4
 
-        cc =
-            rem year 100
+        y =
+            if month < 3 then
+                year - 1
+            else
+                year
 
         d =
-            ((yy // 4 - 2 * yy - 1)
-                + (5 * cc // 4)
-                + (26 * (month + 1) // 10)
-                + day
-            )
-                % 7
+            (y + y // 4 - y // 100 + y // 400 + m + day) % 7
     in
         if d == 0 then
             Sun
