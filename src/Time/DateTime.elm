@@ -9,6 +9,7 @@ module Time.DateTime
         , year
         , month
         , day
+        , weekday
         , hour
         , minute
         , second
@@ -43,7 +44,7 @@ module Time.DateTime
 time of day.
 
 # DateTimes
-@docs DateTime, zero, epoch, dateTime, date, year, month, day, hour, minute, second, millisecond
+@docs DateTime, zero, epoch, dateTime, date, year, month, day, weekday, hour, minute, second, millisecond
 
 # Manipulating DateTimes
 @docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
@@ -58,12 +59,11 @@ time of day.
 @docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
 -}
 
-import Combine
-import Combine.Infix exposing (..)
+import Combine exposing (..)
 import Combine.Num
 import String
 import Time exposing (Time)
-import Time.Date exposing (Date, isValidDate)
+import Time.Date exposing (Date, Weekday, isValidDate)
 import Time.Internal exposing (..)
 
 
@@ -159,6 +159,13 @@ month (DateTime { date }) =
 day : DateTime -> Int
 day (DateTime { date }) =
     Time.Date.day date
+
+
+{-| weekday returns a DateTime's day of the week.
+-}
+weekday : DateTime -> Weekday
+weekday (DateTime { date }) =
+    Time.Date.weekday date
 
 
 {-| hour returns a DateTime's hour.

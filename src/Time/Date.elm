@@ -2,10 +2,12 @@ module Time.Date
     exposing
         ( Date
         , DateDelta
+        , Weekday(..)
         , date
         , year
         , month
         , day
+        , weekday
         , setYear
         , setMonth
         , setDay
@@ -26,7 +28,7 @@ module Time.Date
 represent any date of the proleptic Gregorian calendar.
 
 # Dates
-@docs Date, date, year, month, day
+@docs Date, date, year, month, day, Weekday, weekday
 
 # Manipulating Dates
 @docs setYear, setMonth, setDay, addYears, addMonths, addDays
@@ -53,6 +55,18 @@ type Date
         , month : Int
         , day : Int
         }
+
+
+{-| Data type used to represent the days of the week.
+-}
+type Weekday
+    = Mon
+    | Tue
+    | Wed
+    | Thu
+    | Fri
+    | Sat
+    | Sun
 
 
 {-| DateDelta represents a delta between two dates.
@@ -93,6 +107,43 @@ the Date's (year, month) pair and in the range [1, 31].
 day : Date -> Int
 day (Date { day }) =
     day
+
+
+{-|
+
+This uses Gauss' algorithm to determine the day of week.
+-}
+weekday : Date -> Weekday
+weekday (Date { year, month, day }) =
+    let
+        yy =
+            year // 100
+
+        cc =
+            rem year 100
+
+        d =
+            ((yy // 4 - 2 * yy - 1)
+                + (5 * cc // 4)
+                + (26 * (month + 1) // 10)
+                + day
+            )
+                % 7
+    in
+        if d == 0 then
+            Sun
+        else if d == 1 then
+            Mon
+        else if d == 2 then
+            Tue
+        else if d == 3 then
+            Wed
+        else if d == 4 then
+            Thu
+        else if d == 5 then
+            Fri
+        else
+            Sat
 
 
 {-| setYear updates a Date's year.  Invalid values are clamped to the

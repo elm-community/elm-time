@@ -9,6 +9,7 @@ module Time.ZonedDateTime
         , year
         , month
         , day
+        , weekday
         , hour
         , minute
         , second
@@ -34,12 +35,13 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs zero, zonedDateTime, fromDateTime, toDateTime
 
 # Inspecting ZonedDateTimes
-@docs timeZone, year, month, day, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString
+@docs timeZone, year, month, day, weekday, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString
 
 # Helper functions
 @docs toISO8601, fromISO8601
 -}
 
+import Time.Date exposing (Weekday)
 import Time.DateTime as DateTime exposing (DateTime)
 import Time.Internal exposing (..)
 import Time.TimeZone as TimeZone exposing (TimeZone)
@@ -144,6 +146,13 @@ month (ZonedDateTime { dateTime }) =
 day : ZonedDateTime -> Int
 day (ZonedDateTime { dateTime }) =
     DateTime.day dateTime
+
+
+{-| weekday returns a ZonedDateTime's day of the week.
+-}
+weekday : ZonedDateTime -> Weekday
+weekday (ZonedDateTime { dateTime }) =
+    DateTime.weekday dateTime
 
 
 {-| hour returns a ZonedDateTime's hour.
