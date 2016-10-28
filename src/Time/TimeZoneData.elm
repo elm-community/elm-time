@@ -8,7 +8,7 @@ import Time.TimeZone exposing (TimeZone, setName)
 unpack : String -> Lazy TimeZone
 unpack data =
     let
-        unpack' () =
+        helper () =
             case Time.TimeZone.unpack data of
                 Err errors ->
                     let
@@ -20,7 +20,7 @@ unpack data =
                 Ok zone ->
                     zone
     in
-        lazy unpack'
+        lazy helper
 
 
 link : String -> Lazy TimeZone -> Lazy TimeZone

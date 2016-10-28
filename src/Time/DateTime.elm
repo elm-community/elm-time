@@ -128,8 +128,8 @@ dateTime ({ year, month, day } as data) =
         }
 
 
-dateTime' : Date -> TimeData d -> DateTime
-dateTime' date time =
+mkDateTime : Date -> TimeData d -> DateTime
+mkDateTime date time =
     DateTime { date = date, offset = offsetFromTimeData time }
 
 
@@ -239,7 +239,7 @@ setDay day (DateTime { date, offset }) =
 -}
 setHour : Int -> DateTime -> DateTime
 setHour hour ((DateTime { date }) as t) =
-    dateTime' date
+    mkDateTime date
         { hour = hour
         , minute = minute t
         , second = second t
@@ -252,7 +252,7 @@ updated time is invalid or Just the new DateTime.
 -}
 setMinute : Int -> DateTime -> DateTime
 setMinute minute ((DateTime { date }) as t) =
-    dateTime' date
+    mkDateTime date
         { hour = hour t
         , minute = minute
         , second = second t
@@ -265,7 +265,7 @@ updated time is invalid or Just the new DateTime.
 -}
 setSecond : Int -> DateTime -> DateTime
 setSecond second ((DateTime { date }) as t) =
-    dateTime' date
+    mkDateTime date
         { hour = hour t
         , minute = minute t
         , second = second
@@ -278,7 +278,7 @@ the updated time is invalid or Just the new DateTime.
 -}
 setMillisecond : Int -> DateTime -> DateTime
 setMillisecond millisecond ((DateTime { date }) as t) =
-    dateTime' date
+    mkDateTime date
         { hour = hour t
         , minute = minute t
         , second = second t
@@ -352,7 +352,7 @@ addMilliseconds ms (DateTime { date, offset }) =
         total =
             ms + offset
 
-        ( days, offset' ) =
+        ( days, newOffset ) =
             if total < 0 then
                 let
                     days =
@@ -370,7 +370,7 @@ addMilliseconds ms (DateTime { date, offset }) =
     in
         DateTime
             { date = Time.Date.addDays days date
-            , offset = offset'
+            , offset = newOffset
             }
 
 
@@ -495,12 +495,12 @@ fromISO8601 input =
 
         intRange lo hi =
             paddedInt
-                `Combine.andThen`
+                |> Combine.andThen
                     (\n ->
                         if n >= lo && n <= hi then
                             Combine.succeed n
                         else
-                            Combine.fail [ "expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]" ]
+                            Combine.fail ("expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]")
                     )
 
         date =
@@ -538,15 +538,15 @@ fromISO8601 input =
                     |> addMinutes -offset
                     |> Combine.succeed
             else
-                Combine.fail [ "invalid date" ]
+                Combine.fail "invalid date"
     in
-        case Combine.parse (datetime `Combine.andThen` convert) input of
-            ( Err es, { position } ) ->
+        case Combine.parse (datetime >>= convert) input of
+            Ok ( _, _, dt ) ->
+                Ok dt
+
+            Err ( _, { position }, es ) ->
                 let
                     messages =
                         String.join " or " es
                 in
                     Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)
-
-            ( Ok dt, _ ) ->
-                Ok dt

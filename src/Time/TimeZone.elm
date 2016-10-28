@@ -21,8 +21,7 @@ module Time.TimeZone
 -}
 
 import Char
-import Combine exposing (Parser)
-import Combine.Infix exposing ((<$>), (<*>), (<*), (*>))
+import Combine exposing (..)
 import Combine.Num
 import String
 import Time exposing (Time)
@@ -125,11 +124,11 @@ See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/
 unpack : String -> Result (List String) TimeZone
 unpack data =
     case Combine.parse packedTimeZone data of
-        ( Err errors, _ ) ->
-            Err errors
-
-        ( Ok zone, _ ) ->
+        Ok ( _, _, zone ) ->
             Ok zone
+
+        Err ( _, _, errors ) ->
+            Err errors
 
 
 type alias PackedTimeZone =
@@ -144,7 +143,7 @@ type alias PackedTimeZone =
 {-| packedTimeZone parses a zone data string into a TimeZone, validating that
 the data fromat invariants hold.
 -}
-packedTimeZone : Parser TimeZone
+packedTimeZone : Parser s TimeZone
 packedTimeZone =
     let
         name =
@@ -189,9 +188,9 @@ packedTimeZone =
                         |> Maybe.withDefault 0
             in
                 if abbrevs /= offsets then
-                    Combine.fail [ "abbrevs and offsets have different lengths" ]
+                    Combine.fail "abbrevs and offsets have different lengths"
                 else if maxIndex >= abbrevs then
-                    Combine.fail [ "highest index is longer than both abbrevs and offsets" ]
+                    Combine.fail "highest index is longer than both abbrevs and offsets"
                 else
                     Combine.succeed data
 
@@ -211,18 +210,18 @@ packedTimeZone =
                         []
 
                 -- surround times with - and +infinity
-                times' =
+                paddedTimes =
                     [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
             in
                 TimeZone
                     { name = data.name
-                    , spans = List.indexedMap (span times' data) data.indices
+                    , spans = List.indexedMap (span paddedTimes data) data.indices
                     }
     in
-        convert <$> (decode `Combine.andThen` validate)
+        convert <$> (decode >>= validate)
 
 
-base60 : Parser Float
+base60 : Parser s Float
 base60 =
     let
         decode =
@@ -233,14 +232,14 @@ base60 =
 
         convert ( sign, whole, frac ) =
             if whole == "" && frac == "" then
-                Combine.fail [ "expected an alphanumeric character or ." ]
+                Combine.fail "expected an alphanumeric character or ."
             else
                 Combine.succeed <| unsafeBase60 sign whole frac
     in
-        decode `Combine.andThen` convert
+        decode >>= convert
 
 
-base60String : Parser String
+base60String : Parser s String
 base60String =
     Combine.regex "[0-9a-zA-Z]+"
 
@@ -270,7 +269,7 @@ unsafeBase60 sign whole frac =
 
         toFrac cs mul acc =
             let
-                mul' =
+                mul_ =
                     mul / 60
             in
                 case cs of
@@ -278,7 +277,7 @@ unsafeBase60 sign whole frac =
                         acc
 
                     c :: cs ->
-                        toFrac cs mul' (acc + mul' * toNum c)
+                        toFrac cs mul_ (acc + mul_ * toNum c)
     in
         toWhole (String.toList whole) 0
             |> toFrac (String.toList frac) 1
