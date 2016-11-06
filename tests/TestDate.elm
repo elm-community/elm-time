@@ -57,10 +57,10 @@ constructing =
         [ fuzzDate "constructs dates" <|
             \year month day ->
                 let
-                    day' =
+                    day_ =
                         clamp 1 day (monthDays year month)
                 in
-                    datesEqual (date year month day') ( year, month, day' )
+                    datesEqual (date year month day_) ( year, month, day_ )
         , test "constructs valid dates" <|
             always <|
                 datesEqual (date 1992 5 29) ( 1992, 5, 29 )
