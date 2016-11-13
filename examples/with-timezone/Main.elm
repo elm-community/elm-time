@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import Html as H exposing (Html)
-import Html.App as App
 import Html.Attributes as A
 import Html.Events as E
 import Json.Decode as JD
@@ -27,9 +26,9 @@ type Msg
     | ChangeZone String
 
 
-main : Program Flags
+main : Program Flags Model Msg
 main =
-    App.programWithFlags
+    H.programWithFlags
         { init = init
         , update = update
         , view = view
