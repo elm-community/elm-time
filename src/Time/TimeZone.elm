@@ -24,7 +24,6 @@ module Time.TimeZone
 import Char
 import Combine exposing (..)
 import Combine.Num
-import String
 import Time exposing (Time)
 import Time.Internal exposing (..)
 
