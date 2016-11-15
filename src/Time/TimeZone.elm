@@ -1,6 +1,7 @@
 module Time.TimeZone
     exposing
         ( TimeZone
+        , name
         , abbreviation
         , offset
         , offsetString
@@ -11,7 +12,7 @@ module Time.TimeZone
 {-| This module defines a representations for Timezone information.
 
 # TimeZone values
-@docs TimeZone, abbreviation, offset, offsetString
+@docs TimeZone, name, abbreviation, offset, offsetString
 
 # Manipulating TimeZones
 @docs setName
@@ -69,7 +70,7 @@ offset time (TimeZone { spans }) =
     find time spans |> .offset
 
 
-{-| Given an arbitrary Time and TimeZone, offset returns an
+{-| Given an arbitrary Time and TimeZone, offsetString returns an
 ISO8601-formatted UTC offset for at that Time.
 -}
 offsetString : Time -> TimeZone -> String
@@ -115,6 +116,13 @@ find time spans =
 setName : String -> TimeZone -> TimeZone
 setName name (TimeZone tz) =
     TimeZone { tz | name = name }
+
+
+{-| name returns a TimeZone's name.
+-}
+name : TimeZone -> String
+name (TimeZone { name }) =
+    name
 
 
 {-| unpack decodes a packed zone data object into a TimeZone value.
