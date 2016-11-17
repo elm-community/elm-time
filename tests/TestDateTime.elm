@@ -222,6 +222,14 @@ toFromISO8601 =
 
                 Ok _ ->
                     Expect.fail ("parsing '" ++ input ++ "' should have failed")
+
+        parseMs input ms =
+            case fromISO8601 input of
+                Err _ ->
+                    Expect.fail "parse failed"
+
+                Ok dt ->
+                    Expect.equal (millisecond dt) ms
     in
         describe "Time.DateTime.{to,from}ISO8601"
             [ test "toISO8601 of epoch is correct" <|
@@ -238,6 +246,22 @@ toFromISO8601 =
                 \() -> parseFails "1993-02-29T00:00:00Z"
             , test "fromISO8601 can parse valid UTC datetime strings" <|
                 \() -> parseEq "1992-05-29T12:25:12Z" (dateTime { zero | year = 1992, month = 5, day = 29, hour = 12, minute = 25, second = 12 })
+            , test "fromISO8601 can parse valid fractions in the hundreds" <|
+                \() -> parseMs "2016-11-14T03:56:12.123Z" 123
+            , test "fromISO8601 can parse valid fractions in the tens" <|
+                \() -> parseMs "2016-11-14T03:56:12.12Z" 120
+            , test "fromISO8601 can parse valid fractions in the ones" <|
+                \() -> parseMs "2016-11-14T03:56:12.1Z" 100
+            , test "fromISO8601 can parse valid padded fractions in the tens" <|
+                \() -> parseMs "2016-11-14T03:56:12.01Z" 10
+            , test "fromISO8601 can parse valid padded fractions in the ones" <|
+                \() -> parseMs "2016-11-14T03:56:12.001Z" 1
+            , test "fromISO8601 fractions are capped at millisecond precision" <|
+                \() -> parseMs "2016-11-14T03:56:12.12345Z" 123
+            , test "fromISO8601 fractions are capped at millisecond precision with padding" <|
+                \() -> parseMs "2016-11-14T03:56:12.0012345Z" 1
+            , test "fromISO8601 fractions are capped at millisecond precision with padding 2" <|
+                \() -> parseMs "2016-11-14T03:56:12.0001234Z" 0
             , fuzz2 (intRange -23 23) (intRange 0 59) "fromISO8601 parses offsets correctly" <|
                 \hour minute ->
                     let

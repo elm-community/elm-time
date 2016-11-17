@@ -502,13 +502,32 @@ fromISO8601 input =
 
         intRange lo hi =
             paddedInt
-                |> Combine.andThen
-                    (\n ->
+                >>= (\n ->
                         if n >= lo && n <= hi then
                             Combine.succeed n
                         else
                             Combine.fail ("expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]")
                     )
+
+        fraction =
+            let
+                padding =
+                    (\p -> 10 ^ String.length p) <$> Combine.regex "0*"
+
+                digits =
+                    (\n -> ( n, String.length (toString n) )) <$> Combine.Num.int
+
+                convert padding ( n, digits ) =
+                    let
+                        ( multiplier, remainder ) =
+                            if digits > 3 then
+                                ( 1, 10 ^ (digits - 3) )
+                            else
+                                ( 1000 // 10 ^ digits, 1 )
+                    in
+                        n * multiplier // padding // remainder
+            in
+                convert <$> padding <*> digits
 
         date =
             (,,)
@@ -517,10 +536,11 @@ fromISO8601 input =
                 <*> (Combine.string "-" *> intRange 1 31)
 
         time =
-            (,,)
+            (,,,)
                 <$> (Combine.string "T" *> intRange 0 23)
                 <*> (Combine.string ":" *> intRange 0 59)
                 <*> (Combine.string ":" *> intRange 0 59)
+                <*> (Combine.optional 0 (Combine.regex "[,.]" *> fraction))
 
         minutes =
             (\s h m -> s * h * 60 + s * m)
@@ -538,9 +558,9 @@ fromISO8601 input =
                 <*> offset
                 <* Combine.end
 
-        convert ( ( year, month, day ), ( hour, minute, second ), offset ) =
+        convert ( ( year, month, day ), ( hour, minute, second, millisecond ), offset ) =
             if isValidDate year month day && isValidTime hour minute second 0 then
-                DateTimeData year month day hour minute second 0
+                DateTimeData year month day hour minute second millisecond
                     |> dateTime
                     |> addMinutes -offset
                     |> Combine.succeed
