@@ -152,11 +152,54 @@ toFromTuple =
         ]
 
 
+toFromISO8601 : Test
+toFromISO8601 =
+    let
+        renderEq date output () =
+            toISO8601 date
+                |> Expect.equal output
+
+        parseEq input date () =
+            case ( fromISO8601 input, date ) of
+                ( Err message, _ ) ->
+                    Expect.fail (message ++ " in input '" ++ input ++ "'")
+
+                ( Ok date1, date2 ) ->
+                    if date1 == date2 then
+                        Expect.pass
+                    else
+                        Expect.fail ("expected '" ++ toISO8601 date1 ++ "' to equal '" ++ toISO8601 date2 ++ "' from input '" ++ input ++ "'")
+
+        parseFails input () =
+            case fromISO8601 input of
+                Err _ ->
+                    Expect.pass
+
+                Ok _ ->
+                    Expect.fail ("parsing '" ++ input ++ "' should have failed")
+    in
+        describe "Time.Date.{to,from}ISO8601"
+            [ test "toISO8601 of epoch is correct" <|
+                renderEq (date 1970 1 1) "1970-01-01"
+            , test "toISO8601 of some date is correct" <|
+                renderEq someDate "1992-05-29"
+            , test "fromISO8601 of a valid date is correct" <|
+                parseEq "1992-05-29" (date 1992 5 29)
+            , test "fromISO8601 of a badly-formatted date fails" <|
+                parseFails ""
+            , test "fromISO8601 of a badly-formatted date fails 2" <|
+                parseFails "1992-05"
+            , test "fromISO8601 of an invalid date fails" <|
+                parseFails "1991-02-31"
+            ]
+
+
 all : Test
 all =
     describe "Time.Date"
         [ constructing
         , leapYears
         , adders
+        , toFromISO8601
         , toFromTuple
         ]

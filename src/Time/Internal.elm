@@ -1,5 +1,8 @@
 module Time.Internal exposing (..)
 
+import Combine exposing (..)
+import Combine.Num
+
 
 type alias DateTimeData =
     { year : Int
@@ -64,3 +67,25 @@ minuteMs =
 secondMs : number
 secondMs =
     1000
+
+
+
+-- Shared parsers
+-- --------------
+
+
+paddedInt : Parser s Int
+paddedInt =
+    Combine.optional "" (Combine.string "0") *> Combine.Num.int
+
+
+intRange : Int -> Int -> Parser s Int
+intRange lo hi =
+    let
+        validate n =
+            if n >= lo && n <= hi then
+                Combine.succeed n
+            else
+                Combine.fail ("expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]")
+    in
+        paddedInt >>= validate

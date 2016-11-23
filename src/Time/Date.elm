@@ -17,6 +17,7 @@ module Time.Date
         , compare
         , delta
         , toISO8601
+        , fromISO8601
         , toTuple
         , fromTuple
         , isValidDate
@@ -40,10 +41,12 @@ represent any date of the proleptic Gregorian calendar.
 @docs DateDelta, delta
 
 # Helper functions
-@docs toISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 -}
 
-import Time.Internal exposing (padded)
+import Combine exposing ((<$>), (<*>), (*>), (>>=))
+import Combine.Num
+import Time.Internal exposing (padded, intRange)
 
 
 {-| Date is the opaque type for all Date values.  Values of this type
@@ -480,3 +483,32 @@ clampMonth month =
 clampDay : Int -> Int
 clampDay day =
     clamp 1 31 day
+
+
+{-| fromISO8601 parses an ISO8601-formatted date string into a Date.
+-}
+fromISO8601 : String -> Result String Date
+fromISO8601 input =
+    let
+        dateTuple =
+            (,,)
+                <$> Combine.Num.int
+                <*> (Combine.string "-" *> intRange 1 12)
+                <*> (Combine.string "-" *> intRange 1 31)
+
+        convert ( year, month, day ) =
+            if isValidDate year month day then
+                Combine.succeed (date year month day)
+            else
+                Combine.fail "invalid date"
+    in
+        case Combine.parse (dateTuple >>= convert) input of
+            Ok ( _, _, date ) ->
+                Ok date
+
+            Err ( _, { position }, es ) ->
+                let
+                    messages =
+                        String.join " or " es
+                in
+                    Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)

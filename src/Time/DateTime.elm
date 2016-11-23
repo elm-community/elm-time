@@ -497,18 +497,6 @@ DateTime object, adjusting for its offset.
 fromISO8601 : String -> Result String DateTime
 fromISO8601 input =
     let
-        paddedInt =
-            Combine.optional "" (Combine.string "0") *> Combine.Num.int
-
-        intRange lo hi =
-            paddedInt
-                >>= (\n ->
-                        if n >= lo && n <= hi then
-                            Combine.succeed n
-                        else
-                            Combine.fail ("expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]")
-                    )
-
         fraction =
             let
                 padding =
