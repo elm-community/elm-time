@@ -16,6 +16,21 @@ module Time.ZonedDateTime
         , minute
         , second
         , millisecond
+        , setDate
+        , setYear
+        , setMonth
+        , setDay
+        , setHour
+        , setMinute
+        , setSecond
+        , setMillisecond
+        , addYears
+        , addMonths
+        , addDays
+        , addHours
+        , addMinutes
+        , addSeconds
+        , addMilliseconds
         , abbreviation
         , utcOffset
         , utcOffsetString
@@ -34,17 +49,20 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs ZonedDateTime
 
 # Constructing ZonedDateTimes
-@docs zero, zonedDateTime, fromDateTime, toDateTime
+@docs zero, zonedDateTime, fromDateTime, toDateTime, fromTimestamp, toTimestamp
 
 # Inspecting ZonedDateTimes
 @docs timeZone, year, month, day, weekday, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString
+
+# Manipulating ZonedDateTimes
+@docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
 # Helper functions
 @docs toISO8601, fromISO8601
 -}
 
 import Time exposing (Time)
-import Time.Date exposing (Weekday)
+import Time.Date exposing (Date, Weekday)
 import Time.DateTime as DateTime exposing (DateTime)
 import Time.Internal exposing (..)
 import Time.TimeZone as TimeZone exposing (TimeZone)
@@ -198,6 +216,117 @@ second (ZonedDateTime { dateTime }) =
 millisecond : ZonedDateTime -> Int
 millisecond (ZonedDateTime { dateTime }) =
     DateTime.millisecond dateTime
+
+
+mapInner : (a -> DateTime -> DateTime) -> a -> ZonedDateTime -> ZonedDateTime
+mapInner f x (ZonedDateTime ({ dateTime } as t)) =
+    ZonedDateTime { t | dateTime = f x dateTime }
+
+
+{-| setDate sets a ZonedDateTime's date.
+-}
+setDate : Date -> ZonedDateTime -> ZonedDateTime
+setDate =
+    mapInner DateTime.setDate
+
+
+{-| setYear sets a ZonedDateTime's year.
+-}
+setYear : Int -> ZonedDateTime -> ZonedDateTime
+setYear =
+    mapInner DateTime.setYear
+
+
+{-| setMonth sets a ZonedDateTime's month.
+-}
+setMonth : Int -> ZonedDateTime -> ZonedDateTime
+setMonth =
+    mapInner DateTime.setMonth
+
+
+{-| setDay sets a ZonedDateTime's day.
+-}
+setDay : Int -> ZonedDateTime -> ZonedDateTime
+setDay =
+    mapInner DateTime.setDay
+
+
+{-| setHour sets a ZonedDateTime's hour.
+-}
+setHour : Int -> ZonedDateTime -> ZonedDateTime
+setHour =
+    mapInner DateTime.setHour
+
+
+{-| setMinute sets a ZonedDateTime's minute.
+-}
+setMinute : Int -> ZonedDateTime -> ZonedDateTime
+setMinute =
+    mapInner DateTime.setMinute
+
+
+{-| setSecond sets a ZonedDateTime's second.
+-}
+setSecond : Int -> ZonedDateTime -> ZonedDateTime
+setSecond =
+    mapInner DateTime.setSecond
+
+
+{-| setMillisecond sets a ZonedDateTime's millisecond.
+-}
+setMillisecond : Int -> ZonedDateTime -> ZonedDateTime
+setMillisecond =
+    mapInner DateTime.setMillisecond
+
+
+{-| addYears adds a relative number of years to a ZonedDateTime value.
+-}
+addYears : Int -> ZonedDateTime -> ZonedDateTime
+addYears =
+    mapInner DateTime.addYears
+
+
+{-| addMonths adds a relative number of months to a ZonedDateTime value.
+-}
+addMonths : Int -> ZonedDateTime -> ZonedDateTime
+addMonths =
+    mapInner DateTime.addMonths
+
+
+{-| addDays adds an absolute number of days to a ZonedDateTime value.
+-}
+addDays : Int -> ZonedDateTime -> ZonedDateTime
+addDays =
+    mapInner DateTime.addDays
+
+
+{-| addHours adds a relative number of hours to a ZonedDateTime value.
+-}
+addHours : Int -> ZonedDateTime -> ZonedDateTime
+addHours =
+    mapInner DateTime.addHours
+
+
+{-| addMinutes adds a relative number of minutes to a ZonedDateTime value.
+-}
+addMinutes : Int -> ZonedDateTime -> ZonedDateTime
+addMinutes =
+    mapInner DateTime.addMinutes
+
+
+{-| addSeconds adds a relative number of seconds to a ZonedDateTime value.
+-}
+addSeconds : Int -> ZonedDateTime -> ZonedDateTime
+addSeconds =
+    mapInner DateTime.addSeconds
+
+
+{-| addMilliseconds adds an absolute number of milliseconds to a
+ZonedDateTime value.
+-}
+addMilliseconds : Int -> ZonedDateTime -> ZonedDateTime
+addMilliseconds =
+    mapInner DateTime.addMilliseconds
 
 
 {-| abbreviation returns a ZonedDateTime's abbreviation at that time.
