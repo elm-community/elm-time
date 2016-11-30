@@ -5,6 +5,8 @@ module Time.ZonedDateTime
         , zonedDateTime
         , fromDateTime
         , toDateTime
+        , fromTimestamp
+        , toTimestamp
         , timeZone
         , year
         , month
@@ -41,6 +43,7 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs toISO8601, fromISO8601
 -}
 
+import Time exposing (Time)
 import Time.Date exposing (Weekday)
 import Time.DateTime as DateTime exposing (DateTime)
 import Time.Internal exposing (..)
@@ -112,7 +115,21 @@ toDateTime ((ZonedDateTime { dateTime }) as zonedDateTime) =
         |> flip DateTime.addMilliseconds dateTime
 
 
-toTimestamp : ZonedDateTime -> Float
+{-| fromTimestamp converts the millisecond representation of a UNIX
+timestamp into a ZonedDateTime value.  This is equivalent to calling
+`DateTime.fromTimestamp` and then converting the resulting `DateTime`
+value to a `ZonedDateTime`.
+-}
+fromTimestamp : TimeZone -> Time -> ZonedDateTime
+fromTimestamp timeZone timestamp =
+    DateTime.fromTimestamp timestamp
+        |> fromDateTime timeZone
+
+
+{-| toTimestamp converts a ZonedDateTime to its UNIX timestamp
+representation in milliseconds.
+-}
+toTimestamp : ZonedDateTime -> Time
 toTimestamp (ZonedDateTime { timeZone, dateTime }) =
     DateTime.toTimestamp dateTime
         |> flip TimeZone.offset timeZone
