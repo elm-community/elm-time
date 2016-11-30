@@ -8,6 +8,7 @@ module Time.ZonedDateTime
         , fromTimestamp
         , toTimestamp
         , timeZone
+        , asTimeZone
         , year
         , month
         , day
@@ -55,7 +56,7 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs timeZone, year, month, day, weekday, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString
 
 # Manipulating ZonedDateTimes
-@docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
+@docs asTimeZone, setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
 # Helper functions
 @docs toISO8601, fromISO8601
@@ -160,6 +161,13 @@ toTimestamp (ZonedDateTime { timeZone, dateTime }) =
 timeZone : ZonedDateTime -> TimeZone
 timeZone (ZonedDateTime { timeZone }) =
     timeZone
+
+
+{-| asTimeZone converts a ZonedDateTime to another TimeZone.
+-}
+asTimeZone : TimeZone -> ZonedDateTime -> ZonedDateTime
+asTimeZone timeZone =
+    fromDateTime timeZone << toDateTime
 
 
 {-| year returns a ZonedDateTime's year.
