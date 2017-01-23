@@ -1,7 +1,7 @@
 {
-    "version": "1.4.0",
+    "version": "1.0.0",
     "summary": "A pure Elm date and time library.",
-    "repository": "https://github.com/Bogdanp/elm-time.git",
+    "repository": "https://github.com/elm-community/elm-time.git",
     "license": "BSD3",
     "source-directories": [
         "src"
