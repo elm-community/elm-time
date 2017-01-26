@@ -1,4 +1,4 @@
-# elm-time [![Build Status](https://travis-ci.org/Bogdanp/elm-time.svg)](https://travis-ci.org/Bogdanp/elm-time)
+# elm-time [![Build Status](https://travis-ci.org/elm-community/elm-time.svg)](https://travis-ci.org/elm-community/elm-time)
 
 ``` shell
 elm package install elm-community/elm-time
