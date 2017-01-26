@@ -1,7 +1,7 @@
 # elm-time [![Build Status](https://travis-ci.org/Bogdanp/elm-time.svg)](https://travis-ci.org/Bogdanp/elm-time)
 
 ``` shell
-elm package install Bogdanp/elm-time
+elm package install elm-community/elm-time
 ```
 
 ## Dates
