@@ -262,6 +262,8 @@ toFromISO8601 =
                 \() -> parseMs "2016-11-14T03:56:12.0012345Z" 1
             , test "fromISO8601 fractions are capped at millisecond precision with padding 2" <|
                 \() -> parseMs "2016-11-14T03:56:12.0001234Z" 0
+            , test "fromISO8601 fractions can be all zeros" <|
+                \() -> parseMs "2016-11-14T03:56:12.000Z" 0
             , fuzz2 (intRange -23 23) (intRange 0 59) "fromISO8601 parses offsets correctly" <|
                 \hour minute ->
                     let

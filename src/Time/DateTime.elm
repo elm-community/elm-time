@@ -515,7 +515,7 @@ fromISO8601 input =
                     in
                         n * multiplier // padding // remainder
             in
-                convert <$> padding <*> digits
+                convert <$> padding <*> optional ( 0, 1 ) digits
 
         date =
             (,,)
