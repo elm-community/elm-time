@@ -209,18 +209,18 @@ a Date, ensuring that the return value represents a valid Date.  Its
 semantics are the same as `addYears`.
 -}
 addMonths : Int -> Date -> Date
-addMonths months (Date ({ year, month, day } as date)) =
+addMonths months (Date { year, month, day }) =
     let
-        sign =
-            if year < 0 then
+        ms =
+            year * 12 + month - 1 + months
+
+        yo =
+            if ms < 0 then
                 -1
             else
-                1
-
-        ms =
-            abs year * 12 + month - 1 + months
+                0
     in
-        firstValid (sign * ms // 12) ((ms % 12) + 1) day
+        date (((ms - yo) // 12) + yo) ((ms % 12) + 1) day
 
 
 {-| days adds an exact number (positive or negative) of days to a

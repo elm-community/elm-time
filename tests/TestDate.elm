@@ -118,6 +118,16 @@ adders =
                         date 1992 2 29
                 in
                     Expect.equal date1 date2
+        , fuzz3 (intRange -400 3000) (intRange 1 12) (intRange -100 100) "addMonths is revertable" <|
+            \year month addage ->
+                let
+                    date1 =
+                        date year month 1
+
+                    date2 =
+                        addMonths addage date1
+                in
+                    Expect.equal date1 (addMonths -addage date2)
         , fuzz int "addDays is absolute" <|
             \days ->
                 let
