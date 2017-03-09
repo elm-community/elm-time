@@ -26,7 +26,7 @@ This solves issue #21.
 
 ### Fixes Date.addMonths anomaly
 
-There were failure cases when adding negative months that crossed year 0.
+@grannath fixed a calculation error when adding negative months that crossed year 0.
 
 ### Added this CHANGE_LOG
 
