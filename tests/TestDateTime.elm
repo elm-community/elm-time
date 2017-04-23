@@ -240,6 +240,9 @@ toFromISO8601 =
                 \() ->
                     toISO8601 epoch
                         |> flip parseEq epoch
+            , test "toISO8601 keeps milliseconds" <|
+                \() -> toISO8601 (dateTime { zero | year = 2017, month = 4, day = 22, hour = 19, minute = 5, second = 31, millisecond = 40 })
+                    |> Expect.equal "2017-04-22T19:05:31.040Z"
             , test "formISO8601 fails to parse invalid strings" <|
                 \() -> parseFails "foo"
             , test "formISO8601 fails to parse invalid UTC datetimes" <|
