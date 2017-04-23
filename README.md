@@ -107,11 +107,11 @@ To make constructing `DateTimes` less tedious, the library provides
 
 > dateTime { zero | year = 1992 }
 |   |> DateTime.toISO8601
-"1992-01-01T00:00:00Z" : String
+"1992-01-01T00:00:00.000Z" : String
 
 > dateTime { zero | year = 1992, month = 2, day = 28, hour = 5 }
 |   |> DateTime.toISO8601
-"1992-02-28T05:00:00Z" : String
+"1992-02-28T05:00:00.000Z" : String
 ```
 
 Use `fromTimestamp` to construct a `DateTime` from a UTC timestamp in
@@ -120,7 +120,7 @@ milliseconds:
 ``` elm
 > fromTimestamp 0
 |   |> DateTime.toISO8601
-"1970-01-01T00:00:00Z" : String
+"1970-01-01T00:00:00.000Z" : String
 ```
 
 See `examples/without-timezone` for an example of how to construct
