@@ -235,7 +235,7 @@ toFromISO8601 =
             [ test "toISO8601 of epoch is correct" <|
                 \() ->
                     toISO8601 epoch
-                        |> Expect.equal "1970-01-01T00:00:00Z"
+                        |> Expect.equal "1970-01-01T00:00:00.000Z"
             , test "fromISO8601 is the inverse of toISO8601" <|
                 \() ->
                     toISO8601 epoch
@@ -267,6 +267,24 @@ toFromISO8601 =
                 \() -> parseMs "2016-11-14T03:56:12.0001234Z" 0
             , test "fromISO8601 fractions can be all zeros" <|
                 \() -> parseMs "2016-11-14T03:56:12.000Z" 0
+            , test "toISO8601 should format 3-digit milliseconds" <|
+                \() ->
+                    epoch
+                        |> setMillisecond 396
+                        |> toISO8601
+                        |> Expect.equal "1970-01-01T00:00:00.396Z"
+            , test "toISO8601 should format 2-digit milliseconds" <|
+                \() ->
+                    epoch
+                        |> setMillisecond 96
+                        |> toISO8601
+                        |> Expect.equal "1970-01-01T00:00:00.096Z"
+            , test "toISO8601 should format 1-digit milliseconds" <|
+                \() ->
+                    epoch
+                        |> setMillisecond 6
+                        |> toISO8601
+                        |> Expect.equal "1970-01-01T00:00:00.006Z"
             , fuzz2 (intRange -23 23) (intRange 0 59) "fromISO8601 parses offsets correctly" <|
                 \hour minute ->
                     let

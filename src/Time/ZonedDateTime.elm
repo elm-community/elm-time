@@ -378,6 +378,8 @@ toISO8601 dateTime =
         ++ padded (minute dateTime)
         ++ ":"
         ++ padded (second dateTime)
+        ++ "."
+        ++ padded3 (millisecond dateTime)
         ++ utcOffsetString dateTime
 
 

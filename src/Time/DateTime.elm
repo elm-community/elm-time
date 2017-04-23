@@ -488,6 +488,8 @@ toISO8601 time =
         ++ padded (minute time)
         ++ ":"
         ++ padded (second time)
+        ++ "."
+        ++ padded3 (millisecond time)
         ++ "Z"
 
 
