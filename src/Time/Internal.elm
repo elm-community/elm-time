@@ -49,6 +49,11 @@ padded n =
         toString n
 
 
+padded3 : Int -> String
+padded3 n =
+    String.padLeft 3 '0' (toString n)
+
+
 dayMs : number
 dayMs =
     86400000
