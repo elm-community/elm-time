@@ -84,6 +84,35 @@ paddedInt =
     Combine.optional "" (Combine.string "0") *> Combine.Num.int
 
 
+digitsInRange : Int -> Int -> Int -> Parser s Int
+digitsInRange digitsToParse lo hi =
+    let
+        failure =
+            Combine.fail
+                ("expected "
+                    ++ toString digitsToParse
+                    ++ " digits in the range ["
+                    ++ toString lo
+                    ++ ", "
+                    ++ toString hi
+                    ++ "]"
+                )
+    in
+        Combine.regex (String.repeat digitsToParse "\\d")
+            |> andThen
+                (\digits ->
+                    case String.toInt digits of
+                        Ok int ->
+                            if int >= lo && int <= hi then
+                                Combine.succeed int
+                            else
+                                failure
+
+                        Err _ ->
+                            failure
+                )
+
+
 intRange : Int -> Int -> Parser s Int
 intRange lo hi =
     let

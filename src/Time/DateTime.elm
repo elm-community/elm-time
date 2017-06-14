@@ -43,20 +43,31 @@ module Time.DateTime
 {-| This module defines a time representation based on a Date and the
 time of day.
 
+
 # DateTimes
+
 @docs DateTime, zero, epoch, dateTime, date, year, month, day, weekday, hour, minute, second, millisecond
 
+
 # Manipulating DateTimes
+
 @docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
+
 # Comparing DateTimes
+
 @docs compare
 
+
 # Subtracting DateTimes
+
 @docs DateTimeDelta, delta
 
+
 # Helper functions
+
 @docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+
 -}
 
 import Combine exposing (..)
@@ -67,7 +78,7 @@ import Time.Date exposing (Date, Weekday, isValidDate)
 import Time.Internal exposing (..)
 
 
-{-| DateTime is the opaque type for all DateTime values.  Values of this
+{-| DateTime is the opaque type for all DateTime values. Values of this
 type represent a valid Date and a time offset from midnight.
 -}
 type DateTime
@@ -92,7 +103,7 @@ type alias DateTimeDelta =
 
 
 {-| zero represents the first millisecond of the first day of the
-current era.  Use it to construct `DateTime` values:
+current era. Use it to construct `DateTime` values:
 
     -- 0-01-01T00:00:00Z
     dateTime zero
@@ -209,6 +220,7 @@ setDate date (DateTime { offset }) =
 {-| setYear sets a DateTime's year.
 
 See also `Time.Date.setYear`.
+
 -}
 setYear : Int -> DateTime -> DateTime
 setYear year (DateTime { date, offset }) =
@@ -221,6 +233,7 @@ setYear year (DateTime { date, offset }) =
 {-| setMonth sets a DateTime's month.
 
 See also `Time.Date.setMonth`.
+
 -}
 setMonth : Int -> DateTime -> DateTime
 setMonth month (DateTime { date, offset }) =
@@ -233,6 +246,7 @@ setMonth month (DateTime { date, offset }) =
 {-| setDay sets a DateTime's day.
 
 See also `Time.Date.setDay`.
+
 -}
 setDay : Int -> DateTime -> DateTime
 setDay day (DateTime { date, offset }) =
@@ -296,6 +310,7 @@ setMillisecond millisecond ((DateTime { date }) as t) =
 {-| addYears adds a relative number of years to a DateTime value.
 
 See also `Time.Date.addYears`.
+
 -}
 addYears : Int -> DateTime -> DateTime
 addYears years (DateTime { date, offset }) =
@@ -308,6 +323,7 @@ addYears years (DateTime { date, offset }) =
 {-| addMonths adds a relative number of months to a DateTime value.
 
 See also `Time.Date.addMonths`.
+
 -}
 addMonths : Int -> DateTime -> DateTime
 addMonths months (DateTime { date, offset }) =
@@ -320,6 +336,7 @@ addMonths months (DateTime { date, offset }) =
 {-| addDays adds an absolute number of days to a DateTime value.
 
 See also `Time.Date.addDays`.
+
 -}
 addDays : Int -> DateTime -> DateTime
 addDays days (DateTime { date, offset }) =
@@ -519,32 +536,48 @@ fromISO8601 input =
             in
                 convert <$> padding <*> optional ( 0, 1 ) digits
 
-        date =
+        extendedDate =
             (,,)
                 <$> Combine.Num.int
                 <*> (Combine.string "-" *> intRange 1 12)
                 <*> (Combine.string "-" *> intRange 1 31)
 
-        time =
+        basicDate =
+            (,,)
+                <$> digitsInRange 4 0 9999
+                <*> digitsInRange 2 1 12
+                <*> digitsInRange 2 1 31
+
+        extendedTime =
             (,,,)
                 <$> (Combine.string "T" *> intRange 0 23)
                 <*> (Combine.string ":" *> intRange 0 59)
                 <*> (Combine.string ":" *> intRange 0 59)
-                <*> (Combine.optional 0 (Combine.regex "[,.]" *> fraction))
+                <*> Combine.optional 0 (Combine.regex "[,.]" *> fraction)
 
-        minutes =
-            (\s h m -> s * h * 60 + s * m)
-                <$> Combine.Num.sign
-                <*> intRange 0 23
-                <*> (Combine.string ":" *> intRange 0 59)
+        basicTime =
+            (,,,)
+                <$> (Combine.string "T" *> digitsInRange 2 0 23)
+                <*> digitsInRange 2 0 59
+                <*> digitsInRange 2 0 59
+                <*> Combine.optional 0 (Combine.regex "[,.]" *> fraction)
 
         offset =
-            (0 <$ Combine.string "Z") <|> minutes
+            (0 <$ Combine.string "Z")
+                <|> ((\s h m -> s * h * 60 + s * m)
+                        <$> Combine.choice
+                                [ 1 <$ Combine.string "+"
+                                , -1 <$ Combine.string "-"
+                                , -1 <$ Combine.string "−" --U+2212
+                                ]
+                        <*> digitsInRange 2 0 23
+                        <*> (Combine.optional ":" (Combine.string ":") *> digitsInRange 2 0 59)
+                    )
 
         datetime =
             (,,)
-                <$> date
-                <*> time
+                <$> (extendedDate <|> basicDate)
+                <*> (extendedTime <|> basicTime)
                 <*> offset
                 <* Combine.end
 
