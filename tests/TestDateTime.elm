@@ -1,7 +1,7 @@
 module TestDateTime exposing (..)
 
 import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, intRange)
+import Fuzz exposing (Fuzzer, constant, int, intRange, oneOf)
 import Test exposing (..)
 import Time.Date as Date
 import Time.DateTime as DateTime exposing (..)
@@ -282,14 +282,14 @@ toFromISO8601 =
                         |> setMillisecond 6
                         |> toISO8601
                         |> Expect.equal "1970-01-01T00:00:00.006Z"
-            , fuzz2 (intRange -23 23) (intRange 0 59) "fromISO8601 parses offsets correctly" <|
-                \hour minute ->
+            , fuzz4 (intRange -23 23) (intRange 0 59) (oneOf [ constant "-", constant "−" ]) (oneOf [ constant ":", constant "" ]) "fromISO8601 parses offsets correctly" <|
+                \hour minute negStr separator ->
                     let
                         ( sign, signStr ) =
-                            if hour < 0 then
+                            if hour <= 0 then
                                 ( -1, "+" )
                             else
-                                ( 1, "-" )
+                                ( 1, negStr )
 
                         padded n =
                             if abs n < 10 then
@@ -298,12 +298,22 @@ toFromISO8601 =
                                 toString (abs n)
 
                         input =
-                            "1992-05-29T12:25:12" ++ signStr ++ padded hour ++ ":" ++ padded minute
+                            "1992-05-29T12:25:12" ++ signStr ++ padded hour ++ separator ++ padded minute
 
                         output =
                             dateTime { zero | year = 1992, month = 5, day = 29, hour = 12, minute = 25, second = 12 }
                                 |> addHours hour
                                 |> addMinutes (sign * minute)
+                    in
+                        parseEq input output
+            , fuzz2 (oneOf [ constant "-", constant "" ]) (oneOf [ constant ":", constant "" ]) "fromISO8601 handles basic and extended time/date formats correctly" <|
+                \dateSep timeSep ->
+                    let
+                        input =
+                            String.join dateSep [ "1992", "05", "29" ] ++ "T" ++ String.join timeSep [ "12", "25", "12" ] ++ "Z"
+
+                        output =
+                            dateTime { zero | year = 1992, month = 5, day = 29, hour = 12, minute = 25, second = 12 }
                     in
                         parseEq input output
             ]
