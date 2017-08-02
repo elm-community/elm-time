@@ -1,5 +1,5 @@
 {
-    "version": "1.0.7",
+    "version": "1.0.8",
     "summary": "A pure Elm date and time library.",
     "repository": "https://github.com/elm-community/elm-time.git",
     "license": "BSD3",
