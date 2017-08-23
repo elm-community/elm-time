@@ -240,12 +240,20 @@ toFromISO8601 =
                 \() ->
                     toISO8601 epoch
                         |> flip parseEq epoch
-            , test "formISO8601 fails to parse invalid strings" <|
+            , test "fromISO8601 fails to parse invalid strings" <|
                 \() -> parseFails "foo"
-            , test "formISO8601 fails to parse invalid UTC datetimes" <|
+            , test "fromISO8601 fails to parse invalid UTC datetimes" <|
                 \() -> parseFails "1993-02-29T00:00:00Z"
             , test "fromISO8601 can parse valid UTC datetime strings" <|
                 \() -> parseEq "1992-05-29T12:25:12Z" (dateTime { zero | year = 1992, month = 5, day = 29, hour = 12, minute = 25, second = 12 })
+            , test "fromISO8601 can parse valid UTC datetime strings including milliseconds" <|
+                \() -> parseEq "1992-05-29T12:25:12.001Z" (dateTime { zero | year = 1992, month = 5, day = 29, hour = 12, minute = 25, second = 12, millisecond = 1 })
+            , test "fromISO8601 can parse valid UTC datetime strings including zero milliseconds" <|
+                \() -> parseEq "1992-05-29T12:25:12.000Z" (dateTime { zero | year = 1992, month = 5, day = 29, hour = 12, minute = 25, second = 12, millisecond = 0 })
+            , test "fromISO8601 can parse valid UTC datetime strings including milliseconds and offset" <|
+                \() -> parseEq "1992-05-29T12:25:12.001-04:00" (dateTime { zero | year = 1992, month = 5, day = 29, hour = 16, minute = 25, second = 12, millisecond = 1})
+            , test "fromISO8601 can parse valid UTC datetime strings including zero milliseconds and offset" <|
+                \() -> parseEq "1992-05-29T12:25:12.000-04:00" (dateTime { zero | year = 1992, month = 5, day = 29, hour = 16, minute = 25, second = 12, millisecond = 0})
             , test "fromISO8601 can parse valid fractions in the hundreds" <|
                 \() -> parseMs "2016-11-14T03:56:12.123Z" 123
             , test "fromISO8601 can parse valid fractions in the tens" <|
@@ -256,6 +264,8 @@ toFromISO8601 =
                 \() -> parseMs "2016-11-14T03:56:12.01Z" 10
             , test "fromISO8601 can parse valid padded fractions in the ones" <|
                 \() -> parseMs "2016-11-14T03:56:12.001Z" 1
+            , test "fromISO8601 can parse valid padded fractions in the zeros" <|
+                \() -> parseMs "2016-11-14T03:56:12.000Z" 0
             , test "fromISO8601 fractions are capped at millisecond precision" <|
                 \() -> parseMs "2016-11-14T03:56:12.12345Z" 123
             , test "fromISO8601 fractions are capped at millisecond precision with padding" <|
@@ -264,6 +274,10 @@ toFromISO8601 =
                 \() -> parseMs "2016-11-14T03:56:12.0001234Z" 0
             , test "fromISO8601 fractions can be all zeros" <|
                 \() -> parseMs "2016-11-14T03:56:12.000Z" 0
+            , test "fromISO8601 zero fractions with offsets" <|
+                \() -> parseMs "2017-07-03T11:27:11.000-0400" 0
+            , test "fromISO8601 fraction 001 with offsets" <|
+                \() -> parseMs "2017-07-03T11:27:11.001-0400" 1
             , test "toISO8601 should format 3-digit milliseconds" <|
                 \() ->
                     epoch

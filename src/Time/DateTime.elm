@@ -77,7 +77,6 @@ import Time exposing (Time)
 import Time.Date exposing (Date, Weekday, isValidDate)
 import Time.Internal exposing (..)
 
-
 {-| DateTime is the opaque type for all DateTime values. Values of this
 type represent a valid Date and a time offset from midnight.
 -}
@@ -518,23 +517,32 @@ fromISO8601 input =
     let
         fraction =
             let
-                padding =
-                    (\p -> 10 ^ String.length p) <$> Combine.regex "0*"
+                getFractionString =
+                    (\p -> p) <$> Combine.regex "\\d*"
 
-                digits =
-                    (\n -> ( n, String.length (toString n) )) <$> Combine.Num.int
+                parseInteger s =
+                    case String.toInt s of
+                        Err msg ->
+                            0
 
-                convert padding ( n, digits ) =
+                        Ok divisor  ->
+                            divisor
+
+                extractMilliseconds fractionString =
                     let
-                        ( multiplier, remainder ) =
-                            if digits > 3 then
-                                ( 1, 10 ^ (digits - 3) )
-                            else
-                                ( 1000 // 10 ^ digits, 1 )
+                        dividend =
+                            parseInteger fractionString
+
+                        divisor =
+                            10 ^ (String.length fractionString)
                     in
-                        n * multiplier // padding // remainder
+                        round (Time.Internal.secondMs * (toFloat dividend) / (toFloat divisor))
+
+                convert fractionString =
+                    extractMilliseconds fractionString
+
             in
-                convert <$> padding <*> optional ( 0, 1 ) digits
+                convert <$> getFractionString
 
         extendedDate =
             (,,)
