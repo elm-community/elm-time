@@ -528,18 +528,18 @@ fromISO8601 input =
                         Ok divisor  ->
                             divisor
 
-                extractMilliseconds fractionString =
+                keepUpTo3Places fractionString =
                     let
-                        dividend =
+                        numerator =
                             parseInteger fractionString
 
-                        divisor =
+                        denominator =
                             10 ^ (String.length fractionString)
                     in
-                        round (Time.Internal.secondMs * (toFloat dividend) / (toFloat divisor))
+                        round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator))
 
                 convert fractionString =
-                    extractMilliseconds fractionString
+                    keepUpTo3Places fractionString
 
             in
                 convert <$> getFractionString
