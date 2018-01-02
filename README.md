@@ -4,6 +4,8 @@
 elm package install elm-community/elm-time
 ```
 
+* **[Running and Understanding Examples](https://github.com/elm-community/elm-time/wiki/The-Examples)**
+
 ## Dates
 
 `Date`s may represent any date in the [proleptic Gregorian calendar][cal].
