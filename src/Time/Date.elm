@@ -47,6 +47,9 @@ represent any date of the proleptic Gregorian calendar.
 import Combine exposing ((<$>), (<*>), (*>), (>>=))
 import Combine.Num
 import Time.Internal exposing (padded, intRange)
+import Parser exposing (Parser, run, (|.), (|=), succeed, symbol, int, ignore, zeroOrMore)
+import Parser.LanguageKit as Parser
+import Result exposing (Result, andThen)
 
 
 {-| Date is the opaque type for all Date values.  Values of this type
@@ -490,7 +493,7 @@ clampDay day =
 fromISO8601 : String -> Result String Date
 fromISO8601 input =
     let
-        dateTuple =
+        dt =
             (,,)
                 <$> Combine.Num.int
                 <*> (Combine.string "-" *> intRange 1 12)
@@ -502,7 +505,7 @@ fromISO8601 input =
             else
                 Combine.fail "invalid date"
     in
-        case Combine.parse (dateTuple >>= convert) input of
+        case Combine.parse (dt >>= convert) input of
             Ok ( _, _, date ) ->
                 Ok date
 
@@ -512,3 +515,27 @@ fromISO8601 input =
                         String.join " or " es
                 in
                     Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)
+
+
+myParser =
+    succeed (,,)
+        |= year_value
+        |. symbol "-"
+        |= month_value
+        |. symbol "-"
+        |= day_value
+
+
+year_value : Parser Int
+year_value =
+    int
+
+
+month_value : Parser Int
+month_value =
+    int
+
+
+day_value : Parser Int
+day_value =
+    int
