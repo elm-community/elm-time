@@ -23,6 +23,7 @@ module Time.Date
         , isValidDate
         , isLeapYear
         , daysInMonth
+        , myParser
         )
 
 {-| This module defines a timezone-independent Date type which can
@@ -48,7 +49,6 @@ import Combine exposing ((<$>), (<*>), (*>), (>>=))
 import Combine.Num
 import Time.Internal exposing (padded, intRange)
 import Parser exposing (Parser, run, (|.), (|=), succeed, symbol, int, ignore, zeroOrMore)
-import Parser.LanguageKit as Parser
 import Result exposing (Result, andThen)
 
 
@@ -520,9 +520,9 @@ fromISO8601 input =
 myParser =
     succeed (,,)
         |= year_value
-        |. symbol "-"
+        |. dash
         |= month_value
-        |. symbol "-"
+        |. dash
         |= day_value
 
 
@@ -539,3 +539,7 @@ month_value =
 day_value : Parser Int
 day_value =
     int
+
+    
+dash =
+    ignore (Parser.Exactly 1) (\c -> c == '-')

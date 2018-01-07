@@ -4,6 +4,7 @@ import Expect exposing (Expectation)
 import Fuzz exposing (int, intRange)
 import Test exposing (..)
 import Time.Date exposing (..)
+import Parser exposing (Parser, run, (|.), (|=), succeed, symbol, ignore, zeroOrMore)
 
 
 someDate : Date
@@ -204,6 +205,36 @@ toFromISO8601 =
             ]
 
 
+myParserTest : Test
+myParserTest =
+    let
+        parseEq input expectedTuple () =
+            case ( Parser.run myParser input ) of
+                Err err ->
+                    Expect.fail ((toString err) ++ " in input '" ++ input ++ "'")
+
+                Ok actualTuple ->
+                    if expectedTuple == actualTuple then
+                        Expect.pass
+                    else
+                        Expect.fail ("expected '" ++ (toString actualTuple) ++ "' to equal '" ++ (toString expectedTuple) ++ "; from input '" ++ input ++ "'")
+
+        parseFails input () =
+            case ( Parser.run myParser input ) of
+                Err _ ->
+                    Expect.pass
+
+                Ok _ ->
+                    Expect.fail ("parsing '" ++ input ++ "' should have failed")
+    in
+        describe "myParser"
+            [ test "creates a tuple from a string" <|
+                parseEq "2017-12-15" (2017, 12, 15)
+            , test "fails when doesn't parse" <|
+                parseFails "2017-1*2-14"
+            ]
+
+
 all : Test
 all =
     describe "Time.Date"
@@ -212,4 +243,5 @@ all =
         , adders
         , toFromISO8601
         , toFromTuple
+        , myParserTest
         ]
