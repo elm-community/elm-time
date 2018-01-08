@@ -173,7 +173,7 @@ toFromISO8601 =
         parseEq input date () =
             case ( fromISO8601 input, date ) of
                 ( Err message, _ ) ->
-                    Expect.fail (message ++ " in input '" ++ input ++ "'")
+                    Expect.fail ((toString message) ++ " in input '" ++ input ++ "'")
 
                 ( Ok date1, date2 ) ->
                     if date1 == date2 then
@@ -205,36 +205,6 @@ toFromISO8601 =
             ]
 
 
-myParserTest : Test
-myParserTest =
-    let
-        parseEq input expectedTuple () =
-            case ( Parser.run myParser input ) of
-                Err err ->
-                    Expect.fail ((toString err) ++ " in input '" ++ input ++ "'")
-
-                Ok actualTuple ->
-                    if expectedTuple == actualTuple then
-                        Expect.pass
-                    else
-                        Expect.fail ("expected '" ++ (toString actualTuple) ++ "' to equal '" ++ (toString expectedTuple) ++ "; from input '" ++ input ++ "'")
-
-        parseFails input () =
-            case ( Parser.run myParser input ) of
-                Err _ ->
-                    Expect.pass
-
-                Ok _ ->
-                    Expect.fail ("parsing '" ++ input ++ "' should have failed")
-    in
-        describe "myParser"
-            [ test "creates a tuple from a string" <|
-                parseEq "2017-12-15" (2017, 12, 15)
-            , test "fails when doesn't parse" <|
-                parseFails "2017-1*2-14"
-            ]
-
-
 all : Test
 all =
     describe "Time.Date"
@@ -243,5 +213,4 @@ all =
         , adders
         , toFromISO8601
         , toFromTuple
-        , myParserTest
         ]

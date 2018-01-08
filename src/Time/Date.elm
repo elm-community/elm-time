@@ -23,7 +23,7 @@ module Time.Date
         , isValidDate
         , isLeapYear
         , daysInMonth
-        , myParser
+--        , myFromISO8601
         )
 
 {-| This module defines a timezone-independent Date type which can
@@ -45,11 +45,8 @@ represent any date of the proleptic Gregorian calendar.
 @docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 -}
 
-import Combine exposing ((<$>), (<*>), (*>), (>>=))
-import Combine.Num
 import Time.Internal exposing (padded, intRange)
-import Parser exposing (Parser, run, (|.), (|=), succeed, symbol, int, ignore, zeroOrMore)
-import Result exposing (Result, andThen)
+import Parser exposing (Parser, Problem, run, (|.), (|=), succeed, symbol, int, ignore, zeroOrMore)
 
 
 {-| Date is the opaque type for all Date values.  Values of this type
@@ -490,56 +487,41 @@ clampDay day =
 
 {-| fromISO8601 parses an ISO8601-formatted date string into a Date.
 -}
-fromISO8601 : String -> Result String Date
+fromISO8601 : String -> Result Parser.Error Date
 fromISO8601 input =
-    let
-        dt =
-            (,,)
-                <$> Combine.Num.int
-                <*> (Combine.string "-" *> intRange 1 12)
-                <*> (Combine.string "-" *> intRange 1 31)
-
-        convert ( year, month, day ) =
-            if isValidDate year month day then
-                Combine.succeed (date year month day)
-            else
-                Combine.fail "invalid date"
-    in
-        case Combine.parse (dt >>= convert) input of
-            Ok ( _, _, date ) ->
-                Ok date
-
-            Err ( _, { position }, es ) ->
-                let
-                    messages =
-                        String.join " or " es
-                in
-                    Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)
+    run tupleParse input
+        |> Result.andThen convert
 
 
-myParser =
+tupleParse =
     succeed (,,)
-        |= year_value
-        |. dash
-        |= month_value
-        |. dash
-        |= day_value
+        |= int              -- year
+        |. symbol "-"
+        |= paddedInt        -- month
+        |. symbol "-"
+        |= paddedInt        -- day
 
 
-year_value : Parser Int
-year_value =
-    int
+{-| Ignores the leading zeros, then parses the integer.
+
+Note: `Err`s if only contains '0' digits.  This works
+for dates but not for times; will have to fix for that eventuality.
+-}
+paddedInt : Parser Int
+paddedInt =
+    succeed identity
+        |. ignore zeroOrMore (\c -> c == '0')
+        |= int
 
 
-month_value : Parser Int
-month_value =
-    int
-
-
-day_value : Parser Int
-day_value =
-    int
-
-    
-dash =
-    ignore (Parser.Exactly 1) (\c -> c == '-')
+convert ( year, month, day ) =
+    if isValidDate year month day then
+        Ok (date year month day)
+    else
+        Err
+            { row = 0
+            , col = 0
+            , source = toString (date year month day)
+            , problem = Parser.Fail "year, month, or day is out of range"
+            , context = [ { row = 0, col = 0, description = "this date" } ]
+            }
