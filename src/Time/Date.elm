@@ -23,7 +23,7 @@ module Time.Date
         , isValidDate
         , isLeapYear
         , daysInMonth
---        , myFromISO8601
+        , paddedInt    -- to be moved to Internal.elm
         )
 
 {-| This module defines a timezone-independent Date type which can
