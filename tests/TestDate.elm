@@ -195,6 +195,8 @@ toFromISO8601 =
             , test "toISO8601 of some date is correct" <|
                 renderEq someDate "1992-05-29"
             , test "fromISO8601 of a valid date is correct" <|
+                parseEq "1992-12-29" (date 1992 12 29)
+            , test "fromISO8601 of a valid padded date is correct" <|
                 parseEq "1992-05-29" (date 1992 5 29)
             , test "fromISO8601 of a badly-formatted date fails" <|
                 parseFails ""
@@ -204,7 +206,7 @@ toFromISO8601 =
                 parseFails "1991-02-31"
             ]
 
-
+{-
 paddedIntTest : Test
 paddedIntTest =
     let
@@ -223,6 +225,7 @@ paddedIntTest =
             [ test "doesn't corrupt conversion when no leading zeros" <|
                 parseEq "01" 1
             ]
+-}
 
 
 all : Test
@@ -233,5 +236,5 @@ all =
         , adders
         , toFromISO8601
         , toFromTuple
-        , paddedIntTest
+--        , paddedIntTest
         ]

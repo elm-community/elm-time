@@ -23,7 +23,6 @@ module Time.Date
         , isValidDate
         , isLeapYear
         , daysInMonth
-        , paddedInt    -- to be moved to Internal.elm
         )
 
 {-| This module defines a timezone-independent Date type which can
@@ -42,7 +41,7 @@ represent any date of the proleptic Gregorian calendar.
 @docs DateDelta, delta
 
 # Helper functions
-@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth, paddedInt
 -}
 
 import Time.Internal exposing (padded, intRange)
@@ -497,18 +496,37 @@ tupleParse =
     succeed (,,)
         |= int              -- year
         |. symbol "-"
-        |= paddedInt        -- month
+        |= parseMonth        -- month
         |. symbol "-"
-        |= paddedInt        -- day
+        |= parseDay        -- day
 
 
-{-| Ignores the leading zeros, then parses the integer.
+-- Private
 
-Note: `Err`s if only contains '0' digits.  This works
-for dates but not for times; will have to fix for that eventuality.
+{-|
 -}
-paddedInt : Parser Int
-paddedInt =
+parseMonth : Parser Int
+parseMonth =
+    padded2Places
+
+
+parseDay : Parser Int
+parseDay =
+    padded2Places
+
+
+{-| Ignores the leading zero padding, if any.
+-}
+padded2Places : Parser Int
+padded2Places =
+    Parser.oneOf
+        [ pInt -- look for leading zero first
+        , int
+        ]
+
+
+pInt : Parser Int
+pInt =
     succeed identity
         |. ignore zeroOrMore (\c -> c == '0')
         |= int
