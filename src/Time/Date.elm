@@ -41,7 +41,7 @@ represent any date of the proleptic Gregorian calendar.
 @docs DateDelta, delta
 
 # Helper functions
-@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth, paddedInt
+@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 -}
 
 import Time.Internal exposing (padded, intRange)
