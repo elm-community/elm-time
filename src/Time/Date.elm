@@ -44,8 +44,12 @@ represent any date of the proleptic Gregorian calendar.
 @docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 -}
 
+import Char
 import Time.Internal exposing (padded, intRange)
-import Parser exposing (Parser, Problem, run, (|.), (|=), succeed, symbol, int, ignore, zeroOrMore)
+import Parser exposing ( Parser, Problem, run, (|.), (|=), andThen, fail
+                       , inContext, keep, succeed, symbol
+                       )
+import Parser.LowLevel exposing ( getCol, getRow, getSource )
 
 
 {-| Date is the opaque type for all Date values.  Values of this type
@@ -489,57 +493,48 @@ clampDay day =
 fromISO8601 : String -> Result Parser.Error Date
 fromISO8601 input =
     run tupleParse input
-        |> Result.andThen convert
 
 
 tupleParse =
-    succeed (,,)
-        |= int              -- year
-        |. symbol "-"
-        |= parseMonth        -- month
-        |. symbol "-"
-        |= parseDay        -- day
+    inContext "date" <|
+        (   ( succeed (,,)
+                |= digits "year"
+                |. symbol "-"
+                |= digits "month"
+                |. symbol "-"
+                |= digits "day"
+            ) |> andThen (convert)
+        )
+
+digits : String -> Parser Int
+digits name =
+    inContext name <|
+        ( keep (Parser.oneOrMore) (\c -> Char.isDigit c)
+            |> andThen (fromResult << String.toInt)
+        )
 
 
--- Private
-
-{-|
--}
-parseMonth : Parser Int
-parseMonth =
-    padded2Places
-
-
-parseDay : Parser Int
-parseDay =
-    padded2Places
+paddedDigits : String -> Int -> Parser Int
+paddedDigits name count=
+    inContext name <|
+        ( keep (Parser.Exactly count) (\c -> True)
+            |> andThen (fromResult << String.toInt)
+        )
 
 
-{-| Ignores the leading zero padding, if any.
--}
-padded2Places : Parser Int
-padded2Places =
-    Parser.oneOf
-        [ pInt -- look for leading zero first
-        , int
-        ]
+fromResult : Result String Int -> Parser Int
+fromResult result =
+    case result of
+        Ok i ->
+            succeed i
+
+        Err msg ->
+            fail msg
 
 
-pInt : Parser Int
-pInt =
-    succeed identity
-        |. ignore zeroOrMore (\c -> c == '0')
-        |= int
-
-
+convert : ( Int, Int, Int ) -> Parser Date
 convert ( year, month, day ) =
     if isValidDate year month day then
-        Ok (date year month day)
+        succeed (date year month day)
     else
-        Err
-            { row = 0
-            , col = 0
-            , source = toString (date year month day)
-            , problem = Parser.Fail "year, month, or day is out of range"
-            , context = [ { row = 0, col = 0, description = "this date" } ]
-            }
+        fail "invalid date"
