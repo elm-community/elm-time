@@ -492,10 +492,10 @@ clampDay day =
 -}
 fromISO8601 : String -> Result Parser.Error Date
 fromISO8601 input =
-    run tupleParse input
+    run delimited input
 
 
-tupleParse =
+delimited =
     inContext "date" <|
         (   ( succeed (,,)
                 |= digits "year"
@@ -510,14 +510,6 @@ digits : String -> Parser Int
 digits name =
     inContext name <|
         ( keep (Parser.oneOrMore) (\c -> Char.isDigit c)
-            |> andThen (fromResult << String.toInt)
-        )
-
-
-paddedDigits : String -> Int -> Parser Int
-paddedDigits name count=
-    inContext name <|
-        ( keep (Parser.Exactly count) (\c -> True)
             |> andThen (fromResult << String.toInt)
         )
 
