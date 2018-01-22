@@ -48,6 +48,6 @@ suite =
         [ test "Exploratory: two dates one millisecond apart at midnight New Years" <|
             \_ ->
                 DateTime.delta date1 date2
-                    |> Debug.log "date2 - date1"
+--                    |> Debug.log "date2 - date1"
                     |> Expect.equal expectedDelta
         ]
