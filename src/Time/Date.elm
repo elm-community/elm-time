@@ -47,7 +47,7 @@ represent any date of the proleptic Gregorian calendar.
 import Char
 import Time.Internal exposing (padded, intRange)
 import Parser exposing ( Parser, Problem, Count(..), end, run, (|.), (|=), oneOf, andThen, fail
-                       , inContext, keep, succeed, symbol
+                       , inContext, keep, succeed, symbol, zeroOrMore
                        )
 import Parser.LowLevel exposing ( getCol, getRow, getSource )
 
@@ -497,50 +497,30 @@ fromISO8601 input =
 
 parseDate : Parser Date
 parseDate =
-    oneOf
-        [ delimited
-        , charsOnly
-        ]
-
-
-delimited =
-    inContext "deliminated date" <|
-        (   ( succeed (,,)
-                |= digits "delimited year"
-                |. symbol "-"
-                |= digits "delimited month"
-                |. symbol "-"
-                |= digits "delimited day"
-                |. end
-            ) |> andThen (convert)
-        )
-
-
-charsOnly =
     inContext "fixed width date" <|
         (   ( succeed (,,)
-                |= fixedDigits "fixed width year" 4
-                |= fixedDigits "fixed width month" 2
-                |= fixedDigits "fixed width day" 2
+                |= digits "year" 4
+                |. optional '-'
+                |= digits "month" 2
+                |. optional '-'
+                |= digits "day" 2
                 |. end
             ) |> andThen (convert)
         )
 
 
-digits : String -> Parser Int
-digits name =
-    inContext name <|
-        ( keep (Parser.oneOrMore) (\c -> Char.isDigit c)
-            |> andThen (fromResult << String.toInt)
-        )
-
-
-fixedDigits : String -> Int -> Parser Int
-fixedDigits name digitsCount =
+digits : String -> Int -> Parser Int
+digits name digitsCount =
     inContext name <|
         ( keep (Exactly digitsCount) (\c -> Char.isDigit c)
             |> andThen (fromResult << String.toInt)
         )
+
+
+optional : Char -> Parser String
+optional char =
+    keep zeroOrMore (\c -> c == char)
+
 
 
 fromResult : Result String Int -> Parser Int

@@ -28,7 +28,7 @@ import Parser exposing ((|.), (|=), Parser)
 -}
 main : Html msg
 main =
-    case mainProg "2017-11-11" of
+    case mainProg "2017--1130" of
         Ok v ->
             text <| toString v
 
