@@ -497,7 +497,7 @@ fromISO8601 input =
 
 parseDate : Parser Date
 parseDate =
-    inContext "fixed width date" <|
+    inContext "date" <|
         (   ( succeed (,,)
                 |= digits "year" 4
                 |. optional '-'
