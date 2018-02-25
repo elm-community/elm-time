@@ -46,10 +46,9 @@ represent any date of the proleptic Gregorian calendar.
 
 import Char
 import Time.Internal exposing (padded, intRange)
-import Parser exposing ( Parser, Problem, Count(..), end, run, (|.), (|=), oneOf, andThen, fail
+import Parser exposing ( Parser, Count(..), end, run, (|.), (|=), oneOf, andThen, fail
                        , inContext, keep, succeed, symbol, zeroOrMore
                        )
-import Parser.LowLevel exposing ( getCol, getRow, getSource )
 
 
 {-| Date is the opaque type for all Date values.  Values of this type
@@ -504,7 +503,6 @@ parseDate =
                 |= digits "month" 2
                 |. optional '-'
                 |= digits "day" 2
-                |. end
             ) |> andThen (convert)
         )
 
