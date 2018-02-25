@@ -46,7 +46,7 @@ represent any date of the proleptic Gregorian calendar.
 
 import Char
 import Time.Internal exposing (padded, intRange)
-import Parser exposing ( Parser, Problem, run, (|.), (|=), andThen, fail
+import Parser exposing ( Parser, Problem, Count(..), end, run, (|.), (|=), oneOf, andThen, fail
                        , inContext, keep, succeed, symbol
                        )
 import Parser.LowLevel exposing ( getCol, getRow, getSource )
@@ -492,24 +492,53 @@ clampDay day =
 -}
 fromISO8601 : String -> Result Parser.Error Date
 fromISO8601 input =
-    run delimited input
+    run parseDate input
+
+
+parseDate : Parser Date
+parseDate =
+    oneOf
+        [ delimited
+        , charsOnly
+        ]
 
 
 delimited =
-    inContext "date" <|
+    inContext "deliminated date" <|
         (   ( succeed (,,)
-                |= digits "year"
+                |= digits "delimited year"
                 |. symbol "-"
-                |= digits "month"
+                |= digits "delimited month"
                 |. symbol "-"
-                |= digits "day"
+                |= digits "delimited day"
+                |. end
             ) |> andThen (convert)
         )
+
+
+charsOnly =
+    inContext "fixed width date" <|
+        (   ( succeed (,,)
+                |= fixedDigits "fixed width year" 4
+                |= fixedDigits "fixed width month" 2
+                |= fixedDigits "fixed width day" 2
+                |. end
+            ) |> andThen (convert)
+        )
+
 
 digits : String -> Parser Int
 digits name =
     inContext name <|
         ( keep (Parser.oneOrMore) (\c -> Char.isDigit c)
+            |> andThen (fromResult << String.toInt)
+        )
+
+
+fixedDigits : String -> Int -> Parser Int
+fixedDigits name digitsCount =
+    inContext name <|
+        ( keep (Exactly digitsCount) (\c -> Char.isDigit c)
             |> andThen (fromResult << String.toInt)
         )
 

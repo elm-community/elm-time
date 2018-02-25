@@ -20,7 +20,7 @@ with the `Parser`
 import Set exposing (Set)
 import Char
 import Html exposing (Html, text)
-import Time.Date as Date exposing (Date)
+import Time.Date exposing (fromISO8601)
 import Parser exposing ((|.), (|=), Parser)
 
 
@@ -28,7 +28,7 @@ import Parser exposing ((|.), (|=), Parser)
 -}
 main : Html msg
 main =
-    case mainProg "19aaa" of
+    case mainProg "2017-11-11" of
         Ok v ->
             text <| toString v
 
@@ -41,9 +41,9 @@ primitives =
     Set.fromList [ "digits" ]
 
 
-mainProg : String -> Result Parser.Error Int
+mainProg : String -> Result Parser.Error Time.Date.Date
 mainProg input =
-    Parser.run (Parser.inContext "year" <| digits 4) input
+    Time.Date.fromISO8601 input
 
 
 digits : Int -> Parser Int
