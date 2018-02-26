@@ -23,6 +23,7 @@ module Time.Date
         , isValidDate
         , isLeapYear
         , daysInMonth
+        , parseDate
         )
 
 {-| This module defines a timezone-independent Date type which can
@@ -41,11 +42,11 @@ represent any date of the proleptic Gregorian calendar.
 @docs DateDelta, delta
 
 # Helper functions
-@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth, parseDate
 -}
 
 import Char
-import Time.Internal exposing (padded, intRange)
+import Time.Internal exposing (digitsInRange, padded, intRange)
 import Parser exposing ( Parser, Count(..), end, run, (|.), (|=), oneOf, andThen, fail
                        , inContext, keep, succeed, symbol, zeroOrMore
                        )
@@ -494,16 +495,18 @@ fromISO8601 input =
     run parseDate input
 
 
+{-|
+-}
 parseDate : Parser Date
 parseDate =
     inContext "date" <|
         (   ( succeed (,,)
                 |= digits "year" 4
                 |. optional '-'
-                |= digits "month" 2
+                |= digitsInRange "month" 2 1 12
                 |. optional '-'
-                |= digits "day" 2
-            ) |> andThen (convert)
+                |= digitsInRange "day" 2 1 31
+            ) |> andThen (convertDate)
         )
 
 
@@ -531,8 +534,8 @@ fromResult result =
             fail msg
 
 
-convert : ( Int, Int, Int ) -> Parser Date
-convert ( year, month, day ) =
+convertDate : ( Int, Int, Int ) -> Parser Date
+convertDate ( year, month, day ) =
     if isValidDate year month day then
         succeed (date year month day)
     else

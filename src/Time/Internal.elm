@@ -1,7 +1,7 @@
 module Time.Internal exposing (..)
 
-import Combine exposing (..)
-import Combine.Num
+import Char
+import Parser exposing (Parser, Count(..), andThen, fail, inContext, keep, succeed)
 
 
 type alias DateTimeData =
@@ -26,7 +26,7 @@ type alias TimeData d =
 
 offsetFromTimeData : TimeData d -> Int
 offsetFromTimeData { hour, minute, second, millisecond } =
-    (clamp 0 23 hour) * hourMs + (clamp 0 59 minute) * minuteMs + (clamp 0 59 second) * secondMs + (clamp 0 999 millisecond)
+    clamp 0 23 hour * hourMs + clamp 0 59 minute * minuteMs + clamp 0 59 second * secondMs + clamp 0 999 millisecond
 
 
 zero : DateTimeData
@@ -79,47 +79,30 @@ secondMs =
 -- --------------
 
 
-paddedInt : Parser s Int
-paddedInt =
-    Combine.optional "" (Combine.string "0") *> Combine.Num.int
+digitsInRange : String -> Int -> Int -> Int -> Parser Int
+digitsInRange name digitsCount lo hi =
+    inContext name <|
+        (keep (Exactly digitsCount) (\c -> Char.isDigit c)
+            |> andThen (intRange lo hi << String.toInt)
+        )
 
 
-digitsInRange : Int -> Int -> Int -> Parser s Int
-digitsInRange digitsToParse lo hi =
-    let
-        failure =
-            Combine.fail
-                ("expected "
-                    ++ toString digitsToParse
-                    ++ " digits in the range ["
-                    ++ toString lo
-                    ++ ", "
-                    ++ toString hi
-                    ++ "]"
-                )
-    in
-        Combine.regex (String.repeat digitsToParse "\\d")
-            |> andThen
-                (\digits ->
-                    case String.toInt digits of
-                        Ok int ->
-                            if int >= lo && int <= hi then
-                                Combine.succeed int
-                            else
-                                failure
-
-                        Err _ ->
-                            failure
-                )
-
-
-intRange : Int -> Int -> Parser s Int
-intRange lo hi =
-    let
-        validate n =
+intRange : Int -> Int -> Result String Int -> Parser Int
+intRange lo hi result =
+    case result of
+        Ok n ->
             if n >= lo && n <= hi then
-                Combine.succeed n
+                succeed n
             else
-                Combine.fail ("expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]")
-    in
-        paddedInt >>= validate
+                fail
+                    ("expected value "
+                        ++ toString n
+                        ++ " to be an integer in the range ["
+                        ++ toString lo
+                        ++ " to "
+                        ++ toString hi
+                        ++ "]"
+                    )
+
+        Err msg ->
+            Parser.fail msg

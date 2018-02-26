@@ -5,6 +5,7 @@ import Fuzz exposing (Fuzzer, constant, int, intRange, oneOf)
 import Test exposing (..)
 import Time.Date as Date
 import Time.DateTime as DateTime exposing (..)
+import Parser exposing (Error)
 
 
 posInt : Fuzzer Int
@@ -207,7 +208,13 @@ toFromISO8601 =
         parseEq input dateTime =
             case ( fromISO8601 input, dateTime ) of
                 ( Err message, _ ) ->
-                    Expect.fail (message ++ " in input '" ++ input ++ "'")
+                    let
+                        context =
+                            Error.context message
+
+                        description = Parser.Context.description context
+                    in
+                        Expect.fail (description ++ " in input '" ++ input ++ "'")
 
                 ( Ok date1, date2 ) ->
                     if date1 == date2 then
