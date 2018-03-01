@@ -513,7 +513,7 @@ parseDate =
 digits : String -> Int -> Parser Int
 digits name digitsCount =
     inContext name <|
-        ( keep (Exactly digitsCount) (\c -> Char.isDigit c)
+        ( keep (Exactly digitsCount) (Char.isDigit)
             |> andThen (fromResult << String.toInt)
         )
 

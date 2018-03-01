@@ -17,18 +17,19 @@ with the `Parser`
 
 -}
 
-import Set exposing (Set)
 import Char
 import Html exposing (Html, text)
-import Time.Date exposing (fromISO8601)
 import Parser exposing ((|.), (|=), Parser)
+import Set exposing (Set)
+import Time.Date exposing (fromISO8601)
+import Time.DateTime exposing (fromISO8601)
 
 
 {-| The "entry"
 -}
 main : Html msg
 main =
-    case mainProg "2017--1130" of
+    case mainProg "2017-1231T06:02:61.001Z" of
         Ok v ->
             text <| toString v
 
@@ -38,12 +39,12 @@ main =
 
 primitives : Set String
 primitives =
-    Set.fromList [ "digits" ]
+    Set.fromList [ "date" ]
 
 
-mainProg : String -> Result Parser.Error Time.Date.Date
+mainProg : String -> Result Parser.Error Time.DateTime.DateTime
 mainProg input =
-    Time.Date.fromISO8601 input
+    Time.DateTime.fromISO8601 input
 
 
 digits : Int -> Parser Int
@@ -201,7 +202,7 @@ describeProblem probableCause problem =
             "I'm looking for a closing `" ++ s ++ "` here."
 
         Parser.Fail s ->
-            "I ran into a failure here:" ++ s
+            "I " ++ s
 
         Parser.BadOneOf problems ->
             "I tried a few things here:\n\n"
@@ -215,7 +216,7 @@ marker col =
 
 forContext : Parser.Context -> String
 forContext { description } =
-    "I ran into a problem parsing this " ++ description ++ ":"
+    "Failed to parse the '" ++ description ++ "' segment:"
 
 
 noContext : String

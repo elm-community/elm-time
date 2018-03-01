@@ -95,13 +95,13 @@ intRange lo hi result =
                 succeed n
             else
                 fail
-                    ("expected value "
+                    ("expected the value "
                         ++ toString n
-                        ++ " to be an integer in the range ["
+                        ++ " to be an integer in the range "
                         ++ toString lo
                         ++ " to "
                         ++ toString hi
-                        ++ "]"
+                        ++ "."
                     )
 
         Err msg ->
