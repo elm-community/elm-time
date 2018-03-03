@@ -29,12 +29,20 @@ import Time.DateTime exposing (fromISO8601)
 -}
 main : Html msg
 main =
-    case mainProg "2017-1231T06:02:61.001Z" of
+    case mainProg "2017-13-31T06:02:61.001Z" of
         Ok v ->
             text <| toString v
 
         Err e ->
-            Html.pre [] [ text <| errorToString primitives e ]
+            let
+                msg =
+                    errorToString primitives e
+                    ++ "\n\n"
+                    ++ toString e
+
+--            Html.pre [] [ text <| errorToString primitives e ]
+            in
+                Html.pre [] [ text <| msg ]
 
 
 primitives : Set String
