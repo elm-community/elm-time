@@ -29,7 +29,7 @@ import Time.DateTime exposing (fromISO8601)
 -}
 main : Html msg
 main =
-    case mainProg "2017-13-31T06:02:61.001Z" of
+    case mainProg "2017-12-31T06:02:51.001Z" of
         Ok v ->
             text <| toString v
 
