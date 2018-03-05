@@ -62,6 +62,7 @@ surface of `ZonedDateTimes` is extremely limited.
 @docs toISO8601, fromISO8601
 -}
 
+import Parser
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday)
 import Time.DateTime as DateTime exposing (DateTime)
@@ -386,7 +387,7 @@ toISO8601 dateTime =
 {-| fromISO8601 parses an ISO8601-formatted string into a
 ZonedDateTime object, adjusting for its offset.
 -}
-fromISO8601 : TimeZone -> String -> Result String ZonedDateTime
+fromISO8601 : TimeZone -> String -> Result Parser.Error ZonedDateTime
 fromISO8601 timeZone input =
     DateTime.fromISO8601 input
         |> Result.map (fromDateTime timeZone)
