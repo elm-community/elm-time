@@ -4,8 +4,15 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, constant, int, intRange, oneOf)
 import Test exposing (..)
 import Time.Date as Date
-import Time.DateTime as DateTime exposing (..)
-import Parser exposing (Parser, Error, Context)
+import Time.DateTime as DateTime exposing
+    ( DateTime
+    , addHours, addMilliseconds, addMinutes, addSeconds
+    , date, dateTime, day, epoch, fromISO8601, hour, millisecond, minute, month
+    , second
+    , setDay, setHour, setMillisecond, setMinute, setMonth, setSecond, setYear
+    , toTuple, year, zero
+    )
+import Parser exposing (Parser, Context, Error, Problem)
 
 
 posInt : Fuzzer Int
@@ -205,23 +212,27 @@ addition =
 toFromISO8601 : Test
 toFromISO8601 =
     let
-        parseEq input dateTime =
-            case ( fromISO8601 input, dateTime ) of
-                ( Err message, _ ) ->
+        parseEq input expectedDateTime =
+            case fromISO8601 input of
+                Err error ->
                     let
                         context =
-                            Error.context message
+                            error.context
 
                         description =
-                            Context.description context
+                            case List.head context of
+                                Just cts ->
+                                    cts.description
+                                Nothing ->
+                                    "<no description>"
                     in
                         Expect.fail (description ++ " in input '" ++ input ++ "'")
 
-                ( Ok date1, date2 ) ->
-                    if date1 == date2 then
+                Ok actualDateTime ->
+                    if actualDateTime == expectedDateTime then
                         Expect.pass
                     else
-                        Expect.fail ("expected '" ++ toISO8601 date1 ++ "' to equal '" ++ toISO8601 date2 ++ "' from input '" ++ input ++ "'")
+                        Expect.fail ("expected '" ++ DateTime.toISO8601 actualDateTime ++ "' to equal '" ++ DateTime.toISO8601 expectedDateTime ++ "' from input '" ++ input ++ "'")
 
         parseFails input =
             case fromISO8601 input of
@@ -242,11 +253,11 @@ toFromISO8601 =
         describe "Time.DateTime.{to,from}ISO8601"
             [ test "toISO8601 of epoch is correct" <|
                 \() ->
-                    toISO8601 epoch
+                    DateTime.toISO8601 epoch
                         |> Expect.equal "1970-01-01T00:00:00.000Z"
             , test "fromISO8601 is the inverse of toISO8601" <|
                 \() ->
-                    toISO8601 epoch
+                    DateTime.toISO8601 epoch
                         |> flip parseEq epoch
             , test "fromISO8601 fails to parse invalid strings" <|
                 \() -> parseFails "foo"
@@ -290,19 +301,19 @@ toFromISO8601 =
                 \() ->
                     epoch
                         |> setMillisecond 396
-                        |> toISO8601
+                        |> DateTime.toISO8601
                         |> Expect.equal "1970-01-01T00:00:00.396Z"
             , test "toISO8601 should format 2-digit milliseconds" <|
                 \() ->
                     epoch
                         |> setMillisecond 96
-                        |> toISO8601
+                        |> DateTime.toISO8601
                         |> Expect.equal "1970-01-01T00:00:00.096Z"
             , test "toISO8601 should format 1-digit milliseconds" <|
                 \() ->
                     epoch
                         |> setMillisecond 6
-                        |> toISO8601
+                        |> DateTime.toISO8601
                         |> Expect.equal "1970-01-01T00:00:00.006Z"
             , fuzz4 (intRange -23 23) (intRange 0 59) (oneOf [ constant "-", constant "−" ]) (oneOf [ constant ":", constant "" ]) "fromISO8601 parses offsets correctly" <|
                 \hour minute negStr separator ->
