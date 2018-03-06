@@ -18,10 +18,10 @@ with the `Parser`
 -}
 
 import Char
-import Html exposing (Html, text)
+import Html exposing (Html, text, pre)
 import Parser exposing ((|.), (|=), Parser)
 import Set exposing (Set)
-import Time.Date exposing (fromISO8601)
+import Time.Date
 import Time.DateTime exposing (fromISO8601)
 
 
@@ -29,7 +29,7 @@ import Time.DateTime exposing (fromISO8601)
 -}
 main : Html msg
 main =
-    case mainProg "2017-12-31T06:02:51.001Z" of
+    case mainProg "21001229000101Z" of
         Ok v ->
             text <| toString v
 
@@ -39,8 +39,6 @@ main =
                     errorToString primitives e
                     ++ "\n\n"
                     ++ toString e
-
---            Html.pre [] [ text <| errorToString primitives e ]
             in
                 Html.pre [] [ text <| msg ]
 
