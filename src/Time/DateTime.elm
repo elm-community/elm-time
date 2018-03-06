@@ -601,24 +601,17 @@ optionalFraction =
 
 
 getFraction : String -> Result String Int
-getFraction digits =
+getFraction fractionString =
     let
-                keepUpTo3Places fractionString =
-                    let
-                        numerator =
-                            String.toInt fractionString
+        numerator =
+            Result.withDefault 0 (String.toInt fractionString)
 
-                        denominator =
-                            10 ^ (String.length fractionString)
-                    in
-                        round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator))
+        denominator =
+            10 ^ (String.length fractionString)
     in
+        Ok (round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator)))
 
-                convert fractionString =
-                    keepUpTo3Places fractionString
 
---    case String.length digits of
---        0 ->
---            Ok 0
---        _ ->
---            String.toInt digits
+secondMs : number
+secondMs =
+    1000
