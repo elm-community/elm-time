@@ -1,7 +1,10 @@
 module Time.Internal exposing (..)
 
 import Char
-import Parser exposing (Parser, Count(..), andThen, fail, inContext, keep, succeed)
+import Parser exposing
+    ( Parser, Count(..), andThen, fail, ignore, inContext
+    , keep, succeed, zeroOrMore
+    )
 
 
 type alias DateTimeData =
@@ -106,3 +109,18 @@ intRange lo hi result =
 
         Err msg ->
             Parser.fail msg
+
+
+fromResult : Result String Int -> Parser Int
+fromResult result =
+    case result of
+        Ok i ->
+            succeed i
+
+        Err msg ->
+            fail msg
+
+
+optional : Char -> Parser ()
+optional char =
+    ignore zeroOrMore (\c -> c == char)

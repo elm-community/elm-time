@@ -82,6 +82,7 @@ import Parser
         , andThen
         , end
         , fail
+        , ignore
         , inContext
         , keep
         , oneOf
@@ -90,6 +91,7 @@ import Parser
         , symbol
         , zeroOrMore
         )
+import Char
 import String
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday, isValidDate, parseDate)
@@ -541,7 +543,7 @@ parseDateTime =
     inContext "datetime" <|
         ((succeed (,)
             |= parseDate
-            |. symbol "T"
+            |. optional 'T'
             |= parseTime
             |. symbol "Z"
          )
@@ -553,13 +555,14 @@ parseTime : Parser Int
 parseTime =
     inContext "time" <|
         ((succeed (,,,)
-            |= digitsInRange "hours" 2 0 59
-            |. colon
+            |= digitsInRange "hours" 2 0 23
+            |. optional ':'
             |= digitsInRange "minutes" 2 0 59
-            |. colon
+            |. optional ':'
             |= digitsInRange "seconds" 2 0 59
-            |. symbol "."
-            |= digitsInRange "milliseconds" 3 0 999
+--            |= digitsInRange "milliseconds" 3 0 999
+            |. optional '.'
+            |= optionalFraction
          )
             |> andThen convertTime
         )
@@ -587,3 +590,20 @@ convertTime ( hours, minutes, seconds, milliseconds ) =
                 )
     else
         fail "invalid time"
+
+
+optionalFraction : Parser Int
+optionalFraction =
+    inContext "fraction" <|
+      ( keep zeroOrMore (Char.isDigit)
+          |> andThen (fromResult << getFraction)
+      )
+
+
+getFraction : String -> Result String Int
+getFraction digits =
+    case String.length digits of
+        0 ->
+            Ok 0
+        _ ->
+            String.toInt digits

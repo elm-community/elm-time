@@ -46,7 +46,9 @@ represent any date of the proleptic Gregorian calendar.
 -}
 
 import Char
-import Time.Internal exposing (digitsInRange, padded, intRange)
+import Time.Internal exposing
+    ( digitsInRange, fromResult, intRange, optional, padded
+    )
 import Parser exposing ( Parser, Count(..), end, run, (|.), (|=), oneOf, andThen, fail
                        , inContext, keep, succeed, symbol, zeroOrMore
                        )
@@ -516,22 +518,6 @@ digits name digitsCount =
         ( keep (Exactly digitsCount) (Char.isDigit)
             |> andThen (fromResult << String.toInt)
         )
-
-
-optional : Char -> Parser String
-optional char =
-    keep zeroOrMore (\c -> c == char)
-
-
-
-fromResult : Result String Int -> Parser Int
-fromResult result =
-    case result of
-        Ok i ->
-            succeed i
-
-        Err msg ->
-            fail msg
 
 
 convertDate : ( Int, Int, Int ) -> Parser Date
