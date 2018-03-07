@@ -545,7 +545,7 @@ parseDateTime =
             |= parseDate
             |. optional 'T'
             |= parseTime
-            |. symbol "Z"
+            -- parse offset (or 'Z')
          )
             |> andThen convertDateTime
         )
@@ -560,7 +560,6 @@ parseTime =
             |= digitsInRange "minutes" 2 0 59
             |. optional ':'
             |= digitsInRange "seconds" 2 0 59
---            |= digitsInRange "milliseconds" 3 0 999
             |. optional '.'
             |= optionalFraction
          )
@@ -610,8 +609,3 @@ getFraction fractionString =
             10 ^ (String.length fractionString)
     in
         Ok (round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator)))
-
-
-secondMs : number
-secondMs =
-    1000
