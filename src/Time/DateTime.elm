@@ -87,12 +87,13 @@ import Parser
         , keep
         , oneOf
         , run
+        , source
         , succeed
         , symbol
         , zeroOrMore
         )
 import Char
-import String
+import String exposing (cons, slice, toInt, uncons)
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday, isValidDate, parseDate)
 import Time.Internal exposing (..)
@@ -120,6 +121,12 @@ type alias DateTimeDelta =
     , seconds : Int
     , milliseconds : Int
     }
+
+
+{-| Offset is expressed in +/- milliseconds
+-}
+type alias Milliseconds =
+    Int
 
 
 {-| zero represents the first millisecond of the first day of the
@@ -554,7 +561,7 @@ parseDateTime =
 parseTime : Parser Int
 parseTime =
     inContext "time" <|
-        ((succeed (,,,)
+        ((succeed (,,,,)
             |= digitsInRange "hours" 2 0 23
             |. optional ':'
             |= digitsInRange "minutes" 2 0 59
@@ -562,6 +569,7 @@ parseTime =
             |= digitsInRange "seconds" 2 0 59
             |. optional '.'
             |= optionalFraction
+            |= offset
          )
             |> andThen convertTime
         )
@@ -577,8 +585,8 @@ convertDateTime ( date, offset ) =
     succeed (DateTime {date = date, offset = offset})
 
 
-convertTime : ( Int, Int, Int, Int ) -> Parser Int
-convertTime ( hours, minutes, seconds, milliseconds ) =
+convertTime : ( Int, Int, Int, Int, Int ) -> Parser Int
+convertTime ( hours, minutes, seconds, milliseconds, offsetMilliseconds ) =
     if isValidTime hours minutes seconds milliseconds then
         succeed (offsetFromTimeData
                     { hour = hours
@@ -609,3 +617,62 @@ getFraction fractionString =
             10 ^ (String.length fractionString)
     in
         Ok (round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator)))
+
+
+offset : Parser Milliseconds
+offset =
+    inContext "offset" <|
+        ((source <|
+            ignore (Exactly 1) (\c -> c == 'Z'
+                                   || c == '+'
+                                   || c == '-'
+                               )
+                |. ignore zeroOrMore (\c -> Char.isDigit c)
+         ) |> andThen (fromResult << getOffset)
+        )
+
+
+getOffset : String -> Result String Milliseconds
+getOffset offsetStr =
+    case (uncons offsetStr) of
+        Just ( delimChar, digitsStr ) ->
+            let
+                signedInt : Int -> Int -> String -> Milliseconds -> Result String Milliseconds
+                signedInt start stop str multiplier =
+                    let
+                        parseStr =
+                            slice start stop str
+                    in
+                        case (toInt parseStr) of
+                            Ok milliseconds ->
+                                Ok (milliseconds * multiplier)
+
+                            Err msg ->
+                                msg
+
+
+                toSignedInt : String -> Result String Milliseconds
+                toSignedInt digitsStr =
+                    let
+                        signedDigitStr =
+                            cons delimChar digitsStr
+                    in
+                        signedInt 0 1 signedDigitStr 360000
+                            |> Result.andThen ((*) (signedInt 2 3 digitsStr 60000))
+            in
+                case delimChar of
+                    'Z' ->
+                        Ok 0
+
+                    '+' ->
+                        toSignedInt digitsStr
+
+                    '-' ->
+                        toSignedInt digitsStr
+
+                    _   ->
+                        Err ("Unallowed offset delimiter character '" ++ (toString delimChar) ++ "'; should be 'Z', '+', or '-'")
+
+        Nothing ->
+            Err ("Offset string '" ++ offsetStr ++ "' not all digits")
+
