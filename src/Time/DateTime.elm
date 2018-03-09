@@ -648,7 +648,7 @@ getOffset offsetStr =
                                 Ok (milliseconds * multiplier)
 
                             Err msg ->
-                                msg
+                                Err msg
 
 
                 toSignedInt : String -> Result String Milliseconds
@@ -657,8 +657,9 @@ getOffset offsetStr =
                         signedDigitStr =
                             cons delimChar digitsStr
                     in
-                        signedInt 0 1 signedDigitStr 360000
-                            |> Result.andThen ((*) (signedInt 2 3 digitsStr 60000))
+                        Result.map2 (*)
+                            (signedInt 0 1 signedDigitStr 360000)
+                            (signedInt 2 3 digitsStr 60000)
             in
                 case delimChar of
                     'Z' ->
