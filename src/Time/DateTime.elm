@@ -552,7 +552,6 @@ parseDateTime =
             |= parseDate
             |. optional 'T'
             |= parseTime
-            -- parse offset (or 'Z')
          )
             |> andThen convertDateTime
         )
@@ -571,7 +570,7 @@ parseTime =
             |= optionalFraction
             |= offset
          )
-            |> andThen convertTime
+            |> andThen convertTime << compensateForOffset
         )
 
 
@@ -585,8 +584,14 @@ convertDateTime ( date, offset ) =
     succeed (DateTime {date = date, offset = offset})
 
 
-convertTime : ( Int, Int, Int, Int, Int ) -> Parser Int
-convertTime ( hours, minutes, seconds, milliseconds, offsetMilliseconds ) =
+compensateForOffset : ( Int, Int, Int, Int, Int ) -> ( Int, Int, Int, Int )
+compensateForOffset ( sHrs, sMin, sSec, sMs, sOffMin ) =
+    (sHrs, sMin, sSec, sMs)
+
+
+
+convertTime : ( Int, Int, Int, Int ) -> Parser Int
+convertTime ( hours, minutes, seconds, milliseconds ) =
     if isValidTime hours minutes seconds milliseconds then
         succeed (offsetFromTimeData
                     { hour = hours
@@ -631,35 +636,32 @@ offset =
          ) |> andThen (fromResult << getOffset)
         )
 
+hourMn : Int
+hourMn =
+    60
+
+type alias Minutes =
+    Int
 
 getOffset : String -> Result String Milliseconds
 getOffset offsetStr =
     case (uncons offsetStr) of
         Just ( delimChar, digitsStr ) ->
             let
-                signedInt : Int -> Int -> String -> Milliseconds -> Result String Milliseconds
-                signedInt start stop str multiplier =
-                    let
-                        parseStr =
-                            slice start stop str
-                    in
-                        case (toInt parseStr) of
-                            Ok milliseconds ->
-                                Ok (milliseconds * multiplier)
+                signedInt : Int -> Int -> String -> Int -> Result String Minutes
+                signedInt startOffset stopOffset str minOffset =
+                    toInt (slice startOffset stopOffset str)
+                        |> Result.map (\i -> i * minOffset)
 
-                            Err msg ->
-                                Err msg
-
-
-                toSignedInt : String -> Result String Milliseconds
+                toSignedInt : String -> Result String Int
                 toSignedInt digitsStr =
                     let
                         signedDigitStr =
                             cons delimChar digitsStr
                     in
                         Result.map2 (*)
-                            (signedInt 0 1 signedDigitStr 360000)
-                            (signedInt 2 3 digitsStr 60000)
+                            (signedInt 0 1 signedDigitStr hourMn)
+                            (signedInt 2 3 digitsStr 1)
             in
                 case delimChar of
                     'Z' ->
