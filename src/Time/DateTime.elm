@@ -18,6 +18,7 @@ module Time.DateTime
         , fromISO8601
         , fromTimestamp
         , fromTuple
+        , getTZOffset -- testing
         , hour
         , isValidTime
         , millisecond
@@ -35,6 +36,7 @@ module Time.DateTime
         , toISO8601
         , toTimestamp
         , toTuple
+        , tZOffset -- testing
         , weekday
         , year
         , zero
@@ -67,6 +69,10 @@ time of day.
 # Helper functions
 
 @docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+
+# Only for testing
+
+@docs getTZOffset, tZOffset
 
 -}
 
@@ -540,7 +546,7 @@ toISO8601 time =
 {-| fromISO8601 parses an ISO8601-formatted date time string into a
 DateTime object, adjusting for its offset.
 -}
-fromISO8601 : String -> Result Parser.Error DateTime
+fromISO8601 : String -> Result Parser.Error DateTime -- DateTime
 fromISO8601 input =
     run parseDateTime input
 
@@ -581,7 +587,7 @@ colon =
 
 convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
 convertDateTime ( date, offset, tZOffset ) =
-    succeed (addMilliseconds -tZOffset (DateTime {date = date, offset = offset}))
+    succeed (addMilliseconds tZOffset (DateTime {date = date, offset = offset}))
 
 
 convertTime : ( Int, Int, Int, Int ) -> Parser Int
@@ -618,6 +624,8 @@ getFraction fractionString =
         Ok (round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator)))
 
 
+{-|
+-}
 tZOffset : Parser Milliseconds
 tZOffset =
     inContext "offset" <|
@@ -637,6 +645,9 @@ hourMn =
 type alias Minutes =
     Int
 
+
+{-|
+-}
 getTZOffset : String -> Result String Milliseconds
 getTZOffset offsetStr =
     case (uncons offsetStr) of
@@ -653,9 +664,9 @@ getTZOffset offsetStr =
                         signedDigitStr =
                             cons delimChar digitsStr
                     in
-                        Result.map2 (*)
-                            (signedInt 0 1 signedDigitStr hourMs)
-                            (signedInt 2 3 digitsStr minuteMs)
+                        Result.map2 (+)
+                            (signedInt 0 3 signedDigitStr hourMs)
+                            (signedInt 3 5 digitsStr minuteMs)
             in
                 case delimChar of
                     'Z' ->
