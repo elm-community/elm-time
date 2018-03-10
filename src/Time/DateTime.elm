@@ -92,6 +92,7 @@ import Parser
         , inContext
         , keep
         , oneOf
+        , oneOrMore
         , run
         , source
         , succeed
@@ -573,8 +574,7 @@ parseOffset =
             |= digitsInRange "minutes" 2 0 59
             |. optional ':'
             |= digitsInRange "seconds" 2 0 59
-            |. optional '.'
-            |= optionalFraction
+            |= fraction
          )
             |> andThen convertTime
         )
@@ -604,12 +604,23 @@ convertTime ( hours, minutes, seconds, milliseconds ) =
         fail "invalid time"
 
 
+fraction : Parser Int
+fraction =
+    oneOf
+        [ optionalFraction
+        , succeed 0
+        ]
+
+
 optionalFraction : Parser Int
 optionalFraction =
     inContext "fraction" <|
-      ( keep zeroOrMore (Char.isDigit)
-          |> andThen (fromResult << getFraction)
-      )
+        ((succeed identity
+            |. keep (Exactly 1) (\c -> c == '.')
+            |= keep oneOrMore (Char.isDigit)
+         )
+            |> andThen (fromResult << getFraction)
+        )
 
 
 getFraction : String -> Result String Int
