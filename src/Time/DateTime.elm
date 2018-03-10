@@ -654,18 +654,22 @@ type alias Minutes =
 getTZOffset : String -> Result String Milliseconds
 getTZOffset offsetStr =
     case (uncons offsetStr) of
-        Just ( delimChar, digitsStr ) ->
+        Just ( signChar, digitsStr ) ->
             let
+                -- Code has to do opposite of sign:
+                signedOne =
+                    if signChar == '-' then -1 else 1
+
                 signedInt : Int -> Int -> String -> Int -> Result String Milliseconds
                 signedInt startOffset stopOffset str msOffset =
                     toInt (slice startOffset stopOffset str)
-                        |> Result.map (\i -> i * msOffset * -1)
+                        |> Result.map (\i -> i * msOffset * signedOne)
 
                 toSignedInt : String -> Result String Int
                 toSignedInt digitsStr =
                     let
                         signedDigitStr =
-                            cons delimChar digitsStr
+                            cons signChar digitsStr
 
                         colonOffset =
                             String.contains ":" digitsStr
@@ -682,7 +686,7 @@ getTZOffset offsetStr =
                             (signedInt 0 3 signedDigitStr hourMs)
                             (signedInt lo ro digitsStr minuteMs)
             in
-                case delimChar of
+                case signChar of
                     'Z' ->
                         Ok 0
 
@@ -693,7 +697,7 @@ getTZOffset offsetStr =
                         toSignedInt digitsStr
 
                     _   ->
-                        Err ("Unallowed offset delimiter character '" ++ (toString delimChar) ++ "'; should be 'Z', '+', or '-'")
+                        Err ("Unallowed offset delimiter character '" ++ (toString signChar) ++ "'; should be 'Z', '+', or '-'")
 
         Nothing ->
             Err ("Offset string '" ++ offsetStr ++ "' not all digits")
