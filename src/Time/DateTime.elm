@@ -656,14 +656,14 @@ getTZOffset offsetStr =
     case (uncons offsetStr) of
         Just ( signChar, digitsStr ) ->
             let
-                -- Code has to do opposite of sign:
-                signedOne =
+                -- Code has to do opposite of signChar:
+                sign =
                     if signChar == '-' then 1 else -1
 
                 parseHrsOrMin : Int -> Int -> String -> Int -> Result String Milliseconds
                 parseHrsOrMin startOffset stopOffset str msOffset =
                     toInt (slice startOffset stopOffset str)
-                        |> Result.map (\i -> i * msOffset * signedOne)
+                        |> Result.map (\i -> i * msOffset * sign)
 
                 parseHrsAndMin : String -> Result String Int
                 parseHrsAndMin digitsStr =
