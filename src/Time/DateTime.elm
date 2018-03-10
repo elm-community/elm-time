@@ -18,8 +18,6 @@ module Time.DateTime
         , fromISO8601
         , fromTimestamp
         , fromTuple
-        , getTZOffset
-          -- testing
         , hour
         , isValidTime
         , millisecond
@@ -34,8 +32,6 @@ module Time.DateTime
         , setMonth
         , setSecond
         , setYear
-        , tZOffset
-          -- testing
         , toISO8601
         , toTimestamp
         , toTuple
@@ -71,12 +67,6 @@ time of day.
 # Helper functions
 
 @docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
-
-
-# Only for testing
-
-@docs getTZOffset, tZOffset
-
 -}
 
 --import Combine exposing (..)
@@ -550,9 +540,7 @@ toISO8601 time =
 {-| fromISO8601 parses an ISO8601-formatted date time string into a
 DateTime object, adjusting for its offset.
 -}
-fromISO8601 :
-    String
-    -> Result Parser.Error DateTime -- DateTime
+fromISO8601 : String -> Result Parser.Error DateTime
 fromISO8601 input =
     run parseDateTime input
 
@@ -583,11 +571,6 @@ parseOffset =
          )
             |> andThen convertTime
         )
-
-
-colon : Parser String
-colon =
-    keep (Exactly 1) (\c -> c == ':')
 
 
 convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
@@ -641,7 +624,6 @@ getFraction fractionString =
     Ok (round (Time.Internal.secondMs * toFloat numerator / toFloat denominator))
 
 
-{-| -}
 tZOffset : Parser Milliseconds
 tZOffset =
     oneOf
@@ -680,11 +662,13 @@ polarity =
              || c == '-'
              || c == '−' --U+2212
             ) |> andThen (fromResult <<
-                (\c -> if c == "+" then Ok -1 else Ok 1)) -- Code has to do opposite of sign char
+                -- Code has to do opposite of sign char
+                (\sign -> if sign == "+" then Ok -1 else Ok 1))
         )
 
 
-{-| -}
 getTZOffset : (Int, Int, Int) -> Result String Milliseconds
 getTZOffset (polarity, hrs, min) =
-    Ok (polarity * hrs * hourMs + polarity * min * minuteMs)
+    Ok ( polarity * hrs * hourMs
+       + polarity * min * minuteMs
+       )
