@@ -575,7 +575,9 @@ parseOffset =
 
 convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
 convertDateTime ( date, offset, tZOffset ) =
-    succeed (addMilliseconds tZOffset (DateTime { date = date, offset = offset }))
+    succeed ( DateTime { date = date, offset = offset }
+                |> addMilliseconds tZOffset
+            )
 
 
 convertTime : ( Int, Int, Int, Int ) -> Parser Milliseconds
