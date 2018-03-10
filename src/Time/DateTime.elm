@@ -644,6 +644,7 @@ tZOffset =
             ignore (Exactly 1) (\c -> c == 'Z'
                                    || c == '+'
                                    || c == '-'
+                                   || c == '−' --U+2212
                                )
                 |. ignore zeroOrMore (\c -> Char.isDigit c)
                 |. ignore zeroOrMore (\c -> c == ':')
@@ -669,7 +670,7 @@ getTZOffset offsetStr =
             let
                 -- Code has to do opposite of signChar:
                 sign =
-                    if signChar == '-' then 1 else -1
+                    if signChar == '+' then -1 else 1
 
                 parseHrsOrMin : Int -> Int -> String -> Int -> Result String Milliseconds
                 parseHrsOrMin startOffset stopOffset str msOffset =
@@ -702,6 +703,9 @@ getTZOffset offsetStr =
                         parseHrsAndMin digitsStr
 
                     '-' ->
+                        parseHrsAndMin digitsStr
+
+                    '−' ->  --U+2212
                         parseHrsAndMin digitsStr
 
                     _   ->
