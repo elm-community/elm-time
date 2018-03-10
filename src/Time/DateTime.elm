@@ -548,19 +548,20 @@ fromISO8601 input =
 parseDateTime : Parser DateTime
 parseDateTime =
     inContext "datetime" <|
-        ((succeed (,)
+        ((succeed (,,)
             |= parseDate
             |. optional 'T'
-            |= parseTime
+            |= parseOffset
+            |= tZOffset
          )
             |> andThen convertDateTime
         )
 
 
-parseTime : Parser Int
-parseTime =
+parseOffset : Parser Int
+parseOffset =
     inContext "time" <|
-        ((succeed (,,,,)
+        ((succeed (,,,)
             |= digitsInRange "hours" 2 0 23
             |. optional ':'
             |= digitsInRange "minutes" 2 0 59
@@ -568,9 +569,8 @@ parseTime =
             |= digitsInRange "seconds" 2 0 59
             |. optional '.'
             |= optionalFraction
-            |= offset
          )
-            |> andThen convertTime << compensateForOffset
+            |> andThen convertTime
         )
 
 
@@ -579,15 +579,9 @@ colon =
     keep (Exactly 1) (\c -> c == ':')
 
 
-convertDateTime : ( Date, Int ) -> Parser DateTime
-convertDateTime ( date, offset ) =
-    succeed (DateTime {date = date, offset = offset})
-
-
-compensateForOffset : ( Int, Int, Int, Int, Int ) -> ( Int, Int, Int, Int )
-compensateForOffset ( sHrs, sMin, sSec, sMs, sOffMin ) =
-    (sHrs, sMin, sSec, sMs)
-
+convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
+convertDateTime ( date, offset, tZOffset ) =
+    succeed (addMilliseconds -tZOffset (DateTime {date = date, offset = offset}))
 
 
 convertTime : ( Int, Int, Int, Int ) -> Parser Int
@@ -624,8 +618,8 @@ getFraction fractionString =
         Ok (round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator)))
 
 
-offset : Parser Milliseconds
-offset =
+tZOffset : Parser Milliseconds
+tZOffset =
     inContext "offset" <|
         ((source <|
             ignore (Exactly 1) (\c -> c == 'Z'
@@ -633,7 +627,7 @@ offset =
                                    || c == '-'
                                )
                 |. ignore zeroOrMore (\c -> Char.isDigit c)
-         ) |> andThen (fromResult << getOffset)
+         ) |> andThen (fromResult << getTZOffset)
         )
 
 hourMn : Int
@@ -643,15 +637,15 @@ hourMn =
 type alias Minutes =
     Int
 
-getOffset : String -> Result String Milliseconds
-getOffset offsetStr =
+getTZOffset : String -> Result String Milliseconds
+getTZOffset offsetStr =
     case (uncons offsetStr) of
         Just ( delimChar, digitsStr ) ->
             let
-                signedInt : Int -> Int -> String -> Int -> Result String Minutes
-                signedInt startOffset stopOffset str minOffset =
+                signedInt : Int -> Int -> String -> Int -> Result String Milliseconds
+                signedInt startOffset stopOffset str msOffset =
                     toInt (slice startOffset stopOffset str)
-                        |> Result.map (\i -> i * minOffset)
+                        |> Result.map (\i -> i * msOffset)
 
                 toSignedInt : String -> Result String Int
                 toSignedInt digitsStr =
@@ -660,8 +654,8 @@ getOffset offsetStr =
                             cons delimChar digitsStr
                     in
                         Result.map2 (*)
-                            (signedInt 0 1 signedDigitStr hourMn)
-                            (signedInt 2 3 digitsStr 1)
+                            (signedInt 0 1 signedDigitStr hourMs)
+                            (signedInt 2 3 digitsStr minuteMs)
             in
                 case delimChar of
                     'Z' ->
