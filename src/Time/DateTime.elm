@@ -635,12 +635,15 @@ tZOffset =
                                    || c == '-'
                                )
                 |. ignore zeroOrMore (\c -> Char.isDigit c)
+                |. ignore zeroOrMore (\c -> c == ':')
+                |. ignore zeroOrMore (\c -> Char.isDigit c)
          ) |> andThen (fromResult << getTZOffset)
         )
 
 hourMn : Int
 hourMn =
     60
+
 
 type alias Minutes =
     Int
@@ -656,17 +659,28 @@ getTZOffset offsetStr =
                 signedInt : Int -> Int -> String -> Int -> Result String Milliseconds
                 signedInt startOffset stopOffset str msOffset =
                     toInt (slice startOffset stopOffset str)
-                        |> Result.map (\i -> i * msOffset)
+                        |> Result.map (\i -> i * msOffset * -1)
 
                 toSignedInt : String -> Result String Int
                 toSignedInt digitsStr =
                     let
                         signedDigitStr =
                             cons delimChar digitsStr
+
+                        colonOffset =
+                            String.contains ":" digitsStr
+                                |> (\c -> if c then 1 else 0)
+
+                        lo =
+                            colonOffset + 2
+
+                        ro =
+                            colonOffset + 4
+
                     in
                         Result.map2 (+)
                             (signedInt 0 3 signedDigitStr hourMs)
-                            (signedInt 3 5 digitsStr minuteMs)
+                            (signedInt lo ro digitsStr minuteMs)
             in
                 case delimChar of
                     'Z' ->

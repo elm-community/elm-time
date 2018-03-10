@@ -215,18 +215,8 @@ toFromISO8601 =
         parseEq input expectedDateTime =
             case fromISO8601 input of
                 Err error ->
-                    let
-                        context =
-                            error.context
-
-                        description =
-                            case List.head context of
-                                Just cts ->
-                                    cts.description
-                                Nothing ->
-                                    "<no description>"
-                    in
-                        Expect.fail (description ++ " in input '" ++ input ++ "'")
+                    toString error
+                        |> Expect.fail
 
                 Ok actualDateTime ->
                     if actualDateTime == expectedDateTime then
