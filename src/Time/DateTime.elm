@@ -658,7 +658,7 @@ getTZOffset offsetStr =
             let
                 -- Code has to do opposite of sign:
                 signedOne =
-                    if signChar == '-' then -1 else 1
+                    if signChar == '-' then 1 else -1
 
                 signedInt : Int -> Int -> String -> Int -> Result String Milliseconds
                 signedInt startOffset stopOffset str msOffset =
@@ -668,9 +668,6 @@ getTZOffset offsetStr =
                 toSignedInt : String -> Result String Int
                 toSignedInt digitsStr =
                     let
-                        signedDigitStr =
-                            cons signChar digitsStr
-
                         colonOffset =
                             String.contains ":" digitsStr
                                 |> (\c -> if c then 1 else 0)
@@ -683,7 +680,7 @@ getTZOffset offsetStr =
 
                     in
                         Result.map2 (+)
-                            (signedInt 0 3 signedDigitStr hourMs)
+                            (signedInt 0 2 digitsStr hourMs)
                             (signedInt lo ro digitsStr minuteMs)
             in
                 case signChar of
