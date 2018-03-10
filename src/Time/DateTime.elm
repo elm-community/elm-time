@@ -538,7 +538,7 @@ toISO8601 time =
 
 
 {-| fromISO8601 parses an ISO8601-formatted date time string into a
-DateTime object, adjusting for its offset.
+DateTime object, adjusting for its timezone offset.
 -}
 fromISO8601 : String -> Result Parser.Error DateTime
 fromISO8601 input =
