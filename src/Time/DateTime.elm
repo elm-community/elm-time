@@ -18,7 +18,8 @@ module Time.DateTime
         , fromISO8601
         , fromTimestamp
         , fromTuple
-        , getTZOffset -- testing
+        , getTZOffset
+          -- testing
         , hour
         , isValidTime
         , millisecond
@@ -33,10 +34,11 @@ module Time.DateTime
         , setMonth
         , setSecond
         , setYear
+        , tZOffset
+          -- testing
         , toISO8601
         , toTimestamp
         , toTuple
-        , tZOffset -- testing
         , weekday
         , year
         , zero
@@ -70,6 +72,7 @@ time of day.
 
 @docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
 
+
 # Only for testing
 
 @docs getTZOffset, tZOffset
@@ -79,6 +82,7 @@ time of day.
 --import Combine exposing (..)
 --import Combine.Num
 
+import Char
 import Parser
     exposing
         ( (|.)
@@ -99,7 +103,6 @@ import Parser
         , symbol
         , zeroOrMore
         )
-import Char
 import String exposing (cons, slice, toInt, uncons)
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday, isValidDate, parseDate)
@@ -547,7 +550,9 @@ toISO8601 time =
 {-| fromISO8601 parses an ISO8601-formatted date time string into a
 DateTime object, adjusting for its offset.
 -}
-fromISO8601 : String -> Result Parser.Error DateTime -- DateTime
+fromISO8601 :
+    String
+    -> Result Parser.Error DateTime -- DateTime
 fromISO8601 input =
     run parseDateTime input
 
@@ -565,7 +570,7 @@ parseDateTime =
         )
 
 
-parseOffset : Parser Int
+parseOffset : Parser Milliseconds
 parseOffset =
     inContext "time" <|
         ((succeed (,,,)
@@ -587,24 +592,25 @@ colon =
 
 convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
 convertDateTime ( date, offset, tZOffset ) =
-    succeed (addMilliseconds tZOffset (DateTime {date = date, offset = offset}))
+    succeed (addMilliseconds tZOffset (DateTime { date = date, offset = offset }))
 
 
-convertTime : ( Int, Int, Int, Int ) -> Parser Int
+convertTime : ( Int, Int, Int, Int ) -> Parser Milliseconds
 convertTime ( hours, minutes, seconds, milliseconds ) =
     if isValidTime hours minutes seconds milliseconds then
-        succeed (offsetFromTimeData
-                    { hour = hours
-                    , minute = minutes
-                    , second = seconds
-                    , millisecond = milliseconds
-                    }
-                )
+        succeed
+            (offsetFromTimeData
+                { hour = hours
+                , minute = minutes
+                , second = seconds
+                , millisecond = milliseconds
+                }
+            )
     else
         fail "invalid time"
 
 
-fraction : Parser Int
+fraction : Parser Milliseconds
 fraction =
     oneOf
         [ optionalFraction
@@ -612,105 +618,73 @@ fraction =
         ]
 
 
-optionalFraction : Parser Int
+optionalFraction : Parser Milliseconds
 optionalFraction =
     inContext "fraction" <|
         ((succeed identity
             |. keep (Exactly 1) (\c -> c == '.')
-            |= keep oneOrMore (Char.isDigit)
+            |= keep oneOrMore Char.isDigit
          )
             |> andThen (fromResult << getFraction)
         )
 
 
-getFraction : String -> Result String Int
+getFraction : String -> Result String Milliseconds
 getFraction fractionString =
     let
         numerator =
             Result.withDefault 0 (String.toInt fractionString)
 
         denominator =
-            10 ^ (String.length fractionString)
+            10 ^ String.length fractionString
     in
-        Ok (round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator)))
+    Ok (round (Time.Internal.secondMs * toFloat numerator / toFloat denominator))
 
 
-{-|
--}
+{-| -}
 tZOffset : Parser Milliseconds
 tZOffset =
+    oneOf
+        [ utc
+        , optionalTZOffset
+        , succeed 0
+        ]
+
+
+utc : Parser Milliseconds
+utc =
+    (succeed identity
+        |. keep (Exactly 1) (\c -> c == 'Z')
+    )
+        |> andThen (fromResult << (\_ -> Ok 0))
+
+
+optionalTZOffset : Parser Milliseconds
+optionalTZOffset =
     inContext "offset" <|
-        ((source <|
-            ignore (Exactly 1) (\c -> c == 'Z'
-                                   || c == '+'
-                                   || c == '-'
-                                   || c == '−' --U+2212
-                               )
-                |. ignore zeroOrMore (\c -> Char.isDigit c)
-                |. ignore zeroOrMore (\c -> c == ':')
-                |. ignore zeroOrMore (\c -> Char.isDigit c)
-         ) |> andThen (fromResult << getTZOffset)
+        (   (succeed (,,)
+                |= polarity
+                |= digitsInRange "timezone hours" 2 0 23
+                |. optional ':'
+                |= digitsInRange "timezone minutes" 2 0 59
+            ) |> andThen (fromResult << getTZOffset)
         )
 
-hourMn : Int
-hourMn =
-    60
+
+polarity : Parser Int
+polarity =
+    inContext "timezone polarity" <|
+        ( keep (Exactly 1)
+            (\c ->
+                c == '+'
+             || c == '-'
+             || c == '−' --U+2212
+            ) |> andThen (fromResult <<
+                (\c -> if c == "+" then Ok -1 else Ok 1)) -- Code has to do opposite of sign char
+        )
 
 
-type alias Minutes =
-    Int
-
-
-{-|
--}
-getTZOffset : String -> Result String Milliseconds
-getTZOffset offsetStr =
-    case (uncons offsetStr) of
-        Just ( signChar, digitsStr ) ->
-            let
-                -- Code has to do opposite of signChar:
-                sign =
-                    if signChar == '+' then -1 else 1
-
-                parseHrsOrMin : Int -> Int -> String -> Int -> Result String Milliseconds
-                parseHrsOrMin startOffset stopOffset str msOffset =
-                    toInt (slice startOffset stopOffset str)
-                        |> Result.map (\i -> i * msOffset * sign)
-
-                parseHrsAndMin : String -> Result String Int
-                parseHrsAndMin digitsStr =
-                    let
-                        colonOffset =
-                            String.contains ":" digitsStr
-                                |> (\c -> if c then 1 else 0)
-
-                        lo =
-                            colonOffset + 2
-
-                        ro =
-                            colonOffset + 4
-
-                    in
-                        Result.map2 (+)
-                            (parseHrsOrMin 0 2 digitsStr hourMs)
-                            (parseHrsOrMin lo ro digitsStr minuteMs)
-            in
-                case signChar of
-                    'Z' ->
-                        Ok 0
-
-                    '+' ->
-                        parseHrsAndMin digitsStr
-
-                    '-' ->
-                        parseHrsAndMin digitsStr
-
-                    '−' ->  --U+2212
-                        parseHrsAndMin digitsStr
-
-                    _   ->
-                        Err ("Unallowed offset delimiter character '" ++ (toString signChar) ++ "'; should be 'Z', '+', or '-'")
-
-        Nothing ->
-            Err ("Offset string '" ++ offsetStr ++ "' not all digits")
-
+{-| -}
+getTZOffset : (Int, Int, Int) -> Result String Milliseconds
+getTZOffset (polarity, hrs, min) =
+    Ok (polarity * hrs * hourMs + polarity * min * minuteMs)
