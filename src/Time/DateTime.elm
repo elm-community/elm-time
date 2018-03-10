@@ -660,13 +660,13 @@ getTZOffset offsetStr =
                 signedOne =
                     if signChar == '-' then 1 else -1
 
-                signedInt : Int -> Int -> String -> Int -> Result String Milliseconds
-                signedInt startOffset stopOffset str msOffset =
+                parseHrsOrMin : Int -> Int -> String -> Int -> Result String Milliseconds
+                parseHrsOrMin startOffset stopOffset str msOffset =
                     toInt (slice startOffset stopOffset str)
                         |> Result.map (\i -> i * msOffset * signedOne)
 
-                toSignedInt : String -> Result String Int
-                toSignedInt digitsStr =
+                parseHrsAndMin : String -> Result String Int
+                parseHrsAndMin digitsStr =
                     let
                         colonOffset =
                             String.contains ":" digitsStr
@@ -680,18 +680,18 @@ getTZOffset offsetStr =
 
                     in
                         Result.map2 (+)
-                            (signedInt 0 2 digitsStr hourMs)
-                            (signedInt lo ro digitsStr minuteMs)
+                            (parseHrsOrMin 0 2 digitsStr hourMs)
+                            (parseHrsOrMin lo ro digitsStr minuteMs)
             in
                 case signChar of
                     'Z' ->
                         Ok 0
 
                     '+' ->
-                        toSignedInt digitsStr
+                        parseHrsAndMin digitsStr
 
                     '-' ->
-                        toSignedInt digitsStr
+                        parseHrsAndMin digitsStr
 
                     _   ->
                         Err ("Unallowed offset delimiter character '" ++ (toString signChar) ++ "'; should be 'Z', '+', or '-'")
