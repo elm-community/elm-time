@@ -148,7 +148,7 @@ type alias PackedTimeZone =
 
 
 {-| packedTimeZone parses a zone data string into a TimeZone, validating that
-the data fromat invariants hold.
+the data format invariants hold.
 -}
 packedTimeZone : Parser s TimeZone
 packedTimeZone =
