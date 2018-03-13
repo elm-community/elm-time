@@ -121,6 +121,13 @@ ${timeZoneData.join("\n")}`.trim();
   });
 });
 
+// Chunk `all` to prevent stack overflow in Elm 0.18 with large list literals.
+let all_chunks = [], all_chunk_size = 50;
+for (let i = 0; i < all.length; i += all_chunk_size) {
+  let slice = all.slice(i, i + all_chunk_size);
+  all_chunks.push("[ " + slice.join("\n              , ") + "\n              ]");
+}
+
 fs.open("../src/Time/TimeZones.elm", "w", (err, fd) => {
   let content = `
 module Time.TimeZones exposing (..)
@@ -159,9 +166,11 @@ ${fns.join("\n")}
 {-| A mapping from TimeZone names to their respective functions.  Use
 this to look up TimeZones by name. -}
 all : Dict String (() -> TimeZone)
-all = Dict.fromList
-    [ ${all.join("\n    , ")}
-    ]
+all =
+    Dict.fromList <|
+        List.concat
+            [ ${all_chunks.join("\n            , ")}
+            ]
 
 
 {-| Look up a TimeZone by name. -}
