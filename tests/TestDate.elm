@@ -198,6 +198,8 @@ toFromISO8601 =
                 parseEq "1992-12-29" (date 1992 12 29)
             , test "fromISO8601 of a valid padded date is correct" <|
                 parseEq "1992-05-29" (date 1992 5 29)
+            , test "fromISO8601 of a valid padded date with no delimeters is correct" <|
+                parseEq "19920529" (date 1992 5 29)
             , test "fromISO8601 of a badly-formatted date fails" <|
                 parseFails ""
             , test "fromISO8601 of a badly-formatted date fails 2" <|
