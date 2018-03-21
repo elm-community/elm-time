@@ -67,6 +67,7 @@ time of day.
 # Helper functions
 
 @docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+
 -}
 
 --import Combine exposing (..)
@@ -575,9 +576,10 @@ parseOffset =
 
 convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
 convertDateTime ( date, offset, tZOffset ) =
-    succeed ( DateTime { date = date, offset = offset }
-                |> addMilliseconds tZOffset
-            )
+    succeed
+        (DateTime { date = date, offset = offset }
+            |> addMilliseconds tZOffset
+        )
 
 
 convertTime : ( Int, Int, Int, Int ) -> Parser Milliseconds
@@ -607,7 +609,7 @@ optionalFraction : Parser Milliseconds
 optionalFraction =
     inContext "fraction" <|
         ((succeed identity
-            |. keep (Exactly 1) (\c -> c == '.')
+            |. keep (Exactly 1) ((==) '.')
             |= keep oneOrMore Char.isDigit
          )
             |> andThen (fromResult << getFraction)
@@ -638,7 +640,7 @@ tZOffset =
 utc : Parser Milliseconds
 utc =
     (succeed identity
-        |. keep (Exactly 1) (\c -> c == 'Z')
+        |. keep (Exactly 1) ((==) 'Z')
     )
         |> andThen (fromResult << (\_ -> Ok 0))
 
@@ -646,31 +648,49 @@ utc =
 optionalTZOffset : Parser Milliseconds
 optionalTZOffset =
     inContext "offset" <|
-        (   (succeed (,,)
-                |= polarity
-                |= digitsInRange "timezone hours" 2 0 23
-                |. optional ':'
-                |= digitsInRange "timezone minutes" 2 0 59
-            ) |> andThen (fromResult << getTZOffset)
+        ((succeed (,,)
+            |= polarity
+            |= digitsInRange "timezone hours" 2 0 23
+            |. optional ':'
+            |= digitsInRange "timezone minutes" 2 0 59
+         )
+            |> andThen (fromResult << getTZOffset)
         )
 
 
 polarity : Parser Int
 polarity =
     inContext "timezone polarity" <|
-        ( keep (Exactly 1)
+        (keep (Exactly 1)
             (\c ->
-                c == '+'
-             || c == '-'
-             || c == '−' --U+2212
-            ) |> andThen (fromResult <<
-                -- Code has to do opposite of sign char
-                (\sign -> if sign == "+" then Ok -1 else Ok 1))
+                c
+                    == '+'
+                    || c
+                    == '-'
+                    || c
+                    == '−'
+             --U+2212
+            )
+            |> andThen
+                (fromResult
+                    << -- Code has to do opposite of sign char
+                       (\sign ->
+                            if sign == "+" then
+                                Ok -1
+                            else
+                                Ok 1
+                       )
+                )
         )
 
 
-getTZOffset : (Int, Int, Int) -> Result String Milliseconds
-getTZOffset (polarity, hrs, min) =
-    Ok ( polarity * hrs * hourMs
-       + polarity * min * minuteMs
-       )
+getTZOffset : ( Int, Int, Int ) -> Result String Milliseconds
+getTZOffset ( polarity, hrs, min ) =
+    Ok
+        (polarity
+            * hrs
+            * hourMs
+            + polarity
+            * min
+            * minuteMs
+        )
