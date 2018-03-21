@@ -1,10 +1,19 @@
 module Time.Internal exposing (..)
 
 import Char
-import Parser exposing
-    ( Parser, Count(..), andThen, fail, ignore, inContext
-    , keep, succeed, zeroOrMore
-    )
+import Parser
+    exposing
+        ( Count(..)
+        , Error
+        , Parser
+        , andThen
+        , fail
+        , ignore
+        , inContext
+        , keep
+        , succeed
+        , zeroOrMore
+        )
 
 
 type alias DateTimeData =
@@ -100,11 +109,13 @@ intRange lo hi result =
                 fail
                     ("expected the value "
                         ++ toString n
-                        ++ " to be an integer in the range "
+                        ++ " to be in the range "
                         ++ toString lo
                         ++ " to "
                         ++ toString hi
                         ++ "."
+                        ++ "Parser col is TODO"
+                     -- ++ toString Parse.Error.context
                     )
 
         Err msg ->
