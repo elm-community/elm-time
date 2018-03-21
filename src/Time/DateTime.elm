@@ -81,6 +81,7 @@ import Parser
         , Count(..)
         , Parser
         , andThen
+        , delayedCommit
         , end
         , fail
         , ignore
@@ -610,10 +611,32 @@ optionalFraction =
     inContext "fraction" <|
         ((succeed identity
             |. keep (Exactly 1) ((==) '.')
-            |= keep oneOrMore Char.isDigit
+            |= parseFractionDigits
          )
             |> andThen (fromResult << getFraction)
         )
+
+
+parseFractionDigits : Parser String
+parseFractionDigits =
+    oneOf
+        [ parse6Digits
+        , keep oneOrMore Char.isDigit
+        ]
+
+
+parse6Digits : Parser String
+parse6Digits =
+    delayedCommit commitHere <|
+        succeed identity
+            |= keep (Exactly 7) Char.isDigit
+            |. commitHere
+
+
+commitHere : Parser String
+commitHere =
+    -- Message not used
+    fail ""
 
 
 getFraction : String -> Result String Milliseconds
