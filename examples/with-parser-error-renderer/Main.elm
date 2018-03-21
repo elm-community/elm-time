@@ -29,7 +29,7 @@ import Time.DateTime exposing (fromISO8601)
 -}
 main : Html msg
 main =
-    case mainProg "1992-05-29T12:25:12.1-01:00" of
+    case mainProg "1990-12-32T12:25:12.0Z" of
         Ok v ->
             text <| toString v
 
@@ -51,24 +51,6 @@ primitives =
 mainProg : String -> Result Parser.Error Time.DateTime.DateTime
 mainProg input =
     Time.DateTime.fromISO8601 input
-
-
-digits : Int -> Parser Int
-digits count =
-    Parser.inContext "digits" <|
-        (Parser.keep (Parser.Exactly count) Char.isDigit
-            |> Parser.andThen (fromResult << String.toInt)
-        )
-
-
-fromResult : Result String Int -> Parser Int
-fromResult result =
-    case result of
-        Ok i ->
-            Parser.succeed i
-
-        Err msg ->
-            Parser.fail msg
 
 
 
