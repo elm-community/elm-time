@@ -1,6 +1,7 @@
 module Time.ISO8601Error
     exposing
-        ( renderText
+        ( reflow
+        , renderText
         )
 
 {-| A renderer to format error messages resulting from
@@ -15,9 +16,9 @@ a fixed-font message to, say, a terminal screen.
 @docs renderText
 
 
-# Configuration
+# Utilities
 
-@docs primitives
+@docs reflow
 
 -}
 
@@ -31,6 +32,15 @@ import Set exposing (Set)
 renderText : Parser.Error -> String
 renderText error =
     let
+        -- Hack: special handling of the leap year.
+        -- This sets the marker under the beginning of the
+        -- day-of-month segment.
+        tweakCol ctx =
+            if ctx.description == "leap-year" then
+                ctx.col - 2
+            else
+                ctx.col
+
         ( source, diagnosis, col ) =
             case List.head error.context of
                 Nothing ->
@@ -39,7 +49,7 @@ renderText error =
                 Just ctx ->
                     ( Just ctx.description
                     , forContext ctx error.problem
-                    , ctx.col
+                    , tweakCol ctx
                     )
     in
     diagnosis
@@ -51,6 +61,8 @@ renderText error =
         ++ (reflow <| describeProblem source error.problem)
 
 
+{-| A convenience function to auto-wrap long strings
+-}
 reflow : String -> String
 reflow s =
     let
@@ -132,6 +144,7 @@ describeProblem probableCause problem =
         Parser.ExpectingEnd ->
             "String should have stopped here, but it goes on."
 
+        -- Usurped for bad day in month due to leap year:
         Parser.ExpectingSymbol s ->
             "Expecting a `" ++ s ++ "` here."
 
@@ -169,12 +182,20 @@ marker col =
 
 forContext : Parser.Context -> Parser.Problem -> String
 forContext { description } problem =
+    let
+        -- hack; can't find any better way to do this.
+        segment =
+            if description == "leap-year" then
+                "day-of-month"
+            else
+                description
+    in
     case problem of
         Fail msg ->
-            "The '" ++ description ++ "' segment is invalid:"
+            "The '" ++ segment ++ "' segment is invalid:"
 
         _ ->
-            "Failed to parse the '" ++ description ++ "' segment:"
+            "Failed to parse the '" ++ segment ++ "' segment:"
 
 
 noContext : String

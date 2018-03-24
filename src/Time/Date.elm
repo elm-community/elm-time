@@ -573,4 +573,25 @@ convertDate ( year, month, day ) =
     if isValidDate year month day then
         succeed (date year month day)
     else
-        fail "invalid date"
+        complainInvalid ( year, month, day )
+
+
+complainInvalid : ( Int, Int, Int ) -> Parser Date
+complainInvalid ( year, month, day ) =
+    inContext "leap-year" <|
+        let
+            maxDays =
+                Maybe.withDefault 31 (daysInMonth year month)
+
+            msg =
+                "Expecting the value "
+                    ++ toString day
+                    ++ " to be in the range 1 to "
+                    ++ toString maxDays
+                    ++ " for the specified year, "
+                    ++ toString year
+                    ++ ", and month, "
+                    ++ toString month
+                    ++ "."
+        in
+        fail msg
