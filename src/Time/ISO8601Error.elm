@@ -1,6 +1,7 @@
-module Time.ISO8601Error exposing
-    ( renderText
-    )
+module Time.ISO8601Error
+    exposing
+        ( renderText
+        )
 
 {-| A renderer to format error messages resulting from
 ISO8601 parsing errors.
@@ -13,6 +14,7 @@ a fixed-font message to, say, a terminal screen.
 
 @docs renderText
 
+
 # Configuration
 
 @docs primitives
@@ -24,53 +26,29 @@ import Parser exposing (Parser, Problem(..))
 import Set exposing (Set)
 
 
-{-|
--}
-primitives : Set String
-primitives =
-    Set.fromList ["date", "time", "datetime"]
-
-
-{-| Invoking the renderer.  This returns an error string
-
+{-| Invoking the renderer. This returns an error string
 -}
 renderText : Parser.Error -> String
 renderText error =
     let
-        findContext : List Parser.Context -> String
-        findContext contexts =
-            List.foldl
-                (\ctx acc ->
-                    if acc == Nothing then
-                        if Set.member ctx.description primitives then
-                            Nothing
-                        else
-                            Just <| forContext ctx
-                    else
-                        acc
-                )
-                Nothing
-                contexts
-                |> Maybe.withDefault noContext
+        ( source, diagnosis, col ) =
+            case List.head error.context of
+                Nothing ->
+                    ( Nothing, noContext, error.col )
 
-        ( cause, context ) =
-            case error.context of
-                [] ->
-                    ( Nothing, noContext )
-
-                x :: xs ->
-                    if Set.member x.description primitives then
-                        ( Just x.description, findContext xs )
-                    else
-                        ( Nothing, forContext x )
+                Just ctx ->
+                    ( Just ctx.description
+                    , forContext ctx
+                    , ctx.col
+                    )
     in
-    context
+    diagnosis
         ++ "\n\n    "
         ++ relevantSource error
         ++ "\n    "
-        ++ (marker <| adjustMarker error context)
+        ++ marker col
         ++ "\n\n"
-        ++ (reflow <| describeProblem cause error.problem)
+        ++ (reflow <| describeProblem source error.problem)
 
 
 reflow : String -> String
