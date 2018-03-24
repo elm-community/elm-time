@@ -107,15 +107,13 @@ intRange lo hi result =
                 succeed n
             else
                 fail
-                    ("expected the value "
+                    ("Expecting the value "
                         ++ toString n
                         ++ " to be in the range "
                         ++ toString lo
                         ++ " to "
                         ++ toString hi
                         ++ "."
-                        ++ "Parser col is TODO"
-                     -- ++ toString Parse.Error.context
                     )
 
         Err msg ->
