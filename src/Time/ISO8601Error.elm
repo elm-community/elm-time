@@ -38,7 +38,7 @@ renderText error =
 
                 Just ctx ->
                     ( Just ctx.description
-                    , forContext ctx
+                    , forContext ctx error.problem
                     , ctx.col
                     )
     in
@@ -167,9 +167,14 @@ marker col =
     String.repeat (col - 1) " " ++ "^"
 
 
-forContext : Parser.Context -> String
-forContext { description } =
-    "Failed to parse the '" ++ description ++ "' segment:"
+forContext : Parser.Context -> Parser.Problem -> String
+forContext { description } problem =
+    case problem of
+        Fail msg ->
+            "The '" ++ description ++ "' segment is invalid:"
+
+        _ ->
+            "Failed to parse the '" ++ description ++ "' segment:"
 
 
 noContext : String
