@@ -20,7 +20,7 @@ a fixed-font message to, say, a terminal screen.
 -}
 
 import Char
-import Parser exposing (Parser)
+import Parser exposing (Parser, Problem(..))
 import Set exposing (Set)
 
 
@@ -68,7 +68,7 @@ renderText error =
         ++ "\n\n    "
         ++ relevantSource error
         ++ "\n    "
-        ++ marker error.col
+        ++ (marker <| adjustMarker error context)
         ++ "\n\n"
         ++ (reflow <| describeProblem cause error.problem)
 
@@ -146,7 +146,7 @@ describeProblem probableCause problem =
         Parser.BadRepeat ->
             case probableCause of
                 Just cause ->
-                    "Can't fine a " ++ cause ++ "."
+                    "Can't find a " ++ cause ++ "."
 
                 Nothing ->
                     "I got stuck here. I'm probably looking for something specific and not making any progress here."
@@ -172,6 +172,16 @@ describeProblem probableCause problem =
         Parser.BadOneOf problems ->
             "Encountering multiple problems:\n\n"
                 ++ (List.map (describeProblem probableCause) problems |> String.join "\n\n")
+
+
+adjustMarker : Parser.Error -> Parser.Context -> Int
+adjustMarker error context =
+    case error.problem of
+        Fail msg ->
+            context.col
+
+        _ ->
+            error.col
 
 
 marker : Int -> String
