@@ -9,9 +9,10 @@
     "exposed-modules": [
         "Time.Date",
         "Time.DateTime",
-        "Time.ZonedDateTime",
+        "Time.ISO8601Error",
         "Time.TimeZone",
-        "Time.TimeZones"
+        "Time.TimeZones",
+        "Time.ZonedDateTime"
     ],
     "dependencies": {
         "elm-community/parser-combinators": "2.0.0 <= v < 3.0.0",
