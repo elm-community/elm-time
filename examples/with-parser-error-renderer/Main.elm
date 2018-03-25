@@ -20,7 +20,6 @@ import Style.Border as Border
 import Style.Color as Color
 import Style.Font as Font
 import Style.Transition as Transition
-import Time exposing (Time, every)
 import Time.DateTime
     exposing
         ( DateTime
@@ -34,7 +33,6 @@ import Time.ISO8601Error exposing (reflow, renderText)
 
 type Msg
     = Run
-    | Tick Time
 
 
 type Styles
@@ -81,11 +79,10 @@ stylesheet =
 {-| The "entry"
 -}
 main =
-    Html.program
-        { init = init
+    Html.beginnerProgram
+        { model = init
         , update = update
         , view = view
-        , subscriptions = subscriptions
         }
 
 
@@ -99,7 +96,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         initInput =
-            "1991-02-29T12:25:12.0Z"
+            "1991-02-28T12:25:12.0Z"
     in
     ( { iso8601input = initInput
       , dateTime = fromISO8601 initInput
@@ -108,25 +105,15 @@ init =
     )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+update msg (model, msg2) =
     case msg of
         Run ->
             runParse model
 
-        Tick time ->
-            ( { model
-                | iso8601input =
-                    time
-                        |> fromTimestamp
-                        |> toISO8601
-              }
-            , Cmd.none
-            )
 
-
-view : Model -> Html Msg
-view model =
+view : ( Model, Cmd Msg ) -> Html Msg
+view (model, msg) =
     case model.dateTime of
         Ok dt ->
             Html.text <| toString dt
@@ -139,11 +126,6 @@ view model =
                         ++ reflow (toString err)
             in
             Html.pre [] [ Html.text <| msg ]
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    every Time.second Tick
 
 
 runParse : Model -> ( Model, Cmd Msg )
