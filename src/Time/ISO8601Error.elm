@@ -1,7 +1,7 @@
 module Time.ISO8601Error
     exposing
-        ( reflow
-        , renderText
+        ( renderText
+        , reflow
         )
 
 {-| A renderer to format error messages resulting from
@@ -12,12 +12,10 @@ a fixed-font message to, say, a terminal screen.
 
 
 # Main entry
-
 @docs renderText
 
 
 # Utilities
-
 @docs reflow
 
 -}

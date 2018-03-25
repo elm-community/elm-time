@@ -533,16 +533,14 @@ fromISO8601 input =
 {-| -}
 parseDate : Parser Date
 parseDate =
-    inContext "date" <|
-        ((succeed (,,)
-            |= parseYear
-            |. optional '-'
-            |= parseMonth
-            |. optional '-'
-            |= parseDay
-         )
-            |> andThen convertDate
-        )
+    (succeed (,,)
+        |= parseYear
+        |. optional '-'
+        |= parseMonth
+        |. optional '-'
+        |= parseDay
+    )
+        |> andThen convertDate
 
 
 parseYear : Parser Int

@@ -549,30 +549,26 @@ fromISO8601 input =
 
 parseDateTime : Parser DateTime
 parseDateTime =
-    inContext "datetime" <|
-        ((succeed (,,)
-            |= parseDate
-            |. optional 'T'
-            |= parseOffset
-            |= tZOffset
-         )
-            |> andThen convertDateTime
-        )
+    (succeed (,,)
+        |= parseDate
+        |. optional 'T'
+        |= parseOffset
+        |= tZOffset
+    )
+        |> andThen convertDateTime
 
 
 parseOffset : Parser Milliseconds
 parseOffset =
-    inContext "time" <|
-        ((succeed (,,,)
-            |= digitsInRange "hours" 2 0 23
-            |. optional ':'
-            |= digitsInRange "minutes" 2 0 59
-            |. optional ':'
-            |= digitsInRange "seconds" 2 0 59
-            |= fraction
-         )
-            |> andThen convertTime
-        )
+    (succeed (,,,)
+        |= digitsInRange "hours" 2 0 23
+        |. optional ':'
+        |= digitsInRange "minutes" 2 0 59
+        |. optional ':'
+        |= digitsInRange "seconds" 2 0 59
+        |= fraction
+    )
+        |> andThen convertTime
 
 
 convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
@@ -585,17 +581,14 @@ convertDateTime ( date, offset, tZOffset ) =
 
 convertTime : ( Int, Int, Int, Int ) -> Parser Milliseconds
 convertTime ( hours, minutes, seconds, milliseconds ) =
-    if isValidTime hours minutes seconds milliseconds then
-        succeed
-            (offsetFromTimeData
-                { hour = hours
-                , minute = minutes
-                , second = seconds
-                , millisecond = milliseconds
-                }
-            )
-    else
-        fail "invalid time"
+    succeed
+        (offsetFromTimeData
+            { hour = hours
+            , minute = minutes
+            , second = seconds
+            , millisecond = milliseconds
+            }
+        )
 
 
 fraction : Parser Milliseconds
