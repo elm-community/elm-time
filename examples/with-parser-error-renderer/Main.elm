@@ -10,11 +10,11 @@ the `elm-time` library.
 
 -}
 
-import Color
+import Color exposing (rgba)
 import Element exposing (..)
-import Element.Attributes exposing(..)
+import Element.Attributes exposing (..)
 import Html exposing (Html)
-import Parser
+import Parser exposing (Error)
 import Style exposing (..)
 import Style.Border as Border
 import Style.Color as Color
@@ -33,7 +33,49 @@ import Time.ISO8601Error exposing (reflow, renderText)
 
 
 type Msg
-    = Tick Time
+    = Run
+    | Tick Time
+
+
+type Styles
+    = None
+    | Container
+    | Field
+    | SubMenu
+    | Error
+    | InputError
+    | Checkbox
+    | CheckboxChecked
+    | LabelBox
+    | Button
+    | CustomRadio
+
+
+
+{-
+   , red, orange, yellow, green, blue, purple, brown
+   , lightRed, lightOrange, lightYellow, lightGreen, lightBlue, lightPurple, lightBrown
+   , darkRed, darkOrange, darkYellow, darkGreen, darkBlue, darkPurple, darkBrown
+   , white, lightGrey, grey, darkGrey, lightCharcoal, charcoal, darkCharcoal, black
+   , lightGray, gray, darkGray
+-}
+
+
+stylesheet : StyleSheet Styles variation
+stylesheet =
+    Style.styleSheet
+        [ style None []
+        , style Container
+            [ Color.text Color.black
+            , Color.background Color.white
+            ]
+        , style Error
+            [ Color.text Color.red
+            ]
+        , style CustomRadio
+            [ Border.rounded 5
+            ]
+        ]
 
 
 {-| The "entry"
@@ -49,14 +91,18 @@ main =
 
 type alias Model =
     { iso8601input : String
-    , result : DateTime
+    , dateTime : Result Parser.Error DateTime
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { iso8601input = "1991-02-28T12:25:12.0Z"
-      , result = fromTuple ( 1991, 2, 28, 12, 15, 12, 0 )
+    let
+        initInput =
+            "1991-02-29T12:25:12.0Z"
+    in
+    ( { iso8601input = initInput
+      , dateTime = fromISO8601 initInput
       }
     , Cmd.none
     )
@@ -65,6 +111,9 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Run ->
+            runParse model
+
         Tick time ->
             ( { model
                 | iso8601input =
@@ -78,16 +127,16 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    case fromISO8601 model.iso8601input of
-        Ok v ->
-            Html.text <| toString v
+    case model.dateTime of
+        Ok dt ->
+            Html.text <| toString dt
 
-        Err e ->
+        Err err ->
             let
                 msg =
-                    renderText e
+                    renderText err
                         ++ "\n\n"
-                        ++ reflow (toString e)
+                        ++ reflow (toString err)
             in
             Html.pre [] [ Html.text <| msg ]
 
@@ -95,3 +144,12 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     every Time.second Tick
+
+
+runParse : Model -> ( Model, Cmd Msg )
+runParse model =
+    ( { model
+        | dateTime = fromISO8601 model.iso8601input
+      }
+    , Cmd.none
+    )
