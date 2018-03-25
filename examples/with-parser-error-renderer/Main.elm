@@ -20,6 +20,7 @@ import Style.Border as Border
 import Style.Color as Color
 import Style.Font as Font
 import Style.Transition as Transition
+import Task
 import Time.DateTime
     exposing
         ( DateTime
@@ -29,15 +30,18 @@ import Time.DateTime
         , toISO8601
         )
 import Time.ISO8601Error exposing (reflow, renderText)
+import Window
 
 
 type Msg
     = Run
+    | Resize Window.Size
 
 
 type Styles
     = None
-    | Container
+    | InputContainer
+    | Title
     | Field
     | SubMenu
     | Error
@@ -63,9 +67,9 @@ stylesheet : StyleSheet Styles variation
 stylesheet =
     Style.styleSheet
         [ style None []
-        , style Container
+        , style InputContainer
             [ Color.text Color.black
-            , Color.background Color.white
+            , Color.background Color.lightGreen
             ]
         , style Error
             [ Color.text Color.red
@@ -79,16 +83,18 @@ stylesheet =
 {-| The "entry"
 -}
 main =
-    Html.beginnerProgram
-        { model = init
+    Html.program
+        { init = init
         , update = update
         , view = view
+        , subscriptions = subscriptions
         }
 
 
 type alias Model =
     { iso8601input : String
     , dateTime : Result Parser.Error DateTime
+    , device : Device
     }
 
 
@@ -100,20 +106,32 @@ init =
     in
     ( { iso8601input = initInput
       , dateTime = fromISO8601 initInput
+      , device = classifyDevice (Window.Size 0 0)
       }
-    , Cmd.none
+    , Task.perform Resize Window.size -- initial window size
     )
 
 
-update : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-update msg (model, msg2) =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         Run ->
             runParse model
 
+        Resize size ->
+            ({ model | device = classifyDevice size
+             }
+            , Cmd.none
+            )
 
-view : ( Model, Cmd Msg ) -> Html Msg
-view (model, msg) =
+
+
+
+
+view : Model -> Html Msg
+view model =
+--    Element.layout styleSheet <|
+--        el Title [] (text "elm-time Demo")
     case model.dateTime of
         Ok dt ->
             Html.text <| toString dt
@@ -126,6 +144,12 @@ view (model, msg) =
                         ++ reflow (toString err)
             in
             Html.pre [] [ Html.text <| msg ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Window.resizes Resize
+
 
 
 runParse : Model -> ( Model, Cmd Msg )
