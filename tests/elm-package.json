@@ -1,20 +1,27 @@
 {
-    "version": "1.0.0",
-    "summary": "Test Suites",
-    "repository": "https://github.com/elm-community/elm-time.git",
-    "license": "BSD3",
-    "source-directories": [
-        "../src",
-        "."
-    ],
-    "exposed-modules": [],
-    "dependencies": {
-        "elm-community/elm-test": "4.0.0 <= v < 5.0.0",
-        "elm-community/json-extra": "2.0.0 <= v < 3.0.0",
-        "elm-community/parser-combinators": "2.0.0 <= v < 3.0.0",
-        "elm-lang/core": "5.0.0 <= v < 6.0.0",
-        "elm-lang/lazy": "2.0.0 <= v < 3.0.0",
-        "elm-tools/parser": "2.0.1 <= v < 3.0.0"
-    },
-    "elm-version": "0.18.0 <= v < 0.19.0"
+  "version": "1.0.0",
+  "summary": "Test Suites",
+  "repository": "https://github.com/elm-community/elm-time.git",
+  "license": "BSD3",
+  "source-directories": [
+    "../src",
+    "."
+  ],
+  "exposed-modules": [
+    "Time.Date",
+    "Time.DateTime",
+    "Time.ISO8601Error",
+    "Time.TimeZone",
+    "Time.TimeZones",
+    "Time.ZonedDateTime"
+  ],
+  "dependencies": {
+    "elm-community/elm-test": "4.0.0 <= v < 5.0.0",
+    "elm-community/json-extra": "2.0.0 <= v < 3.0.0",
+    "elm-community/parser-combinators": "2.0.0 <= v < 3.0.0",
+    "elm-lang/core": "5.0.0 <= v < 6.0.0",
+    "elm-lang/lazy": "2.0.0 <= v < 3.0.0",
+    "elm-tools/parser": "2.0.1 <= v < 3.0.0"
+  },
+  "elm-version": "0.18.0 <= v < 0.19.0"
 }
