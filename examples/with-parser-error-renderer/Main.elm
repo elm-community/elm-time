@@ -108,7 +108,7 @@ init =
       , dateTime = fromISO8601 initInput
       , device = classifyDevice (Window.Size 0 0)
       }
-    , Task.perform Resize Window.size -- initial window size
+    , Task.perform Resize Window.size
     )
 
 
@@ -119,19 +119,17 @@ update msg model =
             runParse model
 
         Resize size ->
-            ({ model | device = classifyDevice size
-             }
+            ( { model
+                | device = classifyDevice size
+              }
             , Cmd.none
             )
 
 
-
-
-
 view : Model -> Html Msg
 view model =
---    Element.layout styleSheet <|
---        el Title [] (text "elm-time Demo")
+    --    Element.layout styleSheet <|
+    --        el Title [] (text "elm-time Demo")
     case model.dateTime of
         Ok dt ->
             Html.text <| toString dt
@@ -149,7 +147,6 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Window.resizes Resize
-
 
 
 runParse : Model -> ( Model, Cmd Msg )
