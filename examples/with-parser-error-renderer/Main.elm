@@ -147,8 +147,7 @@ view model =
                             { label = Input.labelLeft (el None [ verticalCenter ] (text "Enter ISO8601 String:"))
                             , text = "Test ISO8601 here"
                             }
-                    , options =
-                        []
+                    , options = []
                     }
                 , el Error [] (text <| output model)
                 ]

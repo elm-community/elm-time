@@ -1,28 +1,30 @@
 module Time.ISO8601Error
     exposing
-        ( renderText
-        , reflow
+        ( reflow
+        , renderText
         )
 
 {-| A renderer to format error messages resulting from
 ISO8601 parsing errors.
 
 At this time, there is a renderer, **renderText**, to render
-a fixed-font message to, say, a terminal screen.
+a fixed-font message to, say, a terminal screen. This renderer
+strives to output the friendly useful error message that elm
+is famous for.
 
 
 # Main entry
+
 @docs renderText
 
 
 # Utilities
+
 @docs reflow
 
 -}
 
-import Char
 import Parser exposing (Parser, Problem(..))
-import Set exposing (Set)
 
 
 {-| Invoking the renderer. This returns an error string
