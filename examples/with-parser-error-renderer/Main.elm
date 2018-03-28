@@ -13,8 +13,11 @@ the `elm-time` library.
 import Color exposing (rgba)
 import Element exposing (..)
 import Element.Attributes exposing (..)
+import Element.Events
+import Element.Input as Input
 import Html exposing (Html)
 import Parser exposing (Error)
+import String
 import Style exposing (..)
 import Style.Border as Border
 import Style.Color as Color
@@ -35,22 +38,21 @@ import Window
 
 type Msg
     = Run
+    | ChangeText String
     | Resize Window.Size
 
 
 type Styles
     = None
     | InputContainer
+    | Page
     | Title
     | Field
     | SubMenu
     | Error
     | InputError
-    | Checkbox
-    | CheckboxChecked
     | LabelBox
     | Button
-    | CustomRadio
 
 
 
@@ -73,9 +75,7 @@ stylesheet =
             ]
         , style Error
             [ Color.text Color.red
-            ]
-        , style CustomRadio
-            [ Border.rounded 5
+            , Font.typeface [ Font.monospace ]
             ]
         ]
 
@@ -102,7 +102,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         initInput =
-            "1991-02-28T12:25:12.0Z"
+            "1991-02-29T12:25:12.0Z"
     in
     ( { iso8601input = initInput
       , dateTime = fromISO8601 initInput
@@ -118,6 +118,12 @@ update msg model =
         Run ->
             runParse model
 
+        ChangeText text ->
+            { model
+                | iso8601input = text
+            }
+                |> runParse
+
         Resize size ->
             ( { model
                 | device = classifyDevice size
@@ -128,25 +134,39 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    --    Element.layout styleSheet <|
-    --        el Title [] (text "elm-time Demo")
-    case model.dateTime of
-        Ok dt ->
-            Html.text <| toString dt
-
-        Err err ->
-            let
-                msg =
-                    renderText err
-                        ++ "\n\n"
-                        ++ reflow (toString err)
-            in
-            Html.pre [] [ Html.text <| msg ]
+    Element.layout stylesheet <|
+        el None [ center, width (px 800) ] <|
+            column Page
+                [ spacing 20 ]
+                [ Input.text Field
+                    [ padding 10 ]
+                    { onChange = ChangeText
+                    , value = model.iso8601input
+                    , label =
+                        Input.placeholder
+                            { label = Input.labelLeft (el None [ verticalCenter ] (text "Enter ISO8601 String:"))
+                            , text = "Test ISO8601 here"
+                            }
+                    , options =
+                        []
+                    }
+                , el Error [] (text <| output model)
+                ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Window.resizes Resize
+
+
+output : Model -> String
+output model =
+    case model.dateTime of
+        Ok v ->
+            toString v
+
+        Err error ->
+            renderText error
 
 
 runParse : Model -> ( Model, Cmd Msg )
@@ -156,3 +176,15 @@ runParse model =
       }
     , Cmd.none
     )
+
+
+render : Model -> String
+render model =
+    case model.dateTime of
+        Ok dt ->
+            toString dt
+
+        Err err ->
+            renderText err
+                ++ "\n\n"
+                ++ reflow (toString err)
