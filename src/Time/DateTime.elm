@@ -15,13 +15,13 @@ module Time.DateTime
         , day
         , delta
         , epoch
-        , fromISO8601
         , fromTimestamp
         , fromTuple
         , hour
         , isValidTime
         , millisecond
         , minute
+        , makeDateTime
         , month
         , second
         , setDate
@@ -51,7 +51,7 @@ time of day.
 
 # Manipulating DateTimes
 
-@docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
+@docs makeDateTime, setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
 
 # Comparing DateTimes
@@ -66,38 +66,15 @@ time of day.
 
 # Helper functions
 
-@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601
 
 -}
 
 --import Combine exposing (..)
 --import Combine.Num
 
-import Char
-import Parser
-    exposing
-        ( (|.)
-        , (|=)
-        , Count(..)
-        , Parser
-        , andThen
-        , delayedCommit
-        , end
-        , fail
-        , ignore
-        , inContext
-        , keep
-        , oneOf
-        , oneOrMore
-        , run
-        , source
-        , succeed
-        , symbol
-        , zeroOrMore
-        )
-import String exposing (cons, slice, toInt, uncons)
 import Time exposing (Time)
-import Time.Date exposing (Date, Weekday, isValidDate, parseDate)
+import Time.Date exposing (Date, Weekday, isValidDate)
 import Time.Internal exposing (..)
 
 
@@ -123,12 +100,6 @@ type alias DateTimeDelta =
     , seconds : Int
     , milliseconds : Int
     }
-
-
-{-| Offset is expressed in +/- milliseconds
--}
-type alias Milliseconds =
-    Int
 
 
 {-| zero represents the first millisecond of the first day of the
@@ -171,6 +142,13 @@ dateTime ({ year, month, day } as data) =
 mkDateTime : Date -> TimeData d -> DateTime
 mkDateTime date time =
     DateTime { date = date, offset = offsetFromTimeData time }
+
+
+{-| Create a DateTime given its date and millisecond offset
+-}
+makeDateTime : Date -> Int -> DateTime
+makeDateTime date offset =
+    DateTime { date = date, offset = offset }
 
 
 {-| date returns a DateTime's Date.
@@ -537,154 +515,3 @@ toISO8601 time =
         ++ "."
         ++ padded3 (millisecond time)
         ++ "Z"
-
-
-{-| fromISO8601 parses an ISO8601-formatted date time string into a
-DateTime object, adjusting for its timezone offset.
--}
-fromISO8601 : String -> Result Parser.Error DateTime
-fromISO8601 input =
-    run parseDateTime input
-
-
-parseDateTime : Parser DateTime
-parseDateTime =
-    (succeed (,,)
-        |= parseDate
-        |. optional 'T'
-        |= parseOffset
-        |= tZOffset
-    )
-        |> andThen convertDateTime
-
-
-parseOffset : Parser Milliseconds
-parseOffset =
-    (succeed (,,,)
-        |= digitsInRange "hours" 2 0 23
-        |. optional ':'
-        |= digitsInRange "minutes" 2 0 59
-        |. optional ':'
-        |= digitsInRange "seconds" 2 0 59
-        |= fraction
-    )
-        |> andThen convertTime
-
-
-convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
-convertDateTime ( date, offset, tZOffset ) =
-    succeed
-        (DateTime { date = date, offset = offset }
-            |> addMilliseconds tZOffset
-        )
-
-
-convertTime : ( Int, Int, Int, Int ) -> Parser Milliseconds
-convertTime ( hours, minutes, seconds, milliseconds ) =
-    succeed
-        (offsetFromTimeData
-            { hour = hours
-            , minute = minutes
-            , second = seconds
-            , millisecond = milliseconds
-            }
-        )
-
-
-fraction : Parser Milliseconds
-fraction =
-    oneOf
-        [ optionalFraction
-        , succeed 0
-        ]
-
-
-optionalFraction : Parser Milliseconds
-optionalFraction =
-    inContext "fraction" <|
-        ((succeed identity
-            |. keep (Exactly 1) ((==) '.')
-            |= keep oneOrMore Char.isDigit
-         )
-            |> andThen (fromResult << getFraction)
-        )
-
-
-getFraction : String -> Result String Milliseconds
-getFraction fractionString =
-    let
-        numerator =
-            Result.withDefault 0 (String.toInt fractionString)
-
-        denominator =
-            10 ^ String.length fractionString
-    in
-    Ok (round (Time.Internal.secondMs * toFloat numerator / toFloat denominator))
-
-
-tZOffset : Parser Milliseconds
-tZOffset =
-    oneOf
-        [ utc
-        , optionalTZOffset
-        , succeed 0
-        ]
-
-
-utc : Parser Milliseconds
-utc =
-    (succeed identity
-        |. keep (Exactly 1) ((==) 'Z')
-    )
-        |> andThen (fromResult << (\_ -> Ok 0))
-
-
-optionalTZOffset : Parser Milliseconds
-optionalTZOffset =
-    inContext "offset" <|
-        ((succeed (,,)
-            |= polarity
-            |= digitsInRange "timezone hours" 2 0 23
-            |. optional ':'
-            |= digitsInRange "timezone minutes" 2 0 59
-         )
-            |> andThen (fromResult << getTZOffset)
-        )
-
-
-polarity : Parser Int
-polarity =
-    inContext "timezone polarity" <|
-        (keep (Exactly 1)
-            (\c ->
-                c
-                    == '+'
-                    || c
-                    == '-'
-                    || c
-                    == '−'
-             --U+2212
-            )
-            |> andThen
-                (fromResult
-                    << -- Code has to do opposite of sign char
-                       (\sign ->
-                            if sign == "+" then
-                                Ok -1
-                            else
-                                Ok 1
-                       )
-                )
-        )
-
-
-getTZOffset : ( Int, Int, Int ) -> Result String Milliseconds
-getTZOffset ( polarity, hrs, min ) =
-    Ok
-        (polarity
-            * hrs
-            * hourMs
-            + polarity
-            * min
-            * minuteMs
-        )

@@ -27,12 +27,12 @@ import Task
 import Time.DateTime
     exposing
         ( DateTime
-        , fromISO8601
         , fromTimestamp
         , fromTuple
         , toISO8601
         )
 import Time.ISO8601Error exposing (reflow, renderText)
+import Time.Iso8601 exposing (toDateTime)
 import Window
 
 
@@ -105,7 +105,7 @@ init =
             "1991-02-29T12:25:12.0Z"
     in
     ( { iso8601input = initInput
-      , dateTime = fromISO8601 initInput
+      , dateTime = toDateTime initInput
       , device = classifyDevice (Window.Size 0 0)
       }
     , Task.perform Resize Window.size
@@ -171,7 +171,7 @@ output model =
 runParse : Model -> ( Model, Cmd Msg )
 runParse model =
     ( { model
-        | dateTime = fromISO8601 model.iso8601input
+        | dateTime = toDateTime model.iso8601input
       }
     , Cmd.none
     )

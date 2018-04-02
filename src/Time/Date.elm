@@ -11,12 +11,10 @@ module Time.Date
         , day
         , daysInMonth
         , delta
-        , fromISO8601
         , fromTuple
         , isLeapYear
         , isValidDate
         , month
-        , parseDate
         , setDay
         , setMonth
         , setYear
@@ -52,35 +50,13 @@ represent any date of the proleptic Gregorian calendar.
 
 # Helper functions
 
-@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth, parseDate
+@docs toISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 
 -}
 
-import Char
-import Parser
-    exposing
-        ( (|.)
-        , (|=)
-        , Count(..)
-        , Parser
-        , andThen
-        , end
-        , fail
-        , inContext
-        , keep
-        , oneOf
-        , run
-        , succeed
-        , symbol
-        , zeroOrMore
-        )
 import Time.Internal
     exposing
-        ( digitsInRange
-        , fromResult
-        , intRange
-        , optional
-        , padded
+        ( padded
         )
 
 
@@ -521,75 +497,3 @@ clampMonth month =
 clampDay : Int -> Int
 clampDay day =
     clamp 1 31 day
-
-
-{-| fromISO8601 parses an ISO8601-formatted date string into a Date.
--}
-fromISO8601 : String -> Result Parser.Error Date
-fromISO8601 input =
-    run parseDate input
-
-
-{-| -}
-parseDate : Parser Date
-parseDate =
-    (succeed (,,)
-        |= parseYear
-        |. optional '-'
-        |= parseMonth
-        |. optional '-'
-        |= parseDay
-    )
-        |> andThen convertDate
-
-
-parseYear : Parser Int
-parseYear =
-    digits "year" 4
-
-
-parseMonth : Parser Int
-parseMonth =
-    digitsInRange "month" 2 1 12
-
-
-parseDay : Parser Int
-parseDay =
-    digitsInRange "day-in-month" 2 1 31
-
-
-digits : String -> Int -> Parser Int
-digits name digitsCount =
-    inContext name <|
-        (keep (Exactly digitsCount) Char.isDigit
-            |> andThen (fromResult << String.toInt)
-        )
-
-
-convertDate : ( Int, Int, Int ) -> Parser Date
-convertDate ( year, month, day ) =
-    if isValidDate year month day then
-        succeed (date year month day)
-    else
-        complainInvalid ( year, month, day )
-
-
-complainInvalid : ( Int, Int, Int ) -> Parser Date
-complainInvalid ( year, month, day ) =
-    inContext "leap-year" <|
-        let
-            maxDays =
-                Maybe.withDefault 31 (daysInMonth year month)
-
-            msg =
-                "Expecting the value "
-                    ++ toString day
-                    ++ " to be in the range 1 to "
-                    ++ toString maxDays
-                    ++ " for the specified year, "
-                    ++ toString year
-                    ++ ", and month, "
-                    ++ toString month
-                    ++ "."
-        in
-        fail msg
