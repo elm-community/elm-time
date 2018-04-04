@@ -1,65 +1,69 @@
 module Time.ZonedDateTime
     exposing
         ( ZonedDateTime
-        , zero
-        , zonedDateTime
-        , fromDateTime
-        , toDateTime
-        , fromTimestamp
-        , toTimestamp
-        , timeZone
-        , asTimeZone
-        , year
-        , month
-        , day
-        , weekday
-        , hour
-        , minute
-        , second
-        , millisecond
-        , setDate
-        , setYear
-        , setMonth
-        , setDay
-        , setHour
-        , setMinute
-        , setSecond
-        , setMillisecond
-        , addYears
-        , addMonths
+        , abbreviation
         , addDays
         , addHours
-        , addMinutes
-        , addSeconds
         , addMilliseconds
-        , abbreviation
+        , addMinutes
+        , addMonths
+        , addSeconds
+        , addYears
+        , asTimeZone
+        , day
+        , fromDateTime
+        , fromTimestamp
+        , hour
+        , millisecond
+        , minute
+        , month
+        , second
+        , setDate
+        , setDay
+        , setHour
+        , setMillisecond
+        , setMinute
+        , setMonth
+        , setSecond
+        , setYear
+        , timeZone
+        , toDateTime
+        , toTimestamp
         , utcOffset
         , utcOffsetString
-        , toISO8601
-        , fromISO8601
+        , weekday
+        , year
+        , zero
+        , zonedDateTime
         )
 
 {-| This module defines a time representation based on a Date, the
 time of day and a time zone.
 
 ZonedDateTimes should only be used when reasoning about or displaying
-`DateTime`s in a user's local time zone.  For this reason, the API
+`DateTime`s in a user's local time zone. For this reason, the API
 surface of `ZonedDateTimes` is extremely limited.
 
+
 # ZonedDateTimes
+
 @docs ZonedDateTime
 
+
 # Constructing ZonedDateTimes
+
 @docs zero, zonedDateTime, fromDateTime, toDateTime, fromTimestamp, toTimestamp
 
+
 # Inspecting ZonedDateTimes
+
 @docs timeZone, year, month, day, weekday, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString
 
+
 # Manipulating ZonedDateTimes
+
 @docs asTimeZone, setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
-# Helper functions
-@docs toISO8601, fromISO8601
 -}
 
 import Parser
@@ -81,7 +85,7 @@ type ZonedDateTime
 
 
 {-| zero represents the first millisecond of the first day of the
-current era.  Use it to build `ZonedDateTime` values:
+current era. Use it to build `ZonedDateTime` values:
 
     -- 0-01-01T00:00:00+02:00
     zonedDateTime (europe_bucharest ()) zero
@@ -91,6 +95,7 @@ current era.  Use it to build `ZonedDateTime` values:
 
     -- 2016-05-29T13:00:00+02:00
     zonedDateTime (europe_bucharest ()) { zero | year = 2016, month = 5, day = 29, hour = 13 }
+
 -}
 zero : DateTimeData
 zero =
@@ -98,7 +103,7 @@ zero =
 
 
 {-| zonedDateTime constructs a ZonedDateTime value given a TimeZone, a
-date and a time.  Invalid values are clamped to the nearest valid date
+date and a time. Invalid values are clamped to the nearest valid date
 and time.
 -}
 zonedDateTime : TimeZone -> DateTimeData -> ZonedDateTime
@@ -121,10 +126,10 @@ fromDateTime timeZone dateTime =
         offset =
             TimeZone.offset timestamp timeZone
     in
-        ZonedDateTime
-            { timeZone = timeZone
-            , dateTime = DateTime.addMilliseconds -offset dateTime
-            }
+    ZonedDateTime
+        { timeZone = timeZone
+        , dateTime = DateTime.addMilliseconds -offset dateTime
+        }
 
 
 {-| toDateTime converts a ZonedDateTime to a UTC DateTime value.
@@ -136,7 +141,7 @@ toDateTime ((ZonedDateTime { dateTime }) as zonedDateTime) =
 
 
 {-| fromTimestamp converts the millisecond representation of a UNIX
-timestamp into a ZonedDateTime value.  This is equivalent to calling
+timestamp into a ZonedDateTime value. This is equivalent to calling
 `DateTime.fromTimestamp` and then converting the resulting `DateTime`
 value to a `ZonedDateTime`.
 -}
@@ -362,32 +367,3 @@ utcOffsetString : ZonedDateTime -> String
 utcOffsetString ((ZonedDateTime { timeZone }) as zonedDateTime) =
     toTimestamp zonedDateTime
         |> flip TimeZone.offsetString timeZone
-
-
-{-| toISO8601 renders a ZonedDateTime in ISO8601 format.
--}
-toISO8601 : ZonedDateTime -> String
-toISO8601 dateTime =
-    toString (year dateTime)
-        ++ "-"
-        ++ padded (month dateTime)
-        ++ "-"
-        ++ padded (day dateTime)
-        ++ "T"
-        ++ padded (hour dateTime)
-        ++ ":"
-        ++ padded (minute dateTime)
-        ++ ":"
-        ++ padded (second dateTime)
-        ++ "."
-        ++ padded3 (millisecond dateTime)
-        ++ utcOffsetString dateTime
-
-
-{-| fromISO8601 parses an ISO8601-formatted string into a
-ZonedDateTime object, adjusting for its offset.
--}
-fromISO8601 : TimeZone -> String -> Result Parser.Error ZonedDateTime
-fromISO8601 timeZone input =
-    DateTime.fromISO8601 input
-        |> Result.map (fromDateTime timeZone)

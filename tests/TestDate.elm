@@ -4,7 +4,6 @@ import Expect exposing (Expectation)
 import Fuzz exposing (int, intRange)
 import Test exposing (..)
 import Time.Date exposing (..)
-import Parser exposing (Parser, run, (|.), (|=), succeed, symbol, ignore, zeroOrMore)
 
 
 someDate : Date
@@ -41,10 +40,10 @@ monthDays year month =
             else
                 standardYearMonths
     in
-        monthDays
-            |> List.drop (month - 1)
-            |> List.head
-            |> Maybe.withDefault 0
+    monthDays
+        |> List.drop (month - 1)
+        |> List.head
+        |> Maybe.withDefault 0
 
 
 fuzzDate : String -> (Int -> Int -> Int -> Expectation) -> Test
@@ -61,7 +60,7 @@ constructing =
                     day_ =
                         clamp 1 day (monthDays year month)
                 in
-                    datesEqual (date year month day_) ( year, month, day_ )
+                datesEqual (date year month day_) ( year, month, day_ )
         , test "constructs valid dates" <|
             always <|
                 datesEqual (date 1992 5 29) ( 1992, 5, 29 )
@@ -107,7 +106,7 @@ adders =
                     date2 =
                         date 1993 2 28
                 in
-                    Expect.equal date1 date2
+                Expect.equal date1 date2
         , test "addMonths is relative" <|
             \() ->
                 let
@@ -118,7 +117,7 @@ adders =
                     date2 =
                         date 1992 2 29
                 in
-                    Expect.equal date1 date2
+                Expect.equal date1 date2
         , fuzz3 (intRange -400 3000) (intRange 1 12) (intRange -100 100) "addMonths is revertable" <|
             \year month addage ->
                 let
@@ -128,7 +127,7 @@ adders =
                     date2 =
                         addMonths addage date1
                 in
-                    Expect.equal date1 (addMonths -addage date2)
+                Expect.equal date1 (addMonths -addage date2)
         , fuzz int "addDays is absolute" <|
             \days ->
                 let
@@ -141,7 +140,7 @@ adders =
                     dt =
                         delta date2 date1
                 in
-                    Expect.equal days dt.days
+                Expect.equal days dt.days
         ]
 
 
@@ -159,74 +158,30 @@ toFromTuple =
                             |> toTuple
                             |> fromTuple
                 in
-                    Expect.equal date1 date2
+                Expect.equal date1 date2
         ]
 
 
-toFromISO8601 : Test
-toFromISO8601 =
-    let
-        renderEq date output () =
-            toISO8601 date
-                |> Expect.equal output
-
-        parseEq input date () =
-            case ( fromISO8601 input, date ) of
-                ( Err message, _ ) ->
-                    Expect.fail ((toString message) ++ " in input '" ++ input ++ "'")
-
-                ( Ok date1, date2 ) ->
-                    if date1 == date2 then
-                        Expect.pass
-                    else
-                        Expect.fail ("expected '" ++ toISO8601 date1 ++ "' to equal '" ++ toISO8601 date2 ++ "' from input '" ++ input ++ "'")
-
-        parseFails input () =
-            case fromISO8601 input of
-                Err _ ->
-                    Expect.pass
-
-                Ok _ ->
-                    Expect.fail ("parsing '" ++ input ++ "' should have failed")
-    in
-        describe "Time.Date.{to,from}ISO8601"
-            [ test "toISO8601 of epoch is correct" <|
-                renderEq (date 1970 1 1) "1970-01-01"
-            , test "toISO8601 of some date is correct" <|
-                renderEq someDate "1992-05-29"
-            , test "fromISO8601 of a valid date is correct" <|
-                parseEq "1992-12-29" (date 1992 12 29)
-            , test "fromISO8601 of a valid padded date is correct" <|
-                parseEq "1992-05-29" (date 1992 5 29)
-            , test "fromISO8601 of a valid padded date with no delimeters is correct" <|
-                parseEq "19920529" (date 1992 5 29)
-            , test "fromISO8601 of a badly-formatted date fails" <|
-                parseFails ""
-            , test "fromISO8601 of a badly-formatted date fails 2" <|
-                parseFails "1992-05"
-            , test "fromISO8601 of an invalid date fails" <|
-                parseFails "1991-02-31"
-            ]
 
 {-
-paddedIntTest : Test
-paddedIntTest =
-    let
-        parseEq input expectedInt () =
-            case ( run paddedInt input ) of
-                Err parserMsg ->
-                    Expect.fail ((toString parserMsg) ++ " in input '" ++ input ++ "'")
+   paddedIntTest : Test
+   paddedIntTest =
+       let
+           parseEq input expectedInt () =
+               case run paddedInt input of
+                   Err parserMsg ->
+                       Expect.fail (toString parserMsg ++ " in input '" ++ input ++ "'")
 
-                Ok actualInt ->
-                    if expectedInt == actualInt then
-                        Expect.pass
-                    else
-                        Expect.fail ("expected '" ++ toString actualInt ++ "' to equal '" ++ toString expectedInt ++ "' from input '" ++ input ++ "'")
-    in
-        describe "Time.Internal.paddedInt"
-            [ test "doesn't corrupt conversion when no leading zeros" <|
-                parseEq "01" 1
-            ]
+                   Ok actualInt ->
+                       if expectedInt == actualInt then
+                           Expect.pass
+                       else
+                           Expect.fail ("expected '" ++ toString actualInt ++ "' to equal '" ++ toString expectedInt ++ "' from input '" ++ input ++ "'")
+       in
+       describe "Time.Internal.paddedInt"
+           [ test "doesn't corrupt conversion when no leading zeros" <|
+               parseEq "01" 1
+           ]
 -}
 
 
@@ -236,7 +191,8 @@ all =
         [ constructing
         , leapYears
         , adders
-        , toFromISO8601
-        , toFromTuple
---        , paddedIntTest
+
+        -- , toFromISO8601
+        -- , toFromTuple
+        -- , paddedIntTest
         ]

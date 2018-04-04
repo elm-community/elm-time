@@ -1,4 +1,12 @@
-module Time.Iso8601 exposing (toDateTime)
+module Time.Iso8601
+    exposing
+        ( fromDate
+        , fromDateTime
+        , fromZonedDateTime
+        , toDate
+        , toDateTime
+        , toZonedDateTime
+        )
 
 import Char
 import Parser
@@ -19,15 +27,36 @@ import Parser
         , succeed
         , zeroOrMore
         )
-import Time.Date exposing (Date, date, daysInMonth, isValidDate)
-import Time.DateTime
+import Time.Date as Date
+    exposing
+        ( Date
+        , daysInMonth
+        , isValidDate
+        )
+import Time.DateTime as DateTime
     exposing
         ( DateTime
         , addMilliseconds
         , dateTime
+        , day
+        , hour
         , makeDateTime
+        , millisecond
+        , minute
+        , month
+        , second
+        , year
         )
-import Time.Internal exposing (hourMs, minuteMs, offsetFromTimeData)
+import Time.Internal
+    exposing
+        ( hourMs
+        , minuteMs
+        , offsetFromTimeData
+        , padded
+        , padded3
+        )
+import Time.TimeZone exposing (TimeZone)
+import Time.ZonedDateTime as ZDT exposing (ZonedDateTime)
 
 
 -- Shared parsers
@@ -40,10 +69,72 @@ type alias Milliseconds =
     Int
 
 
-{-| fromISO8601Date parses an ISO8601-formatted date string into a Date.
+{-| fromDate renders a Date in ISO8601 format.
 -}
-fromISO8601Date : String -> Result Parser.Error Date
-fromISO8601Date input =
+
+
+fromDate : Date -> String
+fromDate date =
+    toString (Date.year date)
+        ++ "-"
+        ++ padded (Date.month date)
+        ++ "-"
+        ++ padded (Date.day date)
+
+
+{-| fromDateTime renders a DateTime in ISO8601 format.
+-}
+fromDateTime : DateTime -> String
+fromDateTime time =
+    toString (year time)
+        ++ "-"
+        ++ padded (month time)
+        ++ "-"
+        ++ padded (day time)
+        ++ "T"
+        ++ padded (hour time)
+        ++ ":"
+        ++ padded (minute time)
+        ++ ":"
+        ++ padded (second time)
+        ++ "."
+        ++ padded3 (millisecond time)
+        ++ "Z"
+
+
+{-| fromZonedDateTime renders a ZonedDateTime in ISO8601 format.
+-}
+fromZonedDateTime : ZonedDateTime -> String
+fromZonedDateTime dateTime =
+    toString (ZDT.year dateTime)
+        ++ "-"
+        ++ padded (ZDT.month dateTime)
+        ++ "-"
+        ++ padded (ZDT.day dateTime)
+        ++ "T"
+        ++ padded (ZDT.hour dateTime)
+        ++ ":"
+        ++ padded (ZDT.minute dateTime)
+        ++ ":"
+        ++ padded (ZDT.second dateTime)
+        ++ "."
+        ++ padded3 (ZDT.millisecond dateTime)
+        ++ ZDT.utcOffsetString dateTime
+
+
+{-| toZonedDateTime parses an ISO8601-formatted string into a
+ZonedDateTime object, adjusting for its offset.
+-}
+toZonedDateTime : TimeZone -> String -> Result Parser.Error ZonedDateTime
+toZonedDateTime timeZone input =
+    toDateTime input
+        |> Result.map (ZDT.fromDateTime timeZone)
+
+
+{-| toDate parses an ISO8601-formatted date string into a Date.
+-}
+toDate : String -> Result Parser.Error Date
+toDate input =
     run parseDate input
 
 
@@ -86,7 +177,7 @@ digits name digitsCount =
 convertDate : ( Int, Int, Int ) -> Parser Date
 convertDate ( year, month, day ) =
     if isValidDate year month day then
-        succeed (date year month day)
+        succeed (Date.date year month day)
     else
         complainInvalid ( year, month, day )
 
