@@ -32,7 +32,6 @@ module Time.DateTime
         , setMonth
         , setSecond
         , setYear
-        , toISO8601
         , toTimestamp
         , toTuple
         , weekday
@@ -66,12 +65,9 @@ time of day.
 
 # Helper functions
 
-@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601
+@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple
 
 -}
-
---import Combine exposing (..)
---import Combine.Num
 
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday, isValidDate)
@@ -498,6 +494,9 @@ fromTuple ( year, month, day, hour, minute, second, millisecond ) =
 
 
 {-| toISO8601 renders a DateTime in ISO8601 format.
+
+NOTE: this is used as a hack for the compare function above; it is not exposed --
+use the functionality in Iso8601 instead.
 -}
 toISO8601 : DateTime -> String
 toISO8601 time =

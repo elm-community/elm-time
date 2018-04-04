@@ -8,6 +8,18 @@ module Time.Iso8601
         , toZonedDateTime
         )
 
+{-|
+
+# Render ISO8601 strings from Date, DateTime, and ZonedDateTime objects
+
+@docs fromDate, fromDateTime, fromZonedDateTime
+
+# Parse ISO8601 strings into Date, DateTme, and ZonedDateTime objects
+
+@docs toDate, toDateTime, toZonedDateTime
+
+-}
+
 import Char
 import Parser
     exposing

@@ -66,7 +66,6 @@ surface of `ZonedDateTimes` is extremely limited.
 
 -}
 
-import Parser
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday)
 import Time.DateTime as DateTime exposing (DateTime)
