@@ -331,13 +331,3 @@ toFromISO8601 =
                     in
                         parseEq input output
             ]
-
-
-all : Test
-all =
-    describe "Time.DateTime"
-        [ dateTimes
-        , setters
-        , addition
-        , toFromISO8601
-        ]
