@@ -1,7 +1,20 @@
 let fs = require("fs");
 let moment = require("moment-timezone");
+
+// `names` contains a mapping from "flat" zone names to their
+// corresponding IANA/Olsen name, e.g. europe_london -> 'Europe/London'.
+// There are entries for canonical zone names as well as aliases and
+// deprecated names.
 let names = moment.tz._names;
+// `links` contains a mapping from flat zone aliases and deprecated
+// names to their canonical sanitized name, e.g. europe_belfast ->
+// 'europe_london'. HOWEVER, there are also mappings from SOME canonical
+// sanitized names to other names, like europe_london -> 'gb-eire'. It's
+// not clear why these latter entries exist.
 let links = moment.tz._links;
+// `zones` contains a mapping from flat zone names to actual zone data,
+// e.g. europe_london -> 'Europe/London|GMT BST BDST|0 -1 ...'. It
+// appears to only contain mappings for canonical zone names.
 let zones = moment.tz._zones;
 
 let sanitize = (name) => {
@@ -15,6 +28,8 @@ let sanitize = (name) => {
 
 // Data file
 let timeZones = [], timeZoneData = [];
+
+// Date file: Populate canonical zone data.
 for (let name in zones) {
   let zone = zones[name];
   let link = links[name];
@@ -25,12 +40,14 @@ for (let name in zones) {
   timeZones.push({name, fullName, link: false});
 }
 
+// Data file: Populate aliases.
 for (let name in links) {
   let link = links[name];
+  // Only add an alias when it refers to a canonical zone.
   if (zones[link]) {
     timeZones.push({
       name: sanitize(name),
-      fullName: names[link],
+      fullName: names[name],
       timeZone: sanitize(link),
       link: true
     });
@@ -104,6 +121,13 @@ ${timeZoneData.join("\n")}`.trim();
   });
 });
 
+// Chunk `all` to prevent stack overflow in Elm 0.18 with large list literals.
+let all_chunks = [], all_chunk_size = 50;
+for (let i = 0; i < all.length; i += all_chunk_size) {
+  let slice = all.slice(i, i + all_chunk_size);
+  all_chunks.push("[ " + slice.join("\n              , ") + "\n              ]");
+}
+
 fs.open("../src/Time/TimeZones.elm", "w", (err, fd) => {
   let content = `
 module Time.TimeZones exposing (..)
@@ -142,7 +166,11 @@ ${fns.join("\n")}
 {-| A mapping from TimeZone names to their respective functions.  Use
 this to look up TimeZones by name. -}
 all : Dict String (() -> TimeZone)
-all = Dict.fromList [${all.join(", ")}]
+all =
+    Dict.fromList <|
+        List.concat
+            [ ${all_chunks.join("\n            , ")}
+            ]
 
 
 {-| Look up a TimeZone by name. -}
