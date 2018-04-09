@@ -202,14 +202,3 @@ toFromISO8601 =
             , test "fromISO8601 of an invalid date fails" <|
                 parseFails "1991-02-31"
             ]
-
-
-all : Test
-all =
-    describe "Time.Date"
-        [ constructing
-        , leapYears
-        , adders
-        , toFromISO8601
-        , toFromTuple
-        ]

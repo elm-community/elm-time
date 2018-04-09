@@ -90,11 +90,3 @@ convertingToDateTime =
                     |> toDateTime
                     |> Expect.equal (DT.dateTime { zero | year = 2016, month = 10, day = 30, hour = 2 })
         ]
-
-
-all : Test
-all =
-    describe "Time.ZonedDateTime"
-        [ summerTimes
-        , convertingToDateTime
-        ]
