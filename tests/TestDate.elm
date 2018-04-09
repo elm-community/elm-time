@@ -160,26 +160,3 @@ toFromTuple =
                 in
                 Expect.equal date1 date2
         ]
-
-
-
-{-
-   paddedIntTest : Test
-   paddedIntTest =
-       let
-           parseEq input expectedInt () =
-               case run paddedInt input of
-                   Err parserMsg ->
-                       Expect.fail (toString parserMsg ++ " in input '" ++ input ++ "'")
-
-                   Ok actualInt ->
-                       if expectedInt == actualInt then
-                           Expect.pass
-                       else
-                           Expect.fail ("expected '" ++ toString actualInt ++ "' to equal '" ++ toString expectedInt ++ "' from input '" ++ input ++ "'")
-       in
-       describe "Time.Internal.paddedInt"
-           [ test "doesn't corrupt conversion when no leading zeros" <|
-               parseEq "01" 1
-           ]
--}
