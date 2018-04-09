@@ -2,42 +2,41 @@ module Time.DateTime
     exposing
         ( DateTime
         , DateTimeDelta
-        , dateTime
-        , zero
-        , epoch
-        , date
-        , year
-        , month
-        , day
-        , weekday
-        , hour
-        , minute
-        , second
-        , millisecond
-        , setDate
-        , setYear
-        , setMonth
-        , setDay
-        , setHour
-        , setMinute
-        , setSecond
-        , setMillisecond
-        , addYears
-        , addMonths
         , addDays
         , addHours
-        , addMinutes
-        , addSeconds
         , addMilliseconds
+        , addMinutes
+        , addMonths
+        , addSeconds
+        , addYears
         , compare
+        , date
+        , dateTime
+        , day
         , delta
-        , isValidTime
-        , toTimestamp
+        , epoch
         , fromTimestamp
-        , toTuple
         , fromTuple
-        , toISO8601
-        , fromISO8601
+        , hour
+        , isValidTime
+        , millisecond
+        , minute
+        , makeDateTime
+        , month
+        , second
+        , setDate
+        , setDay
+        , setHour
+        , setMillisecond
+        , setMinute
+        , setMonth
+        , setSecond
+        , setYear
+        , toTimestamp
+        , toTuple
+        , weekday
+        , year
+        , zero
         )
 
 {-| This module defines a time representation based on a Date and the
@@ -51,7 +50,7 @@ time of day.
 
 # Manipulating DateTimes
 
-@docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
+@docs makeDateTime, setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
 
 # Comparing DateTimes
@@ -66,16 +65,14 @@ time of day.
 
 # Helper functions
 
-@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple
 
 -}
 
-import Combine exposing (..)
-import Combine.Num
-import String
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday, isValidDate)
 import Time.Internal exposing (..)
+
 
 {-| DateTime is the opaque type for all DateTime values. Values of this
 type represent a valid Date and a time offset from midnight.
@@ -141,6 +138,13 @@ dateTime ({ year, month, day } as data) =
 mkDateTime : Date -> TimeData d -> DateTime
 mkDateTime date time =
     DateTime { date = date, offset = offsetFromTimeData time }
+
+
+{-| Create a DateTime given its date and millisecond offset
+-}
+makeDateTime : Date -> Int -> DateTime
+makeDateTime date offset =
+    DateTime { date = date, offset = offset }
 
 
 {-| date returns a DateTime's Date.
@@ -384,17 +388,17 @@ addMilliseconds ms (DateTime { date, offset }) =
                     offset =
                         rem total dayMs
                 in
-                    if offset == 0 then
-                        ( days + 1, 0 )
-                    else
-                        ( days, dayMs + rem offset dayMs )
+                if offset == 0 then
+                    ( days + 1, 0 )
+                else
+                    ( days, dayMs + rem offset dayMs )
             else
                 ( total // dayMs, rem total dayMs )
     in
-        DateTime
-            { date = Time.Date.addDays days date
-            , offset = newOffset
-            }
+    DateTime
+        { date = Time.Date.addDays days date
+        , offset = newOffset
+        }
 
 
 {-| compare two DateTimes.
@@ -425,20 +429,20 @@ delta (DateTime t1) (DateTime t2) =
         seconds =
             milliseconds // secondMs
     in
-        { years = years
-        , months = months
-        , days = days
-        , hours = hours
-        , minutes = minutes
-        , seconds = seconds
-        , milliseconds = milliseconds
-        }
+    { years = years
+    , months = months
+    , days = days
+    , hours = hours
+    , minutes = minutes
+    , seconds = seconds
+    , milliseconds = milliseconds
+    }
 
 
 {-| isValidTime returns True if the given hour, minute, second and
 millisecond represent a valid time of day.
 -}
-isValidTime : Int -> Int -> Int -> Time -> Bool
+isValidTime : Int -> Int -> Int -> Int -> Bool
 isValidTime hour minute second millisecond =
     hour >= 0 && hour < 24 && minute >= 0 && minute < 60 && second >= 0 && second < 60 && millisecond >= 0 && millisecond < 1000
 
@@ -470,7 +474,7 @@ toTuple ((DateTime { date }) as t) =
         ( year, month, day ) =
             Time.Date.toTuple date
     in
-        ( year, month, day, hour t, minute t, second t, millisecond t )
+    ( year, month, day, hour t, minute t, second t, millisecond t )
 
 
 {-| fromTuple converts a (year, month, day, hour, minute, second,
@@ -490,6 +494,9 @@ fromTuple ( year, month, day, hour, minute, second, millisecond ) =
 
 
 {-| toISO8601 renders a DateTime in ISO8601 format.
+
+NOTE: this is used as a hack for the compare function above; it is not exposed --
+use the functionality in Iso8601 instead.
 -}
 toISO8601 : DateTime -> String
 toISO8601 time =
@@ -507,104 +514,3 @@ toISO8601 time =
         ++ "."
         ++ padded3 (millisecond time)
         ++ "Z"
-
-
-{-| fromISO8601 parses an ISO8601-formatted date time string into a
-DateTime object, adjusting for its offset.
--}
-fromISO8601 : String -> Result String DateTime
-fromISO8601 input =
-    let
-        fraction =
-            let
-                getFractionString =
-                    (\p -> p) <$> Combine.regex "\\d*"
-
-                parseInteger s =
-                    case String.toInt s of
-                        Err msg ->
-                            0
-
-                        Ok divisor  ->
-                            divisor
-
-                keepUpTo3Places fractionString =
-                    let
-                        numerator =
-                            parseInteger fractionString
-
-                        denominator =
-                            10 ^ (String.length fractionString)
-                    in
-                        round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator))
-
-                convert fractionString =
-                    keepUpTo3Places fractionString
-
-            in
-                convert <$> getFractionString
-
-        extendedDate =
-            (,,)
-                <$> Combine.Num.int
-                <*> (Combine.string "-" *> intRange 1 12)
-                <*> (Combine.string "-" *> intRange 1 31)
-
-        basicDate =
-            (,,)
-                <$> digitsInRange 4 0 9999
-                <*> digitsInRange 2 1 12
-                <*> digitsInRange 2 1 31
-
-        extendedTime =
-            (,,,)
-                <$> (Combine.string "T" *> intRange 0 23)
-                <*> (Combine.string ":" *> intRange 0 59)
-                <*> (Combine.string ":" *> intRange 0 59)
-                <*> Combine.optional 0 (Combine.regex "[,.]" *> fraction)
-
-        basicTime =
-            (,,,)
-                <$> (Combine.string "T" *> digitsInRange 2 0 23)
-                <*> digitsInRange 2 0 59
-                <*> digitsInRange 2 0 59
-                <*> Combine.optional 0 (Combine.regex "[,.]" *> fraction)
-
-        offset =
-            (0 <$ Combine.string "Z")
-                <|> ((\s h m -> s * h * 60 + s * m)
-                        <$> Combine.choice
-                                [ 1 <$ Combine.string "+"
-                                , -1 <$ Combine.string "-"
-                                , -1 <$ Combine.string "−" --U+2212
-                                ]
-                        <*> digitsInRange 2 0 23
-                        <*> (Combine.optional ":" (Combine.string ":") *> digitsInRange 2 0 59)
-                    )
-
-        datetime =
-            (,,)
-                <$> (extendedDate <|> basicDate)
-                <*> (extendedTime <|> basicTime)
-                <*> offset
-                <* Combine.end
-
-        convert ( ( year, month, day ), ( hour, minute, second, millisecond ), offset ) =
-            if isValidDate year month day && isValidTime hour minute second 0 then
-                DateTimeData year month day hour minute second millisecond
-                    |> dateTime
-                    |> addMinutes -offset
-                    |> Combine.succeed
-            else
-                Combine.fail "invalid date"
-    in
-        case Combine.parse (datetime >>= convert) input of
-            Ok ( _, _, dt ) ->
-                Ok dt
-
-            Err ( _, { position }, es ) ->
-                let
-                    messages =
-                        String.join " or " es
-                in
-                    Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)
