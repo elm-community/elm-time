@@ -227,12 +227,3 @@ addition =
                     |> toTuple
                     |> Expect.equal ( 1969, 12, 31, 23, 59, 59, 999 )
         ]
-
-
-all : Test
-all =
-    describe "Time.DateTime"
-        [ dateTimes
-        , setters
-        , addition
-        ]

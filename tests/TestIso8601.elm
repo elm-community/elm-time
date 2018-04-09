@@ -263,12 +263,3 @@ summerTimes =
                     |> fromZonedDateTime
                     |> Expect.equal "2017-01-01T00:00:00.006+02:00"
         ]
-
-
-all : Test
-all =
-    describe "Time.Date"
-        [ toFromISO8601
-        , toFromDateISO8601
-        , summerTimes
-        ]

@@ -21,10 +21,3 @@ unpackTimeZoneData =
                 in
                     Expect.equal (force africa_bissau_l) tz
         ]
-
-
-all : Test
-all =
-    describe "Time.TimeZone"
-        [ unpackTimeZoneData
-        ]

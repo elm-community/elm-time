@@ -183,16 +183,3 @@ toFromTuple =
                parseEq "01" 1
            ]
 -}
-
-
-all : Test
-all =
-    describe "Time.Date"
-        [ constructing
-        , leapYears
-        , adders
-
-        -- , toFromISO8601
-        -- , toFromTuple
-        -- , paddedIntTest
-        ]
