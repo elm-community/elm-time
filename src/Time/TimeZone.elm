@@ -26,8 +26,13 @@ import Parser as ParserNew
     exposing
         ( (|.)
         , (|=)
+        , Count(..)
+        , delayedCommit
+        , ignore
+        , keep
+        , oneOf
+        , oneOrMore
         , run
-        , succeed
         )
 import Combine exposing (..)
 import Combine.Num
@@ -244,12 +249,82 @@ packedTimeZone =
         convert <$> (decode >>= validate)
 
 
+parseBang : ParserNew.Parser String
+parseBang =
+    keep (Exactly 1) ((==) '|')
+
+
+parseName : ParserNew.Parser String
+parseName =
+    ParserNew.inContext "name" <|
+        ParserNew.succeed identity
+            |= keep oneOrMore ((/=) '|')
+
+
+parseAbbrev : ParserNew.Parser String
+parseAbbrev =
+    keep oneOrMore (\c -> c /= ' ' && c /= '|')
+
+
+{-| Parse the first abbrev and then use `abbrevsHelp` to find
+the remaining ones.
+-}
+parseAbbrevs : ParserNew.Parser (List String)
+parseAbbrevs =
+    ParserNew.inContext "abbrevs" <|
+        ParserNew.succeed identity
+            |= ParserNew.andThen (\s -> abbrevsHelp [s]) parseAbbrev
+
+
+{-| Check if there is a `nextAbbrev`. If so, continue trying to find
+more abbreviations.  If not, give back the list accumulated thus far.
+-}
+abbrevsHelp : List String -> ParserNew.Parser (List String)
+abbrevsHelp revTerms =
+    oneOf
+        [ nextAbbrev
+            |> ParserNew.andThen (\s -> abbrevsHelp (s :: revTerms))
+        , ParserNew.succeed (List.reverse revTerms)
+        ]
+
+
+nextAbbrev : ParserNew.Parser String
+nextAbbrev =
+    delayedCommit delimiter <|
+        ParserNew.succeed identity
+            |. delimiter
+            |= parseAbbrev
+
+
+delimiter : ParserNew.Parser ()
+delimiter =
+    ignore (Exactly 1) (\c -> c == ' ' || c == '|')
+
+
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
 the data format invariants hold.
 -}
 packedTimeZoneNew : ParserNew.Parser TimeZone
 packedTimeZoneNew =
     let
+
+        parseOffsets =
+            ParserNew.succeed []
+
+        parseIndices =
+            ParserNew.succeed []
+
+        parseDiffs =
+            ParserNew.succeed []
+
+        convertData : (String, List String, List Float, List Float, List Float) -> ParserNew.Parser TimeZone
+        convertData (name, abbrevs, offsets, indices, diffs) =
+            ParserNew.succeed (TimeZone
+                { name = "name"
+                , spans = []
+                }
+            )
+
         name =
             Combine.regex "[^|]+"
                 <* Combine.string "|"
@@ -323,11 +398,18 @@ packedTimeZoneNew =
                     }
     in
 --        convert <$> (decode >>= validate)
-        ParserNew.succeed (TimeZone
-                    { name = "name"
-                    , spans = []
-                    }
-                )
+        ( ParserNew.succeed (,,,,)
+            |= parseName
+            |. parseBang
+            |= parseAbbrevs
+            |. parseBang
+            |= parseOffsets
+            |. parseBang
+            |= parseIndices
+            |. parseBang
+            |= parseDiffs
+        )
+            |> ParserNew.andThen convertData
 
 base60 : Parser s Float
 base60 =
