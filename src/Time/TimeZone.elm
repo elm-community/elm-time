@@ -7,18 +7,32 @@ module Time.TimeZone
         , offsetString
         , setName
         , unpack
+        , parseName
+        , parseAbbrevs
+        , packedTimeZoneTuple
         )
 
 {-| This module defines a representations for Timezone information.
 
+
 # TimeZone values
+
 @docs TimeZone, name, abbreviation, offset, offsetString
 
+
 # Manipulating TimeZones
+
 @docs setName
 
+
 # Constructing TimeZones
+
 @docs unpack
+
+# Temporary
+
+@docs parseName, parseAbbrevs, packedTimeZoneTuple
+
 -}
 
 import Char
@@ -40,10 +54,11 @@ import Time exposing (Time)
 import Time.Internal exposing (..)
 
 
-{-| TimeZone represents the opaque type of timezone values.  These are
+{-| TimeZone represents the opaque type of timezone values. These are
 generally loaded from an external source via `unpack`.
 
-See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/.
+See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>.
+
 -}
 type TimeZone
     = TimeZone
@@ -52,10 +67,11 @@ type TimeZone
         }
 
 
-{-| Spans represent variations within a TimeZone.  A Time has an
+{-| Spans represent variations within a TimeZone. A Time has an
 associated Span if `.from <= t < .until`.
 
 `offset` is the Span's UTC offset in milliseconds.
+
 -}
 type alias Span =
     { from : Time
@@ -138,7 +154,8 @@ name (TimeZone { name }) =
 
 {-| unpack decodes a packed zone data object into a TimeZone value.
 
-See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/
+See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
+
 -}
 unpack : String -> Result (List String) TimeZone
 unpack data =
@@ -152,7 +169,8 @@ unpack data =
 
 {-| unpackNew decodes a packed zone data object into a TimeZone value.
 
-See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/
+See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
+
 -}
 unpackNew : String -> Result ParserNew.Error TimeZone
 unpackNew data =
@@ -254,6 +272,8 @@ parseBang =
     keep (Exactly 1) ((==) '|')
 
 
+{-|
+-}
 parseName : ParserNew.Parser String
 parseName =
     ParserNew.inContext "name" <|
@@ -273,11 +293,11 @@ parseAbbrevs : ParserNew.Parser (List String)
 parseAbbrevs =
     ParserNew.inContext "abbrevs" <|
         ParserNew.succeed identity
-            |= ParserNew.andThen (\s -> abbrevsHelp [s]) parseAbbrev
+            |= ParserNew.andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
 
 
 {-| Check if there is a `nextAbbrev`. If so, continue trying to find
-more abbreviations.  If not, give back the list accumulated thus far.
+more abbreviations. If not, give back the list accumulated thus far.
 -}
 abbrevsHelp : List String -> ParserNew.Parser (List String)
 abbrevsHelp revTerms =
@@ -300,6 +320,21 @@ delimiter : ParserNew.Parser ()
 delimiter =
     ignore (Exactly 1) (\c -> c == ' ' || c == '|')
 
+{-|
+-}
+packedTimeZoneTuple : ParserNew.Parser (String, List String)
+packedTimeZoneTuple =
+    ParserNew.succeed (,)
+        |= parseName
+        |. parseBang
+        |= parseAbbrevs
+--        |. parseBang
+--        |= parseOffsets
+--        |. parseBang
+--        |= parseIndices
+--        |. parseBang
+--        |= parseDiffs
+
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
 the data format invariants hold.
@@ -307,7 +342,6 @@ the data format invariants hold.
 packedTimeZoneNew : ParserNew.Parser TimeZone
 packedTimeZoneNew =
     let
-
         parseOffsets =
             ParserNew.succeed []
 
@@ -317,13 +351,14 @@ packedTimeZoneNew =
         parseDiffs =
             ParserNew.succeed []
 
-        convertData : (String, List String, List Float, List Float, List Float) -> ParserNew.Parser TimeZone
-        convertData (name, abbrevs, offsets, indices, diffs) =
-            ParserNew.succeed (TimeZone
-                { name = "name"
-                , spans = []
-                }
-            )
+        convertData : ( String, List String, List Float, List Float, List Float ) -> ParserNew.Parser TimeZone
+        convertData ( name, abbrevs, offsets, indices, diffs ) =
+            ParserNew.succeed
+                (TimeZone
+                    { name = "name"
+                    , spans = []
+                    }
+                )
 
         name =
             Combine.regex "[^|]+"
@@ -397,8 +432,8 @@ packedTimeZoneNew =
                     , spans = List.indexedMap (span paddedTimes data) data.indices
                     }
     in
---        convert <$> (decode >>= validate)
-        ( ParserNew.succeed (,,,,)
+        --        convert <$> (decode >>= validate)
+        (ParserNew.succeed (,,,,)
             |= parseName
             |. parseBang
             |= parseAbbrevs
@@ -410,6 +445,7 @@ packedTimeZoneNew =
             |= parseDiffs
         )
             |> ParserNew.andThen convertData
+
 
 base60 : Parser s Float
 base60 =
