@@ -16,15 +16,7 @@ source =
 name : Test
 name =
     describe "Time.TimeZone.name"
-        [ test "Parse a timezone name" <|
-            \() ->
-                case run Time.TimeZone.parseName source of
-                    Err msg ->
-                        fail (toString msg)
-
-                    Ok value ->
-                        Expect.equal "Africa/Bissau" value
-        , test "In addition, parse the abbreviations" <|
+        [ test "In addition, parse the abbreviations" <|
             \() ->
                 case run Time.TimeZone.packedTimeZoneTuple source of
                     Err msg ->

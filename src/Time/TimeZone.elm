@@ -29,6 +29,7 @@ module Time.TimeZone
 
 @docs unpack
 
+
 # Temporary
 
 @docs parseName, parseAbbrevs, packedTimeZoneTuple
@@ -36,6 +37,10 @@ module Time.TimeZone
 -}
 
 import Char
+import Debug
+    exposing
+        ( log
+        )
 import Parser as ParserNew
     exposing
         ( (|.)
@@ -267,13 +272,17 @@ packedTimeZone =
         convert <$> (decode >>= validate)
 
 
-parseBang : ParserNew.Parser String
-parseBang =
-    keep (Exactly 1) ((==) '|')
+parseBar : ParserNew.Parser ()
+parseBar =
+    ignore (Exactly 1) ((==) '|')
 
 
-{-|
--}
+parseSpace : ParserNew.Parser ()
+parseSpace =
+    ignore (Exactly 1) ((==) ' ')
+
+
+{-| -}
 parseName : ParserNew.Parser String
 parseName =
     ParserNew.inContext "name" <|
@@ -310,24 +319,26 @@ abbrevsHelp revTerms =
 
 nextAbbrev : ParserNew.Parser String
 nextAbbrev =
-    delayedCommit delimiter <|
-        ParserNew.succeed identity
-            |. delimiter
-            |= parseAbbrev
+    ParserNew.succeed identity
+        |. parseSpace
+        |= parseAbbrev
 
 
-delimiter : ParserNew.Parser ()
-delimiter =
-    ignore (Exactly 1) (\c -> c == ' ' || c == '|')
+--delimiter : ParserNew.Parser ()
+--delimiter =
+--    ignore (Exactly 1) (\c -> c == ' ' || c == '|')
 
-{-|
--}
-packedTimeZoneTuple : ParserNew.Parser (String, List String)
+
+{-| -}
+packedTimeZoneTuple : ParserNew.Parser ( String, List String )
 packedTimeZoneTuple =
     ParserNew.succeed (,)
         |= parseName
-        |. parseBang
+        |. parseBar
         |= parseAbbrevs
+
+
+
 --        |. parseBang
 --        |= parseOffsets
 --        |. parseBang
@@ -435,13 +446,13 @@ packedTimeZoneNew =
         --        convert <$> (decode >>= validate)
         (ParserNew.succeed (,,,,)
             |= parseName
-            |. parseBang
+            |. parseBar
             |= parseAbbrevs
-            |. parseBang
+            |. parseBar
             |= parseOffsets
-            |. parseBang
+            |. parseBar
             |= parseIndices
-            |. parseBang
+            |. parseBar
             |= parseDiffs
         )
             |> ParserNew.andThen convertData
