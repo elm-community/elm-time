@@ -23,5 +23,5 @@ name =
                         fail (toString msg)
 
                     Ok value ->
-                        Expect.equal ("Africa/Bissau", ["LMT", "-01", "GMT"]) value
+                        Expect.equal ("Africa/Bissau", ["LMT", "-01", "GMT"], ["12.k", "10",  "0"]) value
         ]

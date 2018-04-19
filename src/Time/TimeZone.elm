@@ -324,27 +324,53 @@ nextAbbrev =
         |= parseAbbrev
 
 
---delimiter : ParserNew.Parser ()
---delimiter =
---    ignore (Exactly 1) (\c -> c == ' ' || c == '|')
-
-
 {-| -}
-packedTimeZoneTuple : ParserNew.Parser ( String, List String )
+packedTimeZoneTuple : ParserNew.Parser ( String, List String, List String )
 packedTimeZoneTuple =
-    ParserNew.succeed (,)
+    ParserNew.succeed (,,)
         |= parseName
         |. parseBar
         |= parseAbbrevs
+        |. parseBar
+        |= parseOffsets
 
 
 
---        |. parseBang
---        |= parseOffsets
 --        |. parseBang
 --        |= parseIndices
 --        |. parseBang
 --        |= parseDiffs
+
+
+parseOffsets : ParserNew.Parser (List String)
+parseOffsets =
+    ParserNew.inContext "offsets" <|
+        ParserNew.succeed identity
+            |= ParserNew.andThen (\f -> offsetsHelp [ f ]) parseOffset
+
+
+parseOffset : ParserNew.Parser String
+parseOffset =
+    keep oneOrMore (\c -> c /= ' ' && c /= '|')
+
+
+{-| Check if there is a `nextOffset`. If so, continue trying to find
+more abbreviations. If not, give back the list accumulated thus far.
+-}
+offsetsHelp : List String -> ParserNew.Parser (List String)
+offsetsHelp revTerms =
+    oneOf
+        [ nextOffset
+            |> ParserNew.andThen (\f -> offsetsHelp (f :: revTerms))
+        , ParserNew.succeed (List.reverse revTerms)
+        ]
+
+
+nextOffset : ParserNew.Parser String
+nextOffset =
+    ParserNew.succeed identity
+        |. parseSpace
+        |= parseOffset
 
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
