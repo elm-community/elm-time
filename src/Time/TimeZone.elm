@@ -223,7 +223,7 @@ packedTimeZone =
             PackedTimeZone
                 <$> name
                 <*> abbrevs
-                <*> offsets
+                <*> Debug.log "offsets" offsets
                 <*> indices
                 <*> diffs
 
