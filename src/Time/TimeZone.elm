@@ -52,6 +52,7 @@ import Parser as ParserNew
         , oneOf
         , oneOrMore
         , run
+        , zeroOrMore
         )
 import Combine exposing (..)
 import Combine.Num
@@ -325,7 +326,7 @@ nextAbbrev =
 
 
 {-| -}
-packedTimeZoneTuple : ParserNew.Parser ( String, List String, List String )
+packedTimeZoneTuple : ParserNew.Parser ( String, List String, List Float )
 packedTimeZoneTuple =
     ParserNew.succeed (,,)
         |= parseName
@@ -342,22 +343,91 @@ packedTimeZoneTuple =
 --        |= parseDiffs
 
 
-parseOffsets : ParserNew.Parser (List String)
+parseOffsets : ParserNew.Parser (List Float)
 parseOffsets =
     ParserNew.inContext "offsets" <|
         ParserNew.succeed identity
             |= ParserNew.andThen (\f -> offsetsHelp [ f ]) parseOffset
 
 
-parseOffset : ParserNew.Parser String
+parseOffset : ParserNew.Parser Float
 parseOffset =
-    keep oneOrMore (\c -> c /= ' ' && c /= '|')
+    (ParserNew.succeed (,,)
+        |= parseSign
+        |= parseWhole
+        |= parseFrac
+    )
+        |> ParserNew.andThen convertBase60
+
+
+convertBase60 : ( Int, String, String ) -> ParserNew.Parser Float
+convertBase60 ( sign, whole, frac ) =
+    let
+        s1 =
+            Debug.log "sign" sign
+
+        w1 =
+            Debug.log "whole" whole
+
+        f1 =
+            Debug.log "frac" frac
+    in
+        if whole == "" && frac == "" then
+            ParserNew.fail "expected an alphanumeric character or ."
+        else
+            ParserNew.succeed <| unsafeBase60 sign whole frac
+
+
+parseSign : ParserNew.Parser Int
+parseSign =
+    oneOf
+        [ keep (Exactly 1) (\c -> c == '-')
+            |> ParserNew.andThen minusOne
+        , ParserNew.succeed 1
+        ]
+
+
+minusOne : String -> ParserNew.Parser Int
+minusOne hyphen =
+    ParserNew.succeed -1
+
+
+parseWhole : ParserNew.Parser String
+parseWhole =
+    keep zeroOrMore (\c -> unsafeBase60Digit c)
+
+
+parseFrac : ParserNew.Parser String
+parseFrac =
+    oneOf
+        [ parseSuccessfulFrac
+        , ParserNew.succeed ""
+        ]
+
+
+parseSuccessfulFrac : ParserNew.Parser String
+parseSuccessfulFrac =
+    ( ParserNew.succeed identity
+        |. ignore (Exactly 1) (\c -> c == '.')
+        |= keep oneOrMore (\c -> unsafeBase60Digit c)
+    )
+
+
+convertFrac : String -> ParserNew.Parser String
+convertFrac frac =
+    ParserNew.succeed frac
+
+
+unsafeBase60Digit : Char -> Bool
+unsafeBase60Digit c =
+    Char.isDigit c || Char.isUpper c || Char.isLower c
 
 
 {-| Check if there is a `nextOffset`. If so, continue trying to find
 more abbreviations. If not, give back the list accumulated thus far.
+Converts the strings to base 60 numbers.
 -}
-offsetsHelp : List String -> ParserNew.Parser (List String)
+offsetsHelp : List Float -> ParserNew.Parser (List Float)
 offsetsHelp revTerms =
     oneOf
         [ nextOffset
@@ -366,7 +436,7 @@ offsetsHelp revTerms =
         ]
 
 
-nextOffset : ParserNew.Parser String
+nextOffset : ParserNew.Parser Float
 nextOffset =
     ParserNew.succeed identity
         |. parseSpace
