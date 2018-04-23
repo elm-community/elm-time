@@ -13,6 +13,9 @@ import Combine
 source =
     "Africa/Bissau|LMT -01 GMT|12.k 10 0|012|-2ldWV.E 2xonV.E|39e4"
 
+expectedOffsets =
+    [62.333333333333336, 60, 0]
+
 
 timezone =
     { name = "Africa/Bissau"
@@ -43,7 +46,7 @@ name =
             \() ->
                 case Combine.parse Time.TimeZone.packedTimeZoneTupleOld source of
                     Ok (_, stream, result) ->
-                        Expect.equal ( "Africa/Bissau", [ "LMT", "-01", "GMT" ], [ 3740000, 3600000, 0 ] ) result
+                        Expect.equal ( "Africa/Bissau", [ "LMT", "-01", "GMT" ], expectedOffsets ) result
 
                     Err (_, stream, errors) ->
                       fail (String.join " or " errors)
@@ -55,5 +58,5 @@ name =
                         fail (toString msg)
 
                     Ok value ->
-                        Expect.equal ( "Africa/Bissau", [ "LMT", "-01", "GMT" ], [ 3740000, 3600000, 0 ] ) value
+                        Expect.equal ( "Africa/Bissau", [ "LMT", "-01", "GMT" ], expectedOffsets ) value
         ]

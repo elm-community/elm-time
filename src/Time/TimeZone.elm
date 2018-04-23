@@ -234,7 +234,7 @@ packedTimeZoneTupleOld =
                     List.length data.abbrevs
 
                 offsets =
-                    List.length (Debug.log "Old offsets" data.offsets)
+                    List.length data.offsets
 
                 maxIndex =
                     List.maximum data.indices
@@ -316,7 +316,7 @@ packedTimeZone =
                     List.length data.abbrevs
 
                 offsets =
-                    List.length (Debug.log "Old offsets" data.offsets)
+                    List.length data.offsets
 
                 maxIndex =
                     List.maximum data.indices
@@ -445,16 +445,16 @@ parseOffset =
 
 convertBase60 : ( Int, String, String ) -> ParserNew.Parser Float
 convertBase60 ( sign, whole, frac ) =
-    let
-        s1 =
-            Debug.log "sign" sign
-
-        w1 =
-            Debug.log "whole" whole
-
-        f1 =
-            Debug.log "frac" frac
-    in
+--    let
+--        s1 =
+--            Debug.log "sign" sign
+--
+--        w1 =
+--            Debug.log "whole" whole
+--
+--        f1 =
+--            Debug.log "frac" frac
+--    in
         if whole == "" && frac == "" then
             ParserNew.fail "expected an alphanumeric character or ."
         else
