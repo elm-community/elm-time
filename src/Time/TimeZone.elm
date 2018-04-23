@@ -196,7 +196,7 @@ type alias PackedTimeZone =
 {-| packedTimeZoneTupleOld parses a zone data string into a TimeZone, validating that
 the data format invariants hold.
 -}
-packedTimeZoneTupleOld : Parser s ( String, List String, List Float )
+packedTimeZoneTupleOld : Parser s ( String, List String, List Float, List Int )
 packedTimeZoneTupleOld =
     let
         name =
@@ -269,6 +269,7 @@ packedTimeZoneTupleOld =
                 (data.name
                 , data.abbrevs
                 , data.offsets
+                , data.indices
                 )
     in
         convert <$> (decode >>= validate)
@@ -417,6 +418,7 @@ packedTimeZoneTupleNew =
         |= parseAbbrevs
         |. parseBar
         |= parseOffsets
+        |. parseBar
 
 
 
