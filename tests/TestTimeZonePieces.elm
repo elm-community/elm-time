@@ -72,6 +72,7 @@ name =
                             ( "Africa/Bissau"
                             , [ "LMT", "-01", "GMT" ]
                             , expectedOffsets
+                            , expectedIndices
                             )
                             value
         ]

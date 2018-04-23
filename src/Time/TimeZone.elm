@@ -410,20 +410,16 @@ nextAbbrev =
 
 
 {-| -}
-packedTimeZoneTupleNew : ParserNew.Parser ( String, List String, List Float )
+packedTimeZoneTupleNew : ParserNew.Parser ( String, List String, List Float, List Int )
 packedTimeZoneTupleNew =
-    ParserNew.succeed (,,)
+    ParserNew.succeed (,,,)
         |= parseName
         |. parseBar
         |= parseAbbrevs
         |. parseBar
         |= parseOffsets
         |. parseBar
-
-
-
---        |. parseBang
---        |= parseIndices
+        |= parseIndices
 --        |. parseBang
 --        |= parseDiffs
 
@@ -526,6 +522,48 @@ nextOffset =
     ParserNew.succeed identity
         |. parseSpace
         |= parseOffset
+
+
+parseIndices : ParserNew.Parser (List Int)
+parseIndices =
+    ParserNew.inContext "indices" <|
+        ParserNew.succeed identity
+            |= ParserNew.andThen (\i -> indicesHelp [ i ]) parseIndex
+
+
+{-| Check if there is a `nextIndex`. If so, continue trying to find
+more indices. If not, give back the list accumulated thus far.
+Each char is converted to an Int.
+-}
+indicesHelp : List Int -> ParserNew.Parser (List Int)
+indicesHelp revTerms =
+    oneOf
+        [ nextIndex
+            |> ParserNew.andThen (\i -> indicesHelp (i :: revTerms))
+        , ParserNew.succeed (List.reverse revTerms)
+        ]
+
+
+nextIndex : ParserNew.Parser Int
+nextIndex =
+    ParserNew.succeed identity
+        |= parseIndex
+
+
+parseIndex : ParserNew.Parser Int
+parseIndex =
+    keep (Exactly 1) (\c -> Char.isDigit c)
+        |> ParserNew.andThen convertDecimal
+
+
+convertDecimal : String -> ParserNew.Parser Int
+convertDecimal digit =
+    case String.toInt digit of
+        Err msg ->
+            ParserNew.fail msg
+
+        Ok value ->
+            ParserNew.succeed value
 
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
