@@ -9,7 +9,8 @@ module Time.TimeZone
         , unpack
         , parseName
         , parseAbbrevs
-        , packedTimeZoneTuple
+        , packedTimeZoneTupleNew
+        , packedTimeZoneTupleOld
         )
 
 {-| This module defines a representations for Timezone information.
@@ -32,7 +33,7 @@ module Time.TimeZone
 
 # Temporary
 
-@docs parseName, parseAbbrevs, packedTimeZoneTuple
+@docs parseName, parseAbbrevs, packedTimeZoneTupleNew, packedTimeZoneTupleOld
 
 -}
 
@@ -192,6 +193,88 @@ type alias PackedTimeZone =
     }
 
 
+{-| packedTimeZoneTupleOld parses a zone data string into a TimeZone, validating that
+the data format invariants hold.
+-}
+packedTimeZoneTupleOld : Parser s ( String, List String, List Float )
+packedTimeZoneTupleOld =
+    let
+        name =
+            Combine.regex "[^|]+"
+                <* Combine.string "|"
+
+        abbrevs =
+            Combine.sepBy1 (Combine.string " ") (Combine.regex "[^ |]+")
+                <* Combine.string "|"
+
+        offsets =
+            Combine.sepBy1 (Combine.string " ") base60
+                <* Combine.string "|"
+
+        indices =
+            (\s -> List.map (\n -> floor <| unsafeBase60 1 n "") (String.split "" s))
+                <$> Combine.regex "[^|]+"
+                <* Combine.string "|"
+
+        diffs =
+            List.map ((*) 60000)
+                <$> Combine.sepBy (Combine.string " ") base60
+
+        decode =
+            PackedTimeZone
+                <$> name
+                <*> abbrevs
+                <*> offsets
+                <*> indices
+                <*> diffs
+
+        validate data =
+            let
+                abbrevs =
+                    List.length data.abbrevs
+
+                offsets =
+                    List.length (Debug.log "Old offsets" data.offsets)
+
+                maxIndex =
+                    List.maximum data.indices
+                        |> Maybe.withDefault 0
+            in
+                if abbrevs /= offsets then
+                    Combine.fail "abbrevs and offsets have different lengths"
+                else if maxIndex >= abbrevs then
+                    Combine.fail "highest index is longer than both abbrevs and offsets"
+                else
+                    Combine.succeed data
+
+        span times data i idx =
+            { from = times !! i
+            , until = times !! (i + 1)
+            , abbreviation = data.abbrevs !! idx
+            , offset = round (data.offsets !! idx * minuteMs)
+            }
+
+        convert data =
+            let
+                times =
+                    if not <| List.isEmpty data.diffs then
+                        List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
+                    else
+                        []
+
+                -- surround times with - and +infinity
+                paddedTimes =
+                    [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
+            in
+                (data.name
+                , data.abbrevs
+                , data.offsets
+                )
+    in
+        convert <$> (decode >>= validate)
+
+
+
 {-| packedTimeZone parses a zone data string into a TimeZone, validating that
 the data format invariants hold.
 -}
@@ -223,7 +306,7 @@ packedTimeZone =
             PackedTimeZone
                 <$> name
                 <*> abbrevs
-                <*> Debug.log "offsets" offsets
+                <*> offsets
                 <*> indices
                 <*> diffs
 
@@ -233,7 +316,7 @@ packedTimeZone =
                     List.length data.abbrevs
 
                 offsets =
-                    List.length data.offsets
+                    List.length (Debug.log "Old offsets" data.offsets)
 
                 maxIndex =
                     List.maximum data.indices
@@ -326,8 +409,8 @@ nextAbbrev =
 
 
 {-| -}
-packedTimeZoneTuple : ParserNew.Parser ( String, List String, List Float )
-packedTimeZoneTuple =
+packedTimeZoneTupleNew : ParserNew.Parser ( String, List String, List Float )
+packedTimeZoneTupleNew =
     ParserNew.succeed (,,)
         |= parseName
         |. parseBar

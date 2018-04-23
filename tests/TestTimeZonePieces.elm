@@ -39,9 +39,18 @@ timezone =
 name : Test
 name =
     describe "Time.TimeZone.name"
-        [ test "In addition, parse the abbreviations and offsets" <|
+        [ test "Old" <|
             \() ->
-                case run Time.TimeZone.packedTimeZoneTuple source of
+                case Combine.parse Time.TimeZone.packedTimeZoneTupleOld source of
+                    Ok (_, stream, result) ->
+                        Expect.equal ( "Africa/Bissau", [ "LMT", "-01", "GMT" ], [ 3740000, 3600000, 0 ] ) result
+
+                    Err (_, stream, errors) ->
+                      fail (String.join " or " errors)
+
+        , test "New" <|
+            \() ->
+                case run Time.TimeZone.packedTimeZoneTupleNew source of
                     Err msg ->
                         fail (toString msg)
 
