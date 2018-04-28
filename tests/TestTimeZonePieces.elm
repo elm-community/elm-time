@@ -22,6 +22,10 @@ expectedIndices =
     [ 0, 1, 2 ]
 
 
+expectedDiffs =
+    [ -1830380260000, 1988150260000 ]
+
+
 timezone =
     { name = "Africa/Bissau"
     , spans =
@@ -56,6 +60,7 @@ name =
                             , [ "LMT", "-01", "GMT" ]
                             , expectedOffsets
                             , expectedIndices
+                            , expectedDiffs
                             )
                             result
 

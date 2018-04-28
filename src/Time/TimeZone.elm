@@ -196,7 +196,7 @@ type alias PackedTimeZone =
 {-| packedTimeZoneTupleOld parses a zone data string into a TimeZone, validating that
 the data format invariants hold.
 -}
-packedTimeZoneTupleOld : Parser s ( String, List String, List Float, List Int )
+packedTimeZoneTupleOld : Parser s ( String, List String, List Float, List Int, List Float )
 packedTimeZoneTupleOld =
     let
         name =
@@ -270,6 +270,7 @@ packedTimeZoneTupleOld =
                 , data.abbrevs
                 , data.offsets
                 , data.indices
+                , data.diffs
                 )
     in
         convert <$> (decode >>= validate)
@@ -420,7 +421,7 @@ packedTimeZoneTupleNew =
         |= parseOffsets
         |. parseBar
         |= parseIndices
---        |. parseBang
+--        |. parseBar
 --        |= parseDiffs
 
 
@@ -564,6 +565,34 @@ convertDecimal digit =
 
         Ok value ->
             ParserNew.succeed value
+
+
+--parseDiffs : ParserNew.Parser (List Float)
+--parseDiffs =
+--    ParserNew.inContext "diffs" <|
+--        ParserNew.succeed identity
+--            |= ParserNew.andThen (\f -> diffsHelp [ f ]) parseDiffs
+--
+--
+--diffsHelp : List Float -> ParserNew.Parser (List Float)
+--diffsHelp revTerms =
+--    oneOf
+--        [ nextDiff
+--            |> ParserNew.andThen (\f -> diffsHelp (f :: revTerms))
+--        , ParserNew.succeed (List.reverse revTerms)
+--        ]
+--
+--
+--nextDiff : ParserNew.Parser Float
+--nextDiff =
+--    ParserNew.succeed identity
+--        |= parseDiff
+--
+--
+--parseDiff : ParserNew.Parser Float
+--parseDiff =
+--    keep (Exactly)
+--
 
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
