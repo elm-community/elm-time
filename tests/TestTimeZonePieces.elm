@@ -14,6 +14,10 @@ source =
     "Africa/Bissau|LMT -01 GMT|12.k 10 0|012|-2ldWV.E 2xonV.E|39e4"
 
 
+expectedAbbrevs =
+    [ "LMT", "-01", "GMT" ]
+
+
 expectedOffsets =
     [ 62.333333333333336, 60, 0 ]
 
@@ -57,7 +61,7 @@ name =
                     Ok ( _, stream, result ) ->
                         Expect.equal
                             ( "Africa/Bissau"
-                            , [ "LMT", "-01", "GMT" ]
+                            , expectedAbbrevs
                             , expectedOffsets
                             , expectedIndices
                             , expectedDiffs
@@ -75,9 +79,10 @@ name =
                     Ok value ->
                         Expect.equal
                             ( "Africa/Bissau"
-                            , [ "LMT", "-01", "GMT" ]
+                            , expectedAbbrevs
                             , expectedOffsets
                             , expectedIndices
+                            , expectedDiffs
                             )
                             value
         ]
