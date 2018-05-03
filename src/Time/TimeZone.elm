@@ -411,9 +411,9 @@ nextAbbrev =
 
 
 {-| -}
-packedTimeZoneTupleNew : ParserNew.Parser ( String, List String, List Float, List Int )
+packedTimeZoneTupleNew : ParserNew.Parser ( String, List String, List Float, List Int, List Float )
 packedTimeZoneTupleNew =
-    ParserNew.succeed (,,,)
+    ParserNew.succeed (,,,,)
         |= parseName
         |. parseBar
         |= parseAbbrevs
@@ -421,8 +421,8 @@ packedTimeZoneTupleNew =
         |= parseOffsets
         |. parseBar
         |= parseIndices
---        |. parseBar
---        |= parseDiffs
+        |. parseBar
+        |= parseDiffs
 
 
 parseOffsets : ParserNew.Parser (List Float)
@@ -567,32 +567,56 @@ convertDecimal digit =
             ParserNew.succeed value
 
 
---parseDiffs : ParserNew.Parser (List Float)
---parseDiffs =
---    ParserNew.inContext "diffs" <|
---        ParserNew.succeed identity
---            |= ParserNew.andThen (\f -> diffsHelp [ f ]) parseDiffs
+parseDiffs : ParserNew.Parser (List Float)
+parseDiffs =
+    ParserNew.inContext "diffs" <|
+        ParserNew.succeed identity
+            |= ParserNew.andThen (\f -> diffsHelp [ f ]) parseDiff
+
+
+diffsHelp : List Float -> ParserNew.Parser (List Float)
+diffsHelp revTerms =
+    oneOf
+        [ nextDiff
+            |> ParserNew.andThen (\f -> diffsHelp (f :: revTerms))
+        , ParserNew.succeed (List.reverse revTerms)
+        ]
+
+
+nextDiff : ParserNew.Parser Float
+nextDiff =
+    ParserNew.succeed identity
+        |= parseDiff
+
+
+
+
+parseDiff : ParserNew.Parser Float
+parseDiff =
+    (ParserNew.succeed (,,)
+        |= parseSign
+        |= parseWhole
+        |= parseFrac
+    )
+        |> ParserNew.andThen convertBase60Times60000
+
+
+convertBase60Times60000 : ( Int, String, String ) -> ParserNew.Parser Float
+convertBase60Times60000 ( sign, whole, frac ) =
+--    let
+--        s1 =
+--            Debug.log "sign" sign
 --
+--        w1 =
+--            Debug.log "whole" whole
 --
---diffsHelp : List Float -> ParserNew.Parser (List Float)
---diffsHelp revTerms =
---    oneOf
---        [ nextDiff
---            |> ParserNew.andThen (\f -> diffsHelp (f :: revTerms))
---        , ParserNew.succeed (List.reverse revTerms)
---        ]
---
---
---nextDiff : ParserNew.Parser Float
---nextDiff =
---    ParserNew.succeed identity
---        |= parseDiff
---
---
---parseDiff : ParserNew.Parser Float
---parseDiff =
---    keep (Exactly)
---
+--        f1 =
+--            Debug.log "frac" frac
+--    in
+        if whole == "" && frac == "" then
+            ParserNew.fail "expected an alphanumeric character or ."
+        else
+            ParserNew.succeed <| (*) 60000 (unsafeBase60 sign whole frac)
 
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
