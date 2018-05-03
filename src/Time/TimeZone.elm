@@ -266,7 +266,7 @@ packedTimeZoneTupleOld =
                 paddedTimes =
                     [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
             in
-                (data.name
+                ( data.name
                 , data.abbrevs
                 , data.offsets
                 , data.indices
@@ -274,7 +274,6 @@ packedTimeZoneTupleOld =
                 )
     in
         convert <$> (decode >>= validate)
-
 
 
 {-| packedTimeZone parses a zone data string into a TimeZone, validating that
@@ -444,20 +443,20 @@ parseOffset =
 
 convertBase60 : ( Int, String, String ) -> ParserNew.Parser Float
 convertBase60 ( sign, whole, frac ) =
---    let
---        s1 =
---            Debug.log "sign" sign
---
---        w1 =
---            Debug.log "whole" whole
---
---        f1 =
---            Debug.log "frac" frac
---    in
-        if whole == "" && frac == "" then
-            ParserNew.fail "expected an alphanumeric character or ."
-        else
-            ParserNew.succeed <| unsafeBase60 sign whole frac
+    --    let
+    --        s1 =
+    --            Debug.log "sign" sign
+    --
+    --        w1 =
+    --            Debug.log "whole" whole
+    --
+    --        f1 =
+    --            Debug.log "frac" frac
+    --    in
+    if whole == "" && frac == "" then
+        ParserNew.fail "expected an alphanumeric character or ."
+    else
+        ParserNew.succeed <| unsafeBase60 sign whole frac
 
 
 parseSign : ParserNew.Parser Int
@@ -489,7 +488,7 @@ parseFrac =
 
 parseSuccessfulFrac : ParserNew.Parser String
 parseSuccessfulFrac =
-    ( ParserNew.succeed identity
+    (ParserNew.succeed identity
         |. ignore (Exactly 1) (\c -> c == '.')
         |= keep oneOrMore (\c -> unsafeBase60Digit c)
     )
@@ -586,9 +585,8 @@ diffsHelp revTerms =
 nextDiff : ParserNew.Parser Float
 nextDiff =
     ParserNew.succeed identity
+        |. parseSpace
         |= parseDiff
-
-
 
 
 parseDiff : ParserNew.Parser Float
@@ -603,20 +601,10 @@ parseDiff =
 
 convertBase60Times60000 : ( Int, String, String ) -> ParserNew.Parser Float
 convertBase60Times60000 ( sign, whole, frac ) =
---    let
---        s1 =
---            Debug.log "sign" sign
---
---        w1 =
---            Debug.log "whole" whole
---
---        f1 =
---            Debug.log "frac" frac
---    in
-        if whole == "" && frac == "" then
-            ParserNew.fail "expected an alphanumeric character or ."
-        else
-            ParserNew.succeed <| (*) 60000 (unsafeBase60 sign whole frac)
+    if whole == "" && frac == "" then
+        ParserNew.fail "expected an alphanumeric character or ."
+    else
+        ParserNew.succeed <| (*) 60000 (unsafeBase60 sign whole frac)
 
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
