@@ -613,16 +613,7 @@ the data format invariants hold.
 packedTimeZoneNew : ParserNew.Parser TimeZone
 packedTimeZoneNew =
     let
-        parseOffsets =
-            ParserNew.succeed []
-
-        parseIndices =
-            ParserNew.succeed []
-
-        parseDiffs =
-            ParserNew.succeed []
-
-        convertData : ( String, List String, List Float, List Float, List Float ) -> ParserNew.Parser TimeZone
+        convertData : ( String, List String, List Float, List Int, List Float ) -> ParserNew.Parser TimeZone
         convertData ( name, abbrevs, offsets, indices, diffs ) =
             ParserNew.succeed
                 (TimeZone
