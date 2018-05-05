@@ -52,8 +52,8 @@ timezone =
     }
 
 
-name : Test
-name =
+packedTimeZoneTest : Test
+packedTimeZoneTest =
     describe "Time.TimeZone.name"
         [ test "Old" <|
             \() ->
