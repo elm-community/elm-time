@@ -52,9 +52,9 @@ timezone =
     }
 
 
-packedTimeZoneTest : Test
-packedTimeZoneTest =
-    describe "Time.TimeZone.name"
+packedTimeZoneTupleTest : Test
+packedTimeZoneTupleTest =
+    describe "Time.TimeZone.packedTimeZoneTuple"
         [ test "Old" <|
             \() ->
                 case Combine.parse Time.TimeZone.packedTimeZoneTupleOld source of
@@ -85,4 +85,22 @@ packedTimeZoneTest =
                             , expectedDiffs
                             )
                             value
+        ]
+
+
+unpackNewTest : Test
+unpackNewTest =
+    describe "Time.TimeZone.unpackNew"
+        [ test "New" <|
+            \() ->
+                case Time.TimeZone.unpackNew source of
+                    Ok value ->
+                        let
+                            v =
+                                Debug.log "TimeZone" value
+                        in
+                            Expect.pass
+
+                    Err msg ->
+                        fail (toString msg)
         ]

@@ -7,6 +7,7 @@ module Time.TimeZone
         , offsetString
         , setName
         , unpack
+        , unpackNew
         , parseName
         , parseAbbrevs
         , packedTimeZoneTupleNew
@@ -33,7 +34,7 @@ module Time.TimeZone
 
 # Temporary
 
-@docs parseName, parseAbbrevs, packedTimeZoneTupleNew, packedTimeZoneTupleOld
+@docs parseName, parseAbbrevs, packedTimeZoneTupleNew, packedTimeZoneTupleOld, unpackNew
 
 -}
 
