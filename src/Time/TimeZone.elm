@@ -7,11 +7,9 @@ module Time.TimeZone
         , offsetString
         , setName
         , unpack
-        , unpackNew
         , parseName
         , parseAbbrevs
         , packedTimeZoneTupleNew
-        , packedTimeZoneTupleOld
         )
 
 {-| This module defines a representations for Timezone information.
@@ -34,7 +32,7 @@ module Time.TimeZone
 
 # Temporary
 
-@docs parseName, parseAbbrevs, packedTimeZoneTupleNew, packedTimeZoneTupleOld, unpackNew
+@docs parseName, parseAbbrevs, packedTimeZoneTupleNew, unpack
 
 -}
 
@@ -56,8 +54,8 @@ import Parser as ParserNew
         , run
         , zeroOrMore
         )
-import Combine exposing (..)
-import Combine.Num
+--import Combine exposing (..)
+--import Combine.Num
 import Time exposing (Time)
 import Time.Internal exposing (..)
 
@@ -160,28 +158,13 @@ name (TimeZone { name }) =
     name
 
 
-{-| unpack decodes a packed zone data object into a TimeZone value.
-
-See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
-
--}
-unpack : String -> Result (List String) TimeZone
-unpack data =
-    case Combine.parse packedTimeZone data of
-        Ok ( _, _, zone ) ->
-            Ok zone
-
-        Err ( _, _, errors ) ->
-            Err errors
-
-
 {-| unpackNew decodes a packed zone data object into a TimeZone value.
 
 See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
 
 -}
-unpackNew : String -> Result ParserNew.Error TimeZone
-unpackNew data =
+unpack : String -> Result ParserNew.Error TimeZone
+unpack data =
     run packedTimeZoneNew data
 
 
@@ -192,170 +175,6 @@ type alias PackedTimeZone =
     , indices : List Int
     , diffs : List Float
     }
-
-
-{-| packedTimeZoneTupleOld parses a zone data string into a TimeZone, validating that
-the data format invariants hold.
--}
-packedTimeZoneTupleOld : Parser s ( String, List String, List Float, List Int, List Float )
-packedTimeZoneTupleOld =
-    let
-        name =
-            Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        abbrevs =
-            Combine.sepBy1 (Combine.string " ") (Combine.regex "[^ |]+")
-                <* Combine.string "|"
-
-        offsets =
-            Combine.sepBy1 (Combine.string " ") base60
-                <* Combine.string "|"
-
-        indices =
-            (\s -> List.map (\n -> floor <| unsafeBase60 1 n "") (String.split "" s))
-                <$> Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        diffs =
-            List.map ((*) 60000)
-                <$> Combine.sepBy (Combine.string " ") base60
-
-        decode =
-            PackedTimeZone
-                <$> name
-                <*> abbrevs
-                <*> offsets
-                <*> indices
-                <*> diffs
-
-        validate data =
-            let
-                abbrevs =
-                    List.length data.abbrevs
-
-                offsets =
-                    List.length data.offsets
-
-                maxIndex =
-                    List.maximum data.indices
-                        |> Maybe.withDefault 0
-            in
-                if abbrevs /= offsets then
-                    Combine.fail "abbrevs and offsets have different lengths"
-                else if maxIndex >= abbrevs then
-                    Combine.fail "highest index is longer than both abbrevs and offsets"
-                else
-                    Combine.succeed data
-
-        span times data i idx =
-            { from = times !! i
-            , until = times !! (i + 1)
-            , abbreviation = data.abbrevs !! idx
-            , offset = round (data.offsets !! idx * minuteMs)
-            }
-
-        convert data =
-            let
-                times =
-                    if not <| List.isEmpty data.diffs then
-                        List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
-                    else
-                        []
-
-                -- surround times with - and +infinity
-                paddedTimes =
-                    [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
-            in
-                ( data.name
-                , data.abbrevs
-                , data.offsets
-                , data.indices
-                , data.diffs
-                )
-    in
-        convert <$> (decode >>= validate)
-
-
-{-| packedTimeZone parses a zone data string into a TimeZone, validating that
-the data format invariants hold.
--}
-packedTimeZone : Parser s TimeZone
-packedTimeZone =
-    let
-        name =
-            Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        abbrevs =
-            Combine.sepBy1 (Combine.string " ") (Combine.regex "[^ |]+")
-                <* Combine.string "|"
-
-        offsets =
-            Combine.sepBy1 (Combine.string " ") base60
-                <* Combine.string "|"
-
-        indices =
-            (\s -> List.map (\n -> floor <| unsafeBase60 1 n "") (String.split "" s))
-                <$> Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        diffs =
-            List.map ((*) 60000)
-                <$> Combine.sepBy (Combine.string " ") base60
-
-        decode =
-            PackedTimeZone
-                <$> name
-                <*> abbrevs
-                <*> offsets
-                <*> indices
-                <*> diffs
-
-        validate data =
-            let
-                abbrevs =
-                    List.length data.abbrevs
-
-                offsets =
-                    List.length data.offsets
-
-                maxIndex =
-                    List.maximum data.indices
-                        |> Maybe.withDefault 0
-            in
-                if abbrevs /= offsets then
-                    Combine.fail "abbrevs and offsets have different lengths"
-                else if maxIndex >= abbrevs then
-                    Combine.fail "highest index is longer than both abbrevs and offsets"
-                else
-                    Combine.succeed data
-
-        span times data i idx =
-            { from = times !! i
-            , until = times !! (i + 1)
-            , abbreviation = data.abbrevs !! idx
-            , offset = round (data.offsets !! idx * minuteMs)
-            }
-
-        convert data =
-            let
-                times =
-                    if not <| List.isEmpty data.diffs then
-                        List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
-                    else
-                        []
-
-                -- surround times with - and +infinity
-                paddedTimes =
-                    [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
-            in
-                TimeZone
-                    { name = data.name
-                    , spans = List.indexedMap (span paddedTimes data) data.indices
-                    }
-    in
-        convert <$> (decode >>= validate)
 
 
 parseBar : ParserNew.Parser ()
@@ -671,33 +490,9 @@ packedTimeZoneNew =
                     , spans = List.indexedMap (span paddedTimes data) data.indices
                     }
     in
-        --        convert <$> (decode >>= validate)
         decode
             |> ParserNew.andThen validate
                 |> ParserNew.map convert
-
-
-base60 : Parser s Float
-base60 =
-    let
-        decode =
-            (,,)
-                <$> Combine.Num.sign
-                <*> Combine.optional "" base60String
-                <*> Combine.optional "" (Combine.string "." *> base60String)
-
-        convert ( sign, whole, frac ) =
-            if whole == "" && frac == "" then
-                Combine.fail "expected an alphanumeric character or ."
-            else
-                Combine.succeed <| unsafeBase60 sign whole frac
-    in
-        decode >>= convert
-
-
-base60String : Parser s String
-base60String =
-    Combine.regex "[0-9a-zA-Z]+"
 
 
 unsafeBase60 : Int -> String -> String -> Float

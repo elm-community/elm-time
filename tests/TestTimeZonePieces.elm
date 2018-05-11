@@ -55,22 +55,7 @@ timezone =
 packedTimeZoneTupleTest : Test
 packedTimeZoneTupleTest =
     describe "Time.TimeZone.packedTimeZoneTuple"
-        [ test "Old" <|
-            \() ->
-                case Combine.parse Time.TimeZone.packedTimeZoneTupleOld source of
-                    Ok ( _, stream, result ) ->
-                        Expect.equal
-                            ( "Africa/Bissau"
-                            , expectedAbbrevs
-                            , expectedOffsets
-                            , expectedIndices
-                            , expectedDiffs
-                            )
-                            result
-
-                    Err ( _, stream, errors ) ->
-                        fail (String.join " or " errors)
-        , test "New" <|
+        [ test "New" <|
             \() ->
                 case run Time.TimeZone.packedTimeZoneTupleNew source of
                     Err msg ->
@@ -93,7 +78,7 @@ unpackNewTest =
     describe "Time.TimeZone.unpackNew"
         [ test "New" <|
             \() ->
-                case Time.TimeZone.unpackNew source of
+                case Time.TimeZone.unpack source of
                     Ok value ->
                         let
                             v =

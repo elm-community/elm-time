@@ -13,7 +13,7 @@ unpack data =
                 Err errors ->
                     let
                         messages =
-                            String.join " or " errors
+                            String.join " or " [Basics.toString errors]
                     in
                         Debug.crash ("failed to parse zone '" ++ data ++ "': " ++ messages)
 
