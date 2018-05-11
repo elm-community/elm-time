@@ -614,18 +614,19 @@ the data format invariants hold.
 packedTimeZoneNew : ParserNew.Parser TimeZone
 packedTimeZoneNew =
     let
-        convertData : PackedTimeZone -> ParserNew.Parser TimeZone
-        convertData packedTimeZone =
-            let
-                x =
-                    Debug.log "PackedTimeZone" packedTimeZone
-            in
-                ParserNew.succeed
-                    (TimeZone
-                        { name = "name"
-                        , spans = []
-                        }
-                    )
+        decode =
+            (ParserNew.succeed PackedTimeZone
+                |= parseName
+                |. parseBar
+                |= parseAbbrevs
+                |. parseBar
+                |= parseOffsets
+                |. parseBar
+                |= parseIndices
+                |. parseBar
+                |= parseDiffs
+            )
+
 
         validate data =
             let
@@ -640,11 +641,11 @@ packedTimeZoneNew =
                         |> Maybe.withDefault 0
             in
                 if abbrevs /= offsets then
-                    Combine.fail "abbrevs and offsets have different lengths"
+                    ParserNew.fail "abbrevs and offsets have different lengths"
                 else if maxIndex >= abbrevs then
-                    Combine.fail "highest index is longer than both abbrevs and offsets"
+                    ParserNew.fail "highest index is longer than both abbrevs and offsets"
                 else
-                    Combine.succeed data
+                    ParserNew.succeed data
 
         span times data i idx =
             { from = times !! i
@@ -671,18 +672,9 @@ packedTimeZoneNew =
                     }
     in
         --        convert <$> (decode >>= validate)
-        (ParserNew.succeed PackedTimeZone
-            |= parseName
-            |. parseBar
-            |= parseAbbrevs
-            |. parseBar
-            |= parseOffsets
-            |. parseBar
-            |= parseIndices
-            |. parseBar
-            |= parseDiffs
-        )
-            |> ParserNew.andThen convertData
+        decode
+            |> ParserNew.andThen validate
+                |> ParserNew.map convert
 
 
 base60 : Parser s Float
