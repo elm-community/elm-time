@@ -614,43 +614,18 @@ the data format invariants hold.
 packedTimeZoneNew : ParserNew.Parser TimeZone
 packedTimeZoneNew =
     let
-        convertData : ( String, List String, List Float, List Int, List Float ) -> ParserNew.Parser TimeZone
-        convertData ( name, abbrevs, offsets, indices, diffs ) =
-            ParserNew.succeed
-                (TimeZone
-                    { name = "name"
-                    , spans = []
-                    }
-                )
-
-        name =
-            Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        abbrevs =
-            Combine.sepBy1 (Combine.string " ") (Combine.regex "[^ |]+")
-                <* Combine.string "|"
-
-        offsets =
-            Combine.sepBy1 (Combine.string " ") base60
-                <* Combine.string "|"
-
-        indices =
-            (\s -> List.map (\n -> floor <| unsafeBase60 1 n "") (String.split "" s))
-                <$> Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        diffs =
-            List.map ((*) 60000)
-                <$> Combine.sepBy (Combine.string " ") base60
-
-        decode =
-            PackedTimeZone
-                <$> name
-                <*> abbrevs
-                <*> offsets
-                <*> indices
-                <*> diffs
+        convertData : PackedTimeZone -> ParserNew.Parser TimeZone
+        convertData packedTimeZone =
+            let
+                x =
+                    Debug.log "PackedTimeZone" packedTimeZone
+            in
+                ParserNew.succeed
+                    (TimeZone
+                        { name = "name"
+                        , spans = []
+                        }
+                    )
 
         validate data =
             let
@@ -696,7 +671,7 @@ packedTimeZoneNew =
                     }
     in
         --        convert <$> (decode >>= validate)
-        (ParserNew.succeed (,,,,)
+        (ParserNew.succeed PackedTimeZone
             |= parseName
             |. parseBar
             |= parseAbbrevs
