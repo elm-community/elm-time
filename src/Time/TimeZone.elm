@@ -389,8 +389,13 @@ convertDecimal digit =
 parseDiffs : ParserNew.Parser (List Float)
 parseDiffs =
     ParserNew.inContext "diffs" <|
-        ParserNew.succeed identity
-            |= ParserNew.andThen (\f -> diffsHelp [ f ]) parseDiff
+        oneOf
+            [ ( ParserNew.succeed identity
+                |. parseBar
+              )
+                |> ParserNew.andThen (\_ -> ParserNew.succeed [])
+            , ParserNew.andThen (\f -> diffsHelp [ f ]) parseDiff
+            ]
 
 
 diffsHelp : List Float -> ParserNew.Parser (List Float)
