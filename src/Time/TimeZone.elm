@@ -9,7 +9,6 @@ module Time.TimeZone
         , unpack
         , parseName
         , parseAbbrevs
-        , packedTimeZoneTupleNew
         )
 
 {-| This module defines a representations for Timezone information.
@@ -32,7 +31,7 @@ module Time.TimeZone
 
 # Temporary
 
-@docs parseName, parseAbbrevs, packedTimeZoneTupleNew, unpack
+@docs parseName, parseAbbrevs, unpack
 
 -}
 
@@ -234,21 +233,6 @@ parseAbbrevs =
     inContext "abbrevs" <|
         succeed identity
             |= andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
-
-
-{-| -}
-packedTimeZoneTupleNew : Parser ( String, List String, List Float, List Int, List Float )
-packedTimeZoneTupleNew =
-    succeed (,,,,)
-        |= parseName
-        |. parseBar
-        |= parseAbbrevs
-        |. parseBar
-        |= parseOffsets
-        |. parseBar
-        |= parseIndices
-        |. parseBar
-        |= parseDiffs
 
 
 parseOffsets : Parser (List Float)
