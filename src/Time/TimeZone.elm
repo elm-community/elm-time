@@ -299,54 +299,58 @@ parseIndices =
 
 parseDiffs : Parser (List Float)
 parseDiffs =
-    inContext "diffs" <|
-        oneOf
-            [ parseEmptyDiffs
-            , parseDiffsEnd
-            , andThen (\f -> diffsHelp [ f ]) parseDiff
-            ]
+    let
+        parseEmptyDiffs : Parser (List Float)
+        parseEmptyDiffs =
+            (succeed identity
+                |. parseBar
+            )
+                |> andThen (\_ -> succeed [])
+
+        parseDiffsEnd : Parser (List Float)
+        parseDiffsEnd =
+            (succeed identity
+                |. end
+            )
+                |> andThen (\_ -> succeed [])
+
+        diffsHelp : List Float -> Parser (List Float)
+        diffsHelp revTerms =
+            oneOf
+                [ nextDiff
+                    |> andThen (\f -> diffsHelp (f :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
+
+        nextDiff : Parser Float
+        nextDiff =
+            succeed identity
+                |. parseSpace
+                |= parseDiff
+
+        parseDiff : Parser Float
+        parseDiff =
+            (succeed (,,)
+                |= parseSign
+                |= parseWhole
+                |= parseFrac
+            )
+                |> andThen convertBase60Times60000
 
 
-parseEmptyDiffs : Parser (List Float)
-parseEmptyDiffs =
-    (succeed identity
-        |. parseBar
-    )
-        |> andThen (\_ -> succeed [])
-
-
-parseDiffsEnd : Parser (List Float)
-parseDiffsEnd =
-    (succeed identity
-        |. end
-    )
-        |> andThen (\_ -> succeed [])
-
-
-diffsHelp : List Float -> Parser (List Float)
-diffsHelp revTerms =
-    oneOf
-        [ nextDiff
-            |> andThen (\f -> diffsHelp (f :: revTerms))
-        , succeed (List.reverse revTerms)
-        ]
-
-
-nextDiff : Parser Float
-nextDiff =
-    succeed identity
-        |. parseSpace
-        |= parseDiff
-
-
-parseDiff : Parser Float
-parseDiff =
-    (succeed (,,)
-        |= parseSign
-        |= parseWhole
-        |= parseFrac
-    )
-        |> andThen convertBase60Times60000
+        convertBase60Times60000 : ( Int, String, String ) -> Parser Float
+        convertBase60Times60000 ( sign, whole, frac ) =
+            if whole == "" && frac == "" then
+                fail "expected an alphanumeric character or ."
+            else
+                succeed <| (*) 60000 (unsafeBase60 sign whole frac)
+    in
+        inContext "diffs" <|
+            oneOf
+                [ parseEmptyDiffs
+                , parseDiffsEnd
+                , andThen (\f -> diffsHelp [ f ]) parseDiff
+                ]
 
 
 parseBar : Parser ()
@@ -357,14 +361,6 @@ parseBar =
 parseSpace : Parser ()
 parseSpace =
     ignore (Exactly 1) ((==) ' ')
-
-
-convertBase60Times60000 : ( Int, String, String ) -> Parser Float
-convertBase60Times60000 ( sign, whole, frac ) =
-    if whole == "" && frac == "" then
-        fail "expected an alphanumeric character or ."
-    else
-        succeed <| (*) 60000 (unsafeBase60 sign whole frac)
 
 
 parseSign : Parser Int
