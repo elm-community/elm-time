@@ -61,8 +61,6 @@ import Parser
         , succeed
         , zeroOrMore
         )
-
-
 import Time exposing (Time)
 import Time.Internal exposing (..)
 
@@ -217,9 +215,9 @@ parseAbbrevs =
                 |. parseSpace
                 |= parseAbbrev
     in
-    inContext "abbrevs" <|
-        succeed identity
-            |= andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
+        inContext "abbrevs" <|
+            succeed identity
+                |= andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
 
 
 parseOffsets : Parser (List Float)
@@ -234,7 +232,6 @@ parseOffsets =
             )
                 |> andThen convertBase60
 
-
         convertBase60 : ( Int, String, String ) -> Parser Float
         convertBase60 ( sign, whole, frac ) =
             if whole == "" && frac == "" then
@@ -242,11 +239,9 @@ parseOffsets =
             else
                 succeed <| unsafeBase60 sign whole frac
 
-
         convertFrac : String -> Parser String
         convertFrac frac =
             succeed frac
-
 
         offsetsHelp : List Float -> Parser (List Float)
         offsetsHelp revTerms =
@@ -256,59 +251,50 @@ parseOffsets =
                 , succeed (List.reverse revTerms)
                 ]
 
-
         nextOffset : Parser Float
         nextOffset =
             succeed identity
                 |. parseSpace
                 |= parseOffset
-
     in
-    inContext "offsets" <|
-        succeed identity
-            |= andThen (\f -> offsetsHelp [ f ]) parseOffset
+        inContext "offsets" <|
+            succeed identity
+                |= andThen (\f -> offsetsHelp [ f ]) parseOffset
 
 
 parseIndices : Parser (List Int)
 parseIndices =
-    inContext "indices" <|
-        succeed identity
-            |= andThen (\i -> indicesHelp [ i ]) parseIndex
+    let
+        indicesHelp : List Int -> Parser (List Int)
+        indicesHelp revTerms =
+            oneOf
+                [ nextIndex
+                    |> andThen (\i -> indicesHelp (i :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
 
+        nextIndex : Parser Int
+        nextIndex =
+            succeed identity
+                |= parseIndex
 
-{-| Check if there is a `nextIndex`. If so, continue trying to find
-more indices. If not, give back the list accumulated thus far.
-Each char is converted to an Int.
--}
-indicesHelp : List Int -> Parser (List Int)
-indicesHelp revTerms =
-    oneOf
-        [ nextIndex
-            |> andThen (\i -> indicesHelp (i :: revTerms))
-        , succeed (List.reverse revTerms)
-        ]
+        parseIndex : Parser Int
+        parseIndex =
+            keep (Exactly 1) (\c -> Char.isDigit c)
+                |> andThen convertDecimal
 
+        convertDecimal : String -> Parser Int
+        convertDecimal digit =
+            case String.toInt digit of
+                Err msg ->
+                    fail msg
 
-nextIndex : Parser Int
-nextIndex =
-    succeed identity
-        |= parseIndex
-
-
-parseIndex : Parser Int
-parseIndex =
-    keep (Exactly 1) (\c -> Char.isDigit c)
-        |> andThen convertDecimal
-
-
-convertDecimal : String -> Parser Int
-convertDecimal digit =
-    case String.toInt digit of
-        Err msg ->
-            fail msg
-
-        Ok value ->
-            succeed value
+                Ok value ->
+                    succeed value
+    in
+        inContext "indices" <|
+            succeed identity
+                |= andThen (\i -> indicesHelp [ i ]) parseIndex
 
 
 parseDiffs : Parser (List Float)
