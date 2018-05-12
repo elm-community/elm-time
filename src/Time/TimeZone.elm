@@ -41,17 +41,25 @@ import Debug
     exposing
         ( log
         )
-import Parser as ParserNew
+import Parser
     exposing
         ( (|.)
         , (|=)
         , Count(..)
+        , Error
+        , Parser
+        , andThen
         , delayedCommit
+        , end
+        , fail
         , ignore
+        , inContext
         , keep
+        , map
         , oneOf
         , oneOrMore
         , run
+        , succeed
         , zeroOrMore
         )
 
@@ -166,7 +174,7 @@ name (TimeZone { name }) =
 See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
 
 -}
-unpack : String -> Result ParserNew.Error TimeZone
+unpack : String -> Result Error TimeZone
 unpack data =
     run packedTimeZoneNew data
 
@@ -180,25 +188,25 @@ type alias PackedTimeZone =
     }
 
 
-parseBar : ParserNew.Parser ()
+parseBar : Parser ()
 parseBar =
     ignore (Exactly 1) ((==) '|')
 
 
-parseSpace : ParserNew.Parser ()
+parseSpace : Parser ()
 parseSpace =
     ignore (Exactly 1) ((==) ' ')
 
 
 {-| -}
-parseName : ParserNew.Parser String
+parseName : Parser String
 parseName =
-    ParserNew.inContext "name" <|
-        ParserNew.succeed identity
+    inContext "name" <|
+        succeed identity
             |= keep oneOrMore ((/=) '|')
 
 
-parseAbbrev : ParserNew.Parser String
+parseAbbrev : Parser String
 parseAbbrev =
     keep oneOrMore (\c -> c /= ' ' && c /= '|')
 
@@ -206,36 +214,36 @@ parseAbbrev =
 {-| Parse the first abbrev and then use `abbrevsHelp` to find
 the remaining ones.
 -}
-parseAbbrevs : ParserNew.Parser (List String)
+parseAbbrevs : Parser (List String)
 parseAbbrevs =
-    ParserNew.inContext "abbrevs" <|
-        ParserNew.succeed identity
-            |= ParserNew.andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
+    inContext "abbrevs" <|
+        succeed identity
+            |= andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
 
 
 {-| Check if there is a `nextAbbrev`. If so, continue trying to find
 more abbreviations. If not, give back the list accumulated thus far.
 -}
-abbrevsHelp : List String -> ParserNew.Parser (List String)
+abbrevsHelp : List String -> Parser (List String)
 abbrevsHelp revTerms =
     oneOf
         [ nextAbbrev
-            |> ParserNew.andThen (\s -> abbrevsHelp (s :: revTerms))
-        , ParserNew.succeed (List.reverse revTerms)
+            |> andThen (\s -> abbrevsHelp (s :: revTerms))
+        , succeed (List.reverse revTerms)
         ]
 
 
-nextAbbrev : ParserNew.Parser String
+nextAbbrev : Parser String
 nextAbbrev =
-    ParserNew.succeed identity
+    succeed identity
         |. parseSpace
         |= parseAbbrev
 
 
 {-| -}
-packedTimeZoneTupleNew : ParserNew.Parser ( String, List String, List Float, List Int, List Float )
+packedTimeZoneTupleNew : Parser ( String, List String, List Float, List Int, List Float )
 packedTimeZoneTupleNew =
-    ParserNew.succeed (,,,,)
+    succeed (,,,,)
         |= parseName
         |. parseBar
         |= parseAbbrevs
@@ -247,24 +255,24 @@ packedTimeZoneTupleNew =
         |= parseDiffs
 
 
-parseOffsets : ParserNew.Parser (List Float)
+parseOffsets : Parser (List Float)
 parseOffsets =
-    ParserNew.inContext "offsets" <|
-        ParserNew.succeed identity
-            |= ParserNew.andThen (\f -> offsetsHelp [ f ]) parseOffset
+    inContext "offsets" <|
+        succeed identity
+            |= andThen (\f -> offsetsHelp [ f ]) parseOffset
 
 
-parseOffset : ParserNew.Parser Float
+parseOffset : Parser Float
 parseOffset =
-    (ParserNew.succeed (,,)
+    (succeed (,,)
         |= parseSign
         |= parseWhole
         |= parseFrac
     )
-        |> ParserNew.andThen convertBase60
+        |> andThen convertBase60
 
 
-convertBase60 : ( Int, String, String ) -> ParserNew.Parser Float
+convertBase60 : ( Int, String, String ) -> Parser Float
 convertBase60 ( sign, whole, frac ) =
     --    let
     --        s1 =
@@ -277,49 +285,49 @@ convertBase60 ( sign, whole, frac ) =
     --            Debug.log "frac" frac
     --    in
     if whole == "" && frac == "" then
-        ParserNew.fail "expected an alphanumeric character or ."
+        fail "expected an alphanumeric character or ."
     else
-        ParserNew.succeed <| unsafeBase60 sign whole frac
+        succeed <| unsafeBase60 sign whole frac
 
 
-parseSign : ParserNew.Parser Int
+parseSign : Parser Int
 parseSign =
     oneOf
         [ keep (Exactly 1) (\c -> c == '-')
-            |> ParserNew.andThen minusOne
-        , ParserNew.succeed 1
+            |> andThen minusOne
+        , succeed 1
         ]
 
 
-minusOne : String -> ParserNew.Parser Int
+minusOne : String -> Parser Int
 minusOne hyphen =
-    ParserNew.succeed -1
+    succeed -1
 
 
-parseWhole : ParserNew.Parser String
+parseWhole : Parser String
 parseWhole =
     keep zeroOrMore (\c -> unsafeBase60Digit c)
 
 
-parseFrac : ParserNew.Parser String
+parseFrac : Parser String
 parseFrac =
     oneOf
         [ parseSuccessfulFrac
-        , ParserNew.succeed ""
+        , succeed ""
         ]
 
 
-parseSuccessfulFrac : ParserNew.Parser String
+parseSuccessfulFrac : Parser String
 parseSuccessfulFrac =
-    (ParserNew.succeed identity
+    (succeed identity
         |. ignore (Exactly 1) (\c -> c == '.')
         |= keep oneOrMore (\c -> unsafeBase60Digit c)
     )
 
 
-convertFrac : String -> ParserNew.Parser String
+convertFrac : String -> Parser String
 convertFrac frac =
-    ParserNew.succeed frac
+    succeed frac
 
 
 unsafeBase60Digit : Char -> Bool
@@ -331,132 +339,132 @@ unsafeBase60Digit c =
 more abbreviations. If not, give back the list accumulated thus far.
 Converts the strings to base 60 numbers.
 -}
-offsetsHelp : List Float -> ParserNew.Parser (List Float)
+offsetsHelp : List Float -> Parser (List Float)
 offsetsHelp revTerms =
     oneOf
         [ nextOffset
-            |> ParserNew.andThen (\f -> offsetsHelp (f :: revTerms))
-        , ParserNew.succeed (List.reverse revTerms)
+            |> andThen (\f -> offsetsHelp (f :: revTerms))
+        , succeed (List.reverse revTerms)
         ]
 
 
-nextOffset : ParserNew.Parser Float
+nextOffset : Parser Float
 nextOffset =
-    ParserNew.succeed identity
+    succeed identity
         |. parseSpace
         |= parseOffset
 
 
-parseIndices : ParserNew.Parser (List Int)
+parseIndices : Parser (List Int)
 parseIndices =
-    ParserNew.inContext "indices" <|
-        ParserNew.succeed identity
-            |= ParserNew.andThen (\i -> indicesHelp [ i ]) parseIndex
+    inContext "indices" <|
+        succeed identity
+            |= andThen (\i -> indicesHelp [ i ]) parseIndex
 
 
 {-| Check if there is a `nextIndex`. If so, continue trying to find
 more indices. If not, give back the list accumulated thus far.
 Each char is converted to an Int.
 -}
-indicesHelp : List Int -> ParserNew.Parser (List Int)
+indicesHelp : List Int -> Parser (List Int)
 indicesHelp revTerms =
     oneOf
         [ nextIndex
-            |> ParserNew.andThen (\i -> indicesHelp (i :: revTerms))
-        , ParserNew.succeed (List.reverse revTerms)
+            |> andThen (\i -> indicesHelp (i :: revTerms))
+        , succeed (List.reverse revTerms)
         ]
 
 
-nextIndex : ParserNew.Parser Int
+nextIndex : Parser Int
 nextIndex =
-    ParserNew.succeed identity
+    succeed identity
         |= parseIndex
 
 
-parseIndex : ParserNew.Parser Int
+parseIndex : Parser Int
 parseIndex =
     keep (Exactly 1) (\c -> Char.isDigit c)
-        |> ParserNew.andThen convertDecimal
+        |> andThen convertDecimal
 
 
-convertDecimal : String -> ParserNew.Parser Int
+convertDecimal : String -> Parser Int
 convertDecimal digit =
     case String.toInt digit of
         Err msg ->
-            ParserNew.fail msg
+            fail msg
 
         Ok value ->
-            ParserNew.succeed value
+            succeed value
 
 
-parseDiffs : ParserNew.Parser (List Float)
+parseDiffs : Parser (List Float)
 parseDiffs =
-    ParserNew.inContext "diffs" <|
+    inContext "diffs" <|
         oneOf
             [ parseEmptyDiffs
             , parseDiffsEnd
-            , ParserNew.andThen (\f -> diffsHelp [ f ]) parseDiff
+            , andThen (\f -> diffsHelp [ f ]) parseDiff
             ]
 
 
-parseEmptyDiffs : ParserNew.Parser (List Float)
+parseEmptyDiffs : Parser (List Float)
 parseEmptyDiffs =
-    (ParserNew.succeed identity
+    (succeed identity
         |. parseBar
     )
-        |> ParserNew.andThen (\_ -> ParserNew.succeed [])
+        |> andThen (\_ -> succeed [])
 
 
-parseDiffsEnd : ParserNew.Parser (List Float)
+parseDiffsEnd : Parser (List Float)
 parseDiffsEnd =
-    (ParserNew.succeed identity
-        |. ParserNew.end
+    (succeed identity
+        |. end
     )
-        |> ParserNew.andThen (\_ -> ParserNew.succeed [])
+        |> andThen (\_ -> succeed [])
 
 
-diffsHelp : List Float -> ParserNew.Parser (List Float)
+diffsHelp : List Float -> Parser (List Float)
 diffsHelp revTerms =
     oneOf
         [ nextDiff
-            |> ParserNew.andThen (\f -> diffsHelp (f :: revTerms))
-        , ParserNew.succeed (List.reverse revTerms)
+            |> andThen (\f -> diffsHelp (f :: revTerms))
+        , succeed (List.reverse revTerms)
         ]
 
 
-nextDiff : ParserNew.Parser Float
+nextDiff : Parser Float
 nextDiff =
-    ParserNew.succeed identity
+    succeed identity
         |. parseSpace
         |= parseDiff
 
 
-parseDiff : ParserNew.Parser Float
+parseDiff : Parser Float
 parseDiff =
-    (ParserNew.succeed (,,)
+    (succeed (,,)
         |= parseSign
         |= parseWhole
         |= parseFrac
     )
-        |> ParserNew.andThen convertBase60Times60000
+        |> andThen convertBase60Times60000
 
 
-convertBase60Times60000 : ( Int, String, String ) -> ParserNew.Parser Float
+convertBase60Times60000 : ( Int, String, String ) -> Parser Float
 convertBase60Times60000 ( sign, whole, frac ) =
     if whole == "" && frac == "" then
-        ParserNew.fail "expected an alphanumeric character or ."
+        fail "expected an alphanumeric character or ."
     else
-        ParserNew.succeed <| (*) 60000 (unsafeBase60 sign whole frac)
+        succeed <| (*) 60000 (unsafeBase60 sign whole frac)
 
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
 the data format invariants hold.
 -}
-packedTimeZoneNew : ParserNew.Parser TimeZone
+packedTimeZoneNew : Parser TimeZone
 packedTimeZoneNew =
     let
         decode =
-            (ParserNew.succeed PackedTimeZone
+            (succeed PackedTimeZone
                 |= parseName
                 |. parseBar
                 |= parseAbbrevs
@@ -481,11 +489,11 @@ packedTimeZoneNew =
                         |> Maybe.withDefault 0
             in
                 if abbrevs /= offsets then
-                    ParserNew.fail "abbrevs and offsets have different lengths"
+                    fail "abbrevs and offsets have different lengths"
                 else if maxIndex >= abbrevs then
-                    ParserNew.fail "highest index is longer than both abbrevs and offsets"
+                    fail "highest index is longer than both abbrevs and offsets"
                 else
-                    ParserNew.succeed data
+                    succeed data
 
         span times data i idx =
             { from = times !! i
@@ -512,8 +520,8 @@ packedTimeZoneNew =
                     }
     in
         decode
-            |> ParserNew.andThen validate
-            |> ParserNew.map convert
+            |> andThen validate
+            |> map convert
 
 
 unsafeBase60 : Int -> String -> String -> Float
