@@ -182,13 +182,13 @@ packedTimeZone =
         decode =
             (succeed PackedTimeZone
                 |= parseName
-                |. parseBar
+                |. pipe
                 |= parseAbbrevs
-                |. parseBar
+                |. pipe
                 |= parseOffsets
-                |. parseBar
+                |. pipe
                 |= parseIndices
-                |. parseBar
+                |. pipe
                 |= parseDiffs
             )
 
@@ -370,7 +370,7 @@ parseDiffs =
         parseEmptyDiffs : Parser (List Float)
         parseEmptyDiffs =
             (succeed identity
-                |. parseBar
+                |. pipe
             )
                 |> andThen (\_ -> succeed [])
 
@@ -419,8 +419,8 @@ parseDiffs =
                 ]
 
 
-parseBar : Parser ()
-parseBar =
+pipe : Parser ()
+pipe =
     ignore (Exactly 1) ((==) '|')
 
 
