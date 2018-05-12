@@ -206,11 +206,6 @@ parseName =
             |= keep oneOrMore ((/=) '|')
 
 
-parseAbbrev : Parser String
-parseAbbrev =
-    keep oneOrMore (\c -> c /= ' ' && c /= '|')
-
-
 {-| Parse the first abbrev and then use `abbrevsHelp` to find
 the remaining ones.
 -}
@@ -219,6 +214,11 @@ parseAbbrevs =
     inContext "abbrevs" <|
         succeed identity
             |= andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
+
+
+parseAbbrev : Parser String
+parseAbbrev =
+    keep oneOrMore (\c -> c /= ' ' && c /= '|')
 
 
 {-| Check if there is a `nextAbbrev`. If so, continue trying to find
