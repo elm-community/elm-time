@@ -264,34 +264,34 @@ the remaining ones.
 parseAbbrevs : Parser (List String)
 parseAbbrevs =
     let
-        parseAbbrev : Parser String
-        parseAbbrev =
+        abbrev : Parser String
+        abbrev =
             keep oneOrMore (\c -> c /= ' ' && c /= '|')
 
-        abbrevsHelp : List String -> Parser (List String)
-        abbrevsHelp revTerms =
+        helper : List String -> Parser (List String)
+        helper revTerms =
             oneOf
-                [ nextAbbrev
-                    |> andThen (\s -> abbrevsHelp (s :: revTerms))
+                [ next
+                    |> andThen (\s -> helper (s :: revTerms))
                 , succeed (List.reverse revTerms)
                 ]
 
-        nextAbbrev : Parser String
-        nextAbbrev =
+        next : Parser String
+        next =
             succeed identity
                 |. parseSpace
-                |= parseAbbrev
+                |= abbrev
     in
         inContext "abbrevs" <|
             succeed identity
-                |= andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
+                |= andThen (\s -> helper [ s ]) abbrev
 
 
 parseOffsets : Parser (List Float)
 parseOffsets =
     let
-        parseOffset : Parser Float
-        parseOffset =
+        offset : Parser Float
+        offset =
             (succeed (,,)
                 |= parseSign
                 |= parseWhole
@@ -310,23 +310,23 @@ parseOffsets =
         convertFrac frac =
             succeed frac
 
-        offsetsHelp : List Float -> Parser (List Float)
-        offsetsHelp revTerms =
+        helper : List Float -> Parser (List Float)
+        helper revTerms =
             oneOf
-                [ nextOffset
-                    |> andThen (\f -> offsetsHelp (f :: revTerms))
+                [ next
+                    |> andThen (\f -> helper (f :: revTerms))
                 , succeed (List.reverse revTerms)
                 ]
 
-        nextOffset : Parser Float
-        nextOffset =
+        next : Parser Float
+        next =
             succeed identity
                 |. parseSpace
-                |= parseOffset
+                |= offset
     in
         inContext "offsets" <|
             succeed identity
-                |= andThen (\f -> offsetsHelp [ f ]) parseOffset
+                |= andThen (\f -> helper [ f ]) offset
 
 
 parseIndices : Parser (List Int)
