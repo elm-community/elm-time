@@ -184,16 +184,6 @@ type alias PackedTimeZone =
     }
 
 
-parseBar : Parser ()
-parseBar =
-    ignore (Exactly 1) ((==) '|')
-
-
-parseSpace : Parser ()
-parseSpace =
-    ignore (Exactly 1) ((==) ' ')
-
-
 {-| Parse the name of the timezone
 -}
 parseName : Parser String
@@ -371,6 +361,16 @@ parseDiff =
         |= parseFrac
     )
         |> andThen convertBase60Times60000
+
+
+parseBar : Parser ()
+parseBar =
+    ignore (Exactly 1) ((==) '|')
+
+
+parseSpace : Parser ()
+parseSpace =
+    ignore (Exactly 1) ((==) ' ')
 
 
 convertBase60Times60000 : ( Int, String, String ) -> Parser Float
