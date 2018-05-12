@@ -63,9 +63,6 @@ import Parser
         )
 
 
---import Combine exposing (..)
---import Combine.Num
-
 import Time exposing (Time)
 import Time.Internal exposing (..)
 
@@ -237,37 +234,49 @@ parseAbbrevs =
 
 parseOffsets : Parser (List Float)
 parseOffsets =
+    let
+        parseOffset : Parser Float
+        parseOffset =
+            (succeed (,,)
+                |= parseSign
+                |= parseWhole
+                |= parseFrac
+            )
+                |> andThen convertBase60
+
+
+        convertBase60 : ( Int, String, String ) -> Parser Float
+        convertBase60 ( sign, whole, frac ) =
+            if whole == "" && frac == "" then
+                fail "expected an alphanumeric character or ."
+            else
+                succeed <| unsafeBase60 sign whole frac
+
+
+        convertFrac : String -> Parser String
+        convertFrac frac =
+            succeed frac
+
+
+        offsetsHelp : List Float -> Parser (List Float)
+        offsetsHelp revTerms =
+            oneOf
+                [ nextOffset
+                    |> andThen (\f -> offsetsHelp (f :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
+
+
+        nextOffset : Parser Float
+        nextOffset =
+            succeed identity
+                |. parseSpace
+                |= parseOffset
+
+    in
     inContext "offsets" <|
         succeed identity
             |= andThen (\f -> offsetsHelp [ f ]) parseOffset
-
-
-parseOffset : Parser Float
-parseOffset =
-    (succeed (,,)
-        |= parseSign
-        |= parseWhole
-        |= parseFrac
-    )
-        |> andThen convertBase60
-
-
-convertBase60 : ( Int, String, String ) -> Parser Float
-convertBase60 ( sign, whole, frac ) =
-    --    let
-    --        s1 =
-    --            Debug.log "sign" sign
-    --
-    --        w1 =
-    --            Debug.log "whole" whole
-    --
-    --        f1 =
-    --            Debug.log "frac" frac
-    --    in
-    if whole == "" && frac == "" then
-        fail "expected an alphanumeric character or ."
-    else
-        succeed <| unsafeBase60 sign whole frac
 
 
 parseSign : Parser Int
@@ -297,42 +306,17 @@ parseFrac =
         ]
 
 
+unsafeBase60Digit : Char -> Bool
+unsafeBase60Digit c =
+    Char.isDigit c || Char.isUpper c || Char.isLower c
+
+
 parseSuccessfulFrac : Parser String
 parseSuccessfulFrac =
     (succeed identity
         |. ignore (Exactly 1) (\c -> c == '.')
         |= keep oneOrMore (\c -> unsafeBase60Digit c)
     )
-
-
-convertFrac : String -> Parser String
-convertFrac frac =
-    succeed frac
-
-
-unsafeBase60Digit : Char -> Bool
-unsafeBase60Digit c =
-    Char.isDigit c || Char.isUpper c || Char.isLower c
-
-
-{-| Check if there is a `nextOffset`. If so, continue trying to find
-more abbreviations. If not, give back the list accumulated thus far.
-Converts the strings to base 60 numbers.
--}
-offsetsHelp : List Float -> Parser (List Float)
-offsetsHelp revTerms =
-    oneOf
-        [ nextOffset
-            |> andThen (\f -> offsetsHelp (f :: revTerms))
-        , succeed (List.reverse revTerms)
-        ]
-
-
-nextOffset : Parser Float
-nextOffset =
-    succeed identity
-        |. parseSpace
-        |= parseOffset
 
 
 parseIndices : Parser (List Int)
