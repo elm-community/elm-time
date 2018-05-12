@@ -7,7 +7,6 @@ import Expect exposing (Expectation, equal, fail)
 import Test exposing (..)
 import Time.TimeZone exposing (TimeZone)
 import Parser exposing (run)
-import Combine
 
 
 source =
