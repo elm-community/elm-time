@@ -7,8 +7,6 @@ module Time.TimeZone
         , offsetString
         , setName
         , unpack
-        , parseName
-        , parseAbbrevs
         )
 
 {-| This module defines a representations for Timezone information.
@@ -27,11 +25,6 @@ module Time.TimeZone
 # Constructing TimeZones
 
 @docs unpack
-
-
-# Temporary
-
-@docs parseName, parseAbbrevs, unpack
 
 -}
 
