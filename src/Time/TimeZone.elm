@@ -367,36 +367,36 @@ parseIndices =
 parseDiffs : Parser (List Float)
 parseDiffs =
     let
-        parseEmptyDiffs : Parser (List Float)
-        parseEmptyDiffs =
+        emptyDiffs : Parser (List Float)
+        emptyDiffs =
             (succeed identity
                 |. pipe
             )
                 |> andThen (\_ -> succeed [])
 
-        parseDiffsEnd : Parser (List Float)
-        parseDiffsEnd =
+        diffsEnd : Parser (List Float)
+        diffsEnd =
             (succeed identity
                 |. end
             )
                 |> andThen (\_ -> succeed [])
 
-        diffsHelp : List Float -> Parser (List Float)
-        diffsHelp revTerms =
+        helper : List Float -> Parser (List Float)
+        helper revTerms =
             oneOf
-                [ nextDiff
-                    |> andThen (\f -> diffsHelp (f :: revTerms))
+                [ next
+                    |> andThen (\f -> helper (f :: revTerms))
                 , succeed (List.reverse revTerms)
                 ]
 
-        nextDiff : Parser Float
-        nextDiff =
+        next : Parser Float
+        next =
             succeed identity
                 |. parseSpace
-                |= parseDiff
+                |= diff
 
-        parseDiff : Parser Float
-        parseDiff =
+        diff : Parser Float
+        diff =
             (succeed (,,)
                 |= parseSign
                 |= parseWhole
@@ -413,9 +413,9 @@ parseDiffs =
     in
         inContext "diffs" <|
             oneOf
-                [ parseEmptyDiffs
-                , parseDiffsEnd
-                , andThen (\f -> diffsHelp [ f ]) parseDiff
+                [ emptyDiffs
+                , diffsEnd
+                , andThen (\f -> helper [ f ]) diff
                 ]
 
 
