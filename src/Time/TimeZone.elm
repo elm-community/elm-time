@@ -279,46 +279,6 @@ parseOffsets =
             |= andThen (\f -> offsetsHelp [ f ]) parseOffset
 
 
-parseSign : Parser Int
-parseSign =
-    oneOf
-        [ keep (Exactly 1) (\c -> c == '-')
-            |> andThen minusOne
-        , succeed 1
-        ]
-
-
-minusOne : String -> Parser Int
-minusOne hyphen =
-    succeed -1
-
-
-parseWhole : Parser String
-parseWhole =
-    keep zeroOrMore (\c -> unsafeBase60Digit c)
-
-
-parseFrac : Parser String
-parseFrac =
-    oneOf
-        [ parseSuccessfulFrac
-        , succeed ""
-        ]
-
-
-unsafeBase60Digit : Char -> Bool
-unsafeBase60Digit c =
-    Char.isDigit c || Char.isUpper c || Char.isLower c
-
-
-parseSuccessfulFrac : Parser String
-parseSuccessfulFrac =
-    (succeed identity
-        |. ignore (Exactly 1) (\c -> c == '.')
-        |= keep oneOrMore (\c -> unsafeBase60Digit c)
-    )
-
-
 parseIndices : Parser (List Int)
 parseIndices =
     inContext "indices" <|
@@ -419,6 +379,46 @@ convertBase60Times60000 ( sign, whole, frac ) =
         fail "expected an alphanumeric character or ."
     else
         succeed <| (*) 60000 (unsafeBase60 sign whole frac)
+
+
+parseSign : Parser Int
+parseSign =
+    oneOf
+        [ keep (Exactly 1) (\c -> c == '-')
+            |> andThen minusOne
+        , succeed 1
+        ]
+
+
+minusOne : String -> Parser Int
+minusOne hyphen =
+    succeed -1
+
+
+parseWhole : Parser String
+parseWhole =
+    keep zeroOrMore (\c -> unsafeBase60Digit c)
+
+
+parseFrac : Parser String
+parseFrac =
+    oneOf
+        [ parseSuccessfulFrac
+        , succeed ""
+        ]
+
+
+unsafeBase60Digit : Char -> Bool
+unsafeBase60Digit c =
+    Char.isDigit c || Char.isUpper c || Char.isLower c
+
+
+parseSuccessfulFrac : Parser String
+parseSuccessfulFrac =
+    (succeed identity
+        |. ignore (Exactly 1) (\c -> c == '.')
+        |= keep oneOrMore (\c -> unsafeBase60Digit c)
+    )
 
 
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
