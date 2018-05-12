@@ -15,7 +15,7 @@ source =
 
 unpackTest : Test
 unpackTest =
-    describe "Time.TimeZone.unpackNew"
+    describe "Time.TimeZone.unpack"
         [ test "New" <|
             \() ->
                 case Time.TimeZone.unpack source of
