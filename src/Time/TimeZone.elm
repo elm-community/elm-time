@@ -54,8 +54,11 @@ import Parser as ParserNew
         , run
         , zeroOrMore
         )
+
+
 --import Combine exposing (..)
 --import Combine.Num
+
 import Time exposing (Time)
 import Time.Internal exposing (..)
 
@@ -390,12 +393,26 @@ parseDiffs : ParserNew.Parser (List Float)
 parseDiffs =
     ParserNew.inContext "diffs" <|
         oneOf
-            [ ( ParserNew.succeed identity
-                |. parseBar
-              )
-                |> ParserNew.andThen (\_ -> ParserNew.succeed [])
+            [ parseEmptyDiffs
+            , parseDiffsEnd
             , ParserNew.andThen (\f -> diffsHelp [ f ]) parseDiff
             ]
+
+
+parseEmptyDiffs : ParserNew.Parser (List Float)
+parseEmptyDiffs =
+    (ParserNew.succeed identity
+        |. parseBar
+    )
+        |> ParserNew.andThen (\_ -> ParserNew.succeed [])
+
+
+parseDiffsEnd : ParserNew.Parser (List Float)
+parseDiffsEnd =
+    (ParserNew.succeed identity
+        |. ParserNew.end
+    )
+        |> ParserNew.andThen (\_ -> ParserNew.succeed [])
 
 
 diffsHelp : List Float -> ParserNew.Parser (List Float)
@@ -451,7 +468,6 @@ packedTimeZoneNew =
                 |= parseDiffs
             )
 
-
         validate data =
             let
                 abbrevs =
@@ -497,7 +513,7 @@ packedTimeZoneNew =
     in
         decode
             |> ParserNew.andThen validate
-                |> ParserNew.map convert
+            |> ParserNew.map convert
 
 
 unsafeBase60 : Int -> String -> String -> Float
