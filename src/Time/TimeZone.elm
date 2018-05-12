@@ -198,7 +198,8 @@ parseSpace =
     ignore (Exactly 1) ((==) ' ')
 
 
-{-| -}
+{-| Parse the name of the timezone
+-}
 parseName : Parser String
 parseName =
     inContext "name" <|
@@ -211,33 +212,28 @@ the remaining ones.
 -}
 parseAbbrevs : Parser (List String)
 parseAbbrevs =
+    let
+        parseAbbrev : Parser String
+        parseAbbrev =
+            keep oneOrMore (\c -> c /= ' ' && c /= '|')
+
+        abbrevsHelp : List String -> Parser (List String)
+        abbrevsHelp revTerms =
+            oneOf
+                [ nextAbbrev
+                    |> andThen (\s -> abbrevsHelp (s :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
+
+        nextAbbrev : Parser String
+        nextAbbrev =
+            succeed identity
+                |. parseSpace
+                |= parseAbbrev
+    in
     inContext "abbrevs" <|
         succeed identity
             |= andThen (\s -> abbrevsHelp [ s ]) parseAbbrev
-
-
-parseAbbrev : Parser String
-parseAbbrev =
-    keep oneOrMore (\c -> c /= ' ' && c /= '|')
-
-
-{-| Check if there is a `nextAbbrev`. If so, continue trying to find
-more abbreviations. If not, give back the list accumulated thus far.
--}
-abbrevsHelp : List String -> Parser (List String)
-abbrevsHelp revTerms =
-    oneOf
-        [ nextAbbrev
-            |> andThen (\s -> abbrevsHelp (s :: revTerms))
-        , succeed (List.reverse revTerms)
-        ]
-
-
-nextAbbrev : Parser String
-nextAbbrev =
-    succeed identity
-        |. parseSpace
-        |= parseAbbrev
 
 
 {-| -}
