@@ -332,21 +332,21 @@ parseOffsets =
 parseIndices : Parser (List Int)
 parseIndices =
     let
-        indicesHelp : List Int -> Parser (List Int)
-        indicesHelp revTerms =
+        helper : List Int -> Parser (List Int)
+        helper revTerms =
             oneOf
-                [ nextIndex
-                    |> andThen (\i -> indicesHelp (i :: revTerms))
+                [ next
+                    |> andThen (\i -> helper (i :: revTerms))
                 , succeed (List.reverse revTerms)
                 ]
 
-        nextIndex : Parser Int
-        nextIndex =
+        next : Parser Int
+        next =
             succeed identity
-                |= parseIndex
+                |= index
 
-        parseIndex : Parser Int
-        parseIndex =
+        index : Parser Int
+        index =
             keep (Exactly 1) (\c -> Char.isDigit c)
                 |> andThen convertDecimal
 
@@ -361,7 +361,7 @@ parseIndices =
     in
         inContext "indices" <|
             succeed identity
-                |= andThen (\i -> indicesHelp [ i ]) parseIndex
+                |= andThen (\i -> helper [ i ]) index
 
 
 parseDiffs : Parser (List Float)
