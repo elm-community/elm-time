@@ -172,7 +172,7 @@ See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
 -}
 unpack : String -> Result Error TimeZone
 unpack data =
-    run packedTimeZoneNew data
+    run packedTimeZone data
 
 
 type alias PackedTimeZone =
@@ -424,8 +424,8 @@ parseSuccessfulFrac =
 {-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
 the data format invariants hold.
 -}
-packedTimeZoneNew : Parser TimeZone
-packedTimeZoneNew =
+packedTimeZone : Parser TimeZone
+packedTimeZone =
     let
         decode =
             (succeed PackedTimeZone

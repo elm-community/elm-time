@@ -13,8 +13,8 @@ source =
     "Africa/Bissau|LMT -01 GMT|12.k 10 0|012|-2ldWV.E 2xonV.E|39e4"
 
 
-unpackNewTest : Test
-unpackNewTest =
+unpackTest : Test
+unpackTest =
     describe "Time.TimeZone.unpackNew"
         [ test "New" <|
             \() ->
