@@ -173,6 +173,73 @@ unpack data =
     run packedTimeZone data
 
 
+{-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
+the data format invariants hold.
+-}
+packedTimeZone : Parser TimeZone
+packedTimeZone =
+    let
+        decode =
+            (succeed PackedTimeZone
+                |= parseName
+                |. parseBar
+                |= parseAbbrevs
+                |. parseBar
+                |= parseOffsets
+                |. parseBar
+                |= parseIndices
+                |. parseBar
+                |= parseDiffs
+            )
+
+        validate data =
+            let
+                abbrevs =
+                    List.length data.abbrevs
+
+                offsets =
+                    List.length data.offsets
+
+                maxIndex =
+                    List.maximum data.indices
+                        |> Maybe.withDefault 0
+            in
+                if abbrevs /= offsets then
+                    fail "abbrevs and offsets have different lengths"
+                else if maxIndex >= abbrevs then
+                    fail "highest index is longer than both abbrevs and offsets"
+                else
+                    succeed data
+
+        span times data i idx =
+            { from = times !! i
+            , until = times !! (i + 1)
+            , abbreviation = data.abbrevs !! idx
+            , offset = round (data.offsets !! idx * minuteMs)
+            }
+
+        convert data =
+            let
+                times =
+                    if not <| List.isEmpty data.diffs then
+                        List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
+                    else
+                        []
+
+                -- surround times with - and +infinity
+                paddedTimes =
+                    [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
+            in
+                TimeZone
+                    { name = data.name
+                    , spans = List.indexedMap (span paddedTimes data) data.indices
+                    }
+    in
+        decode
+            |> andThen validate
+            |> map convert
+
+
 type alias PackedTimeZone =
     { name : String
     , abbrevs : List String
@@ -337,7 +404,6 @@ parseDiffs =
             )
                 |> andThen convertBase60Times60000
 
-
         convertBase60Times60000 : ( Int, String, String ) -> Parser Float
         convertBase60Times60000 ( sign, whole, frac ) =
             if whole == "" && frac == "" then
@@ -365,16 +431,16 @@ parseSpace =
 
 parseSign : Parser Int
 parseSign =
-    oneOf
-        [ keep (Exactly 1) (\c -> c == '-')
-            |> andThen minusOne
-        , succeed 1
-        ]
-
-
-minusOne : String -> Parser Int
-minusOne hyphen =
-    succeed -1
+    let
+        minusOne : String -> Parser Int
+        minusOne hyphen =
+            succeed -1
+    in
+        oneOf
+            [ keep (Exactly 1) (\c -> c == '-')
+                |> andThen minusOne
+            , succeed 1
+            ]
 
 
 parseWhole : Parser String
@@ -401,73 +467,6 @@ parseSuccessfulFrac =
         |. ignore (Exactly 1) (\c -> c == '.')
         |= keep oneOrMore (\c -> unsafeBase60Digit c)
     )
-
-
-{-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
-the data format invariants hold.
--}
-packedTimeZone : Parser TimeZone
-packedTimeZone =
-    let
-        decode =
-            (succeed PackedTimeZone
-                |= parseName
-                |. parseBar
-                |= parseAbbrevs
-                |. parseBar
-                |= parseOffsets
-                |. parseBar
-                |= parseIndices
-                |. parseBar
-                |= parseDiffs
-            )
-
-        validate data =
-            let
-                abbrevs =
-                    List.length data.abbrevs
-
-                offsets =
-                    List.length data.offsets
-
-                maxIndex =
-                    List.maximum data.indices
-                        |> Maybe.withDefault 0
-            in
-                if abbrevs /= offsets then
-                    fail "abbrevs and offsets have different lengths"
-                else if maxIndex >= abbrevs then
-                    fail "highest index is longer than both abbrevs and offsets"
-                else
-                    succeed data
-
-        span times data i idx =
-            { from = times !! i
-            , until = times !! (i + 1)
-            , abbreviation = data.abbrevs !! idx
-            , offset = round (data.offsets !! idx * minuteMs)
-            }
-
-        convert data =
-            let
-                times =
-                    if not <| List.isEmpty data.diffs then
-                        List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
-                    else
-                        []
-
-                -- surround times with - and +infinity
-                paddedTimes =
-                    [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
-            in
-                TimeZone
-                    { name = data.name
-                    , spans = List.indexedMap (span paddedTimes data) data.indices
-                    }
-    in
-        decode
-            |> andThen validate
-            |> map convert
 
 
 unsafeBase60 : Int -> String -> String -> Float
