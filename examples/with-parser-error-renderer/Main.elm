@@ -29,7 +29,6 @@ import Time.DateTime
         ( DateTime
         , fromTimestamp
         , fromTuple
-        , toISO8601
         )
 import Time.ISO8601Error exposing (reflow, renderText)
 import Time.Iso8601 exposing (toDateTime)
