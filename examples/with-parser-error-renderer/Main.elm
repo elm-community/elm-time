@@ -48,6 +48,7 @@ type Styles
     | Title
     | Field
     | SubMenu
+    | Success
     | Error
     | InputError
     | LabelBox
@@ -72,8 +73,13 @@ stylesheet =
             [ Style.Color.text black
             , Style.Color.background lightGreen
             ]
+        , style Success
+            [ Style.Color.text darkGreen
+            , Style.Color.background white
+            ]
         , style Error
             [ Style.Color.text red
+            , Style.Color.background white
             , Font.typeface [ Font.monospace ]
             ]
         ]
@@ -118,18 +124,11 @@ update msg model =
             runParse model
 
         ChangeText text ->
-            let
-                endChar =
-                    String.right 1 text
-            in
-                (if (True || endChar == "\n") then
-                    { model
-                        | iso8601input = text
-                    }
-                 else
-                    model
-                )
-                    |> runParse
+            ({ model
+                    | iso8601input = text
+             }
+            )
+                |> runParse
 
         Resize size ->
             ( { model
@@ -156,7 +155,7 @@ view model =
                             }
                     , options = []
                     }
-                , el Error [] (text <| output model)
+                , el (result model) [] (text <| output model)
                 ]
 
 
@@ -194,3 +193,12 @@ render model =
             renderText err
                 ++ "\n\n"
                 ++ reflow (toString err)
+
+result : Model -> Styles
+result model =
+    case model.dateTime of
+        Ok dt ->
+            Success
+
+        Err err ->
+            Error
