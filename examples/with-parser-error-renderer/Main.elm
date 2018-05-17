@@ -10,7 +10,7 @@ the `elm-time` library.
 
 -}
 
-import Color exposing (rgba)
+import Color exposing (..)
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Element.Events
@@ -20,7 +20,7 @@ import Parser exposing (Error)
 import String
 import Style exposing (..)
 import Style.Border as Border
-import Style.Color as Color
+import Style.Color
 import Style.Font as Font
 import Style.Transition as Transition
 import Task
@@ -69,11 +69,11 @@ stylesheet =
     Style.styleSheet
         [ style None []
         , style InputContainer
-            [ Color.text Color.black
-            , Color.background Color.lightGreen
+            [ Style.Color.text black
+            , Style.Color.background lightGreen
             ]
         , style Error
-            [ Color.text Color.red
+            [ Style.Color.text red
             , Font.typeface [ Font.monospace ]
             ]
         ]
@@ -103,12 +103,12 @@ init =
         initInput =
             "1991-02-29T12:25:12.0Z"
     in
-    ( { iso8601input = initInput
-      , dateTime = toDateTime initInput
-      , device = classifyDevice (Window.Size 0 0)
-      }
-    , Task.perform Resize Window.size
-    )
+        ( { iso8601input = initInput
+          , dateTime = toDateTime initInput
+          , device = classifyDevice (Window.Size 0 0)
+          }
+        , Task.perform Resize Window.size
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -118,10 +118,18 @@ update msg model =
             runParse model
 
         ChangeText text ->
-            { model
-                | iso8601input = text
-            }
-                |> runParse
+            let
+                endChar =
+                    String.right 1 text
+            in
+                (if (True || endChar == "\n") then
+                    { model
+                        | iso8601input = text
+                    }
+                 else
+                    model
+                )
+                    |> runParse
 
         Resize size ->
             ( { model
