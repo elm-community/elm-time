@@ -71,7 +71,8 @@ stylesheet =
         [ style None []
         , style InputContainer
             [ Style.Color.text black
-            , Style.Color.background lightGreen
+            , Style.Color.background lightGray
+            , Border.all 2
             ]
         , style Success
             [ Style.Color.text darkGreen
@@ -144,7 +145,7 @@ view model =
         el None [ center, width (px 800) ] <|
             column Page
                 [ spacing 20 ]
-                [ Input.text Field
+                [ Input.text InputContainer
                     [ padding 10 ]
                     { onChange = ChangeText
                     , value = model.iso8601input
