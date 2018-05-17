@@ -155,7 +155,7 @@ view model =
                             }
                     , options = []
                     }
-                , el (result model) [] (text <| output model)
+                , el (renderOkErr model) [] (text <| output model)
                 ]
 
 
@@ -194,8 +194,8 @@ render model =
                 ++ "\n\n"
                 ++ reflow (toString err)
 
-result : Model -> Styles
-result model =
+renderOkErr : Model -> Styles
+renderOkErr model =
     case model.dateTime of
         Ok dt ->
             Success
