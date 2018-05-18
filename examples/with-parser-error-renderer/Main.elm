@@ -10,12 +10,14 @@ the `elm-time` library.
 
 -}
 
+import Char
 import Color exposing (..)
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Element.Events
 import Element.Input as Input
 import Html exposing (Html)
+import Keyboard
 import Parser exposing (Error)
 import String
 import Style exposing (..)
@@ -39,6 +41,7 @@ type Msg
     = Run
     | ChangeText String
     | Resize Window.Size
+    | KeyDown Keyboard.KeyCode
 
 
 type Styles
@@ -128,8 +131,8 @@ update msg model =
             ({ model
                     | iso8601input = text
              }
+            , Cmd.none
             )
-                |> runParse
 
         Resize size ->
             ( { model
@@ -137,6 +140,12 @@ update msg model =
               }
             , Cmd.none
             )
+
+        KeyDown keyCode ->
+            if returnChar == Char.fromCode keyCode then
+                runParse model
+            else
+                ( model, Cmd.none)
 
 
 view : Model -> Html Msg
@@ -151,7 +160,7 @@ view model =
                     , value = model.iso8601input
                     , label =
                         Input.placeholder
-                            { label = Input.labelLeft (el None [ verticalCenter ] (text "Enter ISO8601 String:"))
+                            { label = Input.labelLeft (el None [ verticalCenter ] (text "Change ISO8601 string, then hit Enter:"))
                             , text = "Test ISO8601 here"
                             }
                     , options = []
@@ -162,7 +171,10 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Window.resizes Resize
+  Sub.batch
+    [ Window.resizes Resize
+    , Keyboard.downs KeyDown
+    ]
 
 
 output : Model -> String
@@ -203,3 +215,8 @@ renderOkErr model =
 
         Err err ->
             Error
+
+
+returnChar : Char
+returnChar =
+    '\r'
