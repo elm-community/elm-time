@@ -17,7 +17,7 @@ import Element.Attributes exposing (..)
 import Element.Events
 import Element.Input as Input
 import Html exposing (Html)
-import Keyboard
+import Keyboard exposing (KeyCode)
 import Parser exposing (Error)
 import String
 import Style exposing (..)
@@ -142,7 +142,7 @@ update msg model =
             )
 
         KeyDown keyCode ->
-            if returnChar == Char.fromCode keyCode then
+            if enterKeyCode == keyCode then
                 runParse model
             else
                 ( model, Cmd.none)
@@ -217,6 +217,6 @@ renderOkErr model =
             Error
 
 
-returnChar : Char
-returnChar =
-    '\r'
+enterKeyCode : KeyCode
+enterKeyCode =
+    13
