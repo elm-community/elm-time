@@ -182,16 +182,6 @@ subscriptions model =
     ]
 
 
-output : Model -> String
-output model =
-    case model.dateTime of
-        Ok v ->
-            toString v
-
-        Err error ->
-            renderText error
-
-
 runParse : Model -> ( Model, Cmd Msg )
 runParse model =
     ( { model
@@ -211,15 +201,6 @@ render model =
             renderText err
                 ++ "\n\n"
                 ++ reflow (toString err)
-
-renderOkErr : Model -> Styles
-renderOkErr model =
-    case model.dateTime of
-        Ok dt ->
-            Success
-
-        Err err ->
-            Error
 
 
 enterKeyCode : KeyCode
