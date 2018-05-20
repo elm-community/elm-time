@@ -165,7 +165,12 @@ view model =
                             }
                     , options = []
                     }
-                , el (renderOkErr model) [] (text <| output model)
+                , case model.dateTime of
+                    Ok v ->
+                        el Success [] (text <| toString v)
+
+                    Err err ->
+                        el Error [] (text <| renderText err)
                 ]
 
 
