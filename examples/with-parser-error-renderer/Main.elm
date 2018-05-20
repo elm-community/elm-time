@@ -241,9 +241,17 @@ renderDateTimeSuccess dt =
                 [ renderCell 0 0 "Year"
                 , renderCell 1 0 "Month"
                 , renderCell 2 0 "Day"
+                , renderCell 3 0 "Hour"
+                , renderCell 4 0 "Minute"
+                , renderCell 5 0 "Second"
+                , renderCell 6 0 "Millisecond"
                 , renderCell 0 1 (toString <| TD.year dt)
                 , renderCell 1 1 (toString <| TD.month dt)
                 , renderCell 2 1 (toString <| TD.day dt)
+                , renderCell 3 1 (toString <| TD.hour dt)
+                , renderCell 4 1 (toString <| TD.minute dt)
+                , renderCell 5 1 (toString <| TD.second dt)
+                , renderCell 6 1 (toString <| TD.millisecond dt)
                 ]
             }
 
