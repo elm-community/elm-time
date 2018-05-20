@@ -26,12 +26,17 @@ import Style.Color
 import Style.Font as Font
 import Style.Transition as Transition
 import Task
-import Time.DateTime
+import Time.Date
+import Time.DateTime as TD
     exposing
         ( DateTime
+        , dateTime
         , fromTimestamp
         , fromTuple
+        , year
+        , month
         )
+import Time.Internal exposing (DateTimeData)
 import Time.ISO8601Error exposing (reflow, renderText)
 import Time.Iso8601 exposing (toDateTime)
 import Window
@@ -51,7 +56,10 @@ type Styles
     | Title
     | Field
     | SubMenu
-    | Success
+    | DateTimeRow
+    | DateTimeUnit
+    | DateTimeGrid
+    | Box
     | Error
     | InputError
     | LabelBox
@@ -77,7 +85,7 @@ stylesheet =
             , Style.Color.background lightGray
             , Border.all 2
             ]
-        , style Success
+        , style DateTimeRow
             [ Style.Color.text darkGreen
             , Style.Color.background white
             ]
@@ -102,7 +110,8 @@ main =
 
 type alias Model =
     { iso8601input : String
-    , dateTime : Result Parser.Error DateTime
+    , dateTime : DateTime
+    , parseResult : Result Error DateTime
     , device : Device
     }
 
@@ -111,10 +120,22 @@ init : ( Model, Cmd Msg )
 init =
     let
         initInput =
-            "1991-02-29T12:25:12.0Z"
+            "1991-02-28T12:25:12.0Z"
+
+        initDateTime =
+            dateTime
+                { year = 1991
+                , month = 2
+                , day = 28
+                , hour = 12
+                , minute = 25
+                , second = 12
+                , millisecond = 0
+                }
     in
         ( { iso8601input = initInput
-          , dateTime = toDateTime initInput
+          , dateTime = initDateTime
+          , parseResult = Ok initDateTime
           , device = classifyDevice (Window.Size 0 0)
           }
         , Task.perform Resize Window.size
@@ -128,9 +149,9 @@ update msg model =
             runParse model
 
         ChangeText text ->
-            ({ model
-                    | iso8601input = text
-             }
+            ( { model
+                | iso8601input = text
+              }
             , Cmd.none
             )
 
@@ -145,7 +166,7 @@ update msg model =
             if enterKeyCode == keyCode then
                 runParse model
             else
-                ( model, Cmd.none)
+                ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -165,35 +186,80 @@ view model =
                             }
                     , options = []
                     }
-                , case model.dateTime of
+                , case model.parseResult of
                     Ok v ->
-                        el Success [] (text <| toString v)
+                        renderDateTimeSuccess model.dateTime
 
                     Err err ->
-                        el Error [] (text <| renderText err)
+                        renderDateTimeFail err
                 ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.batch
-    [ Window.resizes Resize
-    , Keyboard.downs KeyDown
-    ]
+    Sub.batch
+        [ Window.resizes Resize
+        , Keyboard.downs KeyDown
+        ]
 
 
 runParse : Model -> ( Model, Cmd Msg )
 runParse model =
-    ( { model
-        | dateTime = toDateTime model.iso8601input
-      }
-    , Cmd.none
-    )
+    case toDateTime model.iso8601input of
+        Ok v ->
+            ( { model
+                | parseResult = Ok v
+                , dateTime = v
+              }
+            , Cmd.none
+            )
+
+        Err msg ->
+            ( { model
+                | parseResult = Err msg
+              }
+            , Cmd.none
+            )
+
+
+renderDateTimeSuccess : DateTime -> Element Styles a b
+renderDateTimeSuccess dt =
+    let
+        renderCell x y value =
+            cell
+                { start = (x, y)
+                , width = 1
+                , height = 1
+                , content = el Box [] (text <| value)
+                }
+    in
+        grid DateTimeGrid
+            []
+            { columns = [ px 100, px 100, px 100 ]
+            , rows = [ px 20, px 20 ]
+            , cells =
+                [ renderCell 0 0 "Year"
+                , renderCell 1 0 "Month"
+                , renderCell 2 0 "Day"
+                , renderCell 0 1 (toString <| TD.year dt)
+                , renderCell 1 1 (toString <| TD.month dt)
+                , renderCell 2 1 (toString <| TD.day dt)
+                ]
+            }
+
+
+
+--    el Success [] (text <| toString dateTime)
+
+
+renderDateTimeFail : Error -> Element Styles a b
+renderDateTimeFail err =
+    el Error [] (text <| renderText err)
 
 
 render : Model -> String
 render model =
-    case model.dateTime of
+    case model.parseResult of
         Ok dt ->
             toString dt
 
