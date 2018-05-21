@@ -43,8 +43,7 @@ import Window
 
 
 type Msg
-    = Run
-    | ChangeText String
+    = ChangeText String
     | Resize Window.Size
     | KeyDown Keyboard.KeyCode
 
@@ -53,27 +52,10 @@ type Styles
     = None
     | InputContainer
     | Page
-    | Title
-    | Field
-    | SubMenu
-    | DateTimeRow
-    | DateTimeUnit
     | DateTimeGrid
+    | DateTimeRow
     | Box
     | Error
-    | InputError
-    | LabelBox
-    | Button
-
-
-
-{-
-   , red, orange, yellow, green, blue, purple, brown
-   , lightRed, lightOrange, lightYellow, lightGreen, lightBlue, lightPurple, lightBrown
-   , darkRed, darkOrange, darkYellow, darkGreen, darkBlue, darkPurple, darkBrown
-   , white, lightGrey, grey, darkGrey, lightCharcoal, charcoal, darkCharcoal, black
-   , lightGray, gray, darkGray
--}
 
 
 stylesheet : StyleSheet Styles variation
@@ -85,14 +67,22 @@ stylesheet =
             , Style.Color.background lightGray
             , Border.all 2
             ]
-        , style DateTimeRow
-            [ Style.Color.text darkGreen
-            , Style.Color.background white
-            ]
         , style Error
             [ Style.Color.text red
             , Style.Color.background white
             , Font.typeface [ Font.monospace ]
+            ]
+        , style DateTimeGrid
+            [ Border.top 2
+            , Border.bottom 2
+            , Border.left 1
+            , Border.right 1
+            ]
+        , style Box
+            [ Border.left 1
+            , Border.right 1
+            , Style.Color.background white
+            , Font.center
             ]
         ]
 
@@ -110,8 +100,7 @@ main =
 
 type alias Model =
     { iso8601input : String
-    , dateTime : DateTime
-    , parseResult : Result Error DateTime
+    , dateTime : Result Error DateTime
     , device : Device
     }
 
@@ -123,7 +112,7 @@ init =
             "1991-02-28T12:25:12.0Z"
 
         initDateTime =
-            dateTime
+            TD.dateTime
                 { year = 1991
                 , month = 2
                 , day = 28
@@ -134,8 +123,7 @@ init =
                 }
     in
         ( { iso8601input = initInput
-          , dateTime = initDateTime
-          , parseResult = Ok initDateTime
+          , dateTime = Ok initDateTime
           , device = classifyDevice (Window.Size 0 0)
           }
         , Task.perform Resize Window.size
@@ -145,9 +133,6 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Run ->
-            runParse model
-
         ChangeText text ->
             ( { model
                 | iso8601input = text
@@ -186,9 +171,9 @@ view model =
                             }
                     , options = []
                     }
-                , case model.parseResult of
+                , case model.dateTime of
                     Ok v ->
-                        renderDateTimeSuccess model.dateTime
+                        renderDateTimeSuccess v
 
                     Err err ->
                         renderDateTimeFail err
@@ -208,15 +193,14 @@ runParse model =
     case toDateTime model.iso8601input of
         Ok v ->
             ( { model
-                | parseResult = Ok v
-                , dateTime = v
+                | dateTime = Ok v
               }
             , Cmd.none
             )
 
         Err msg ->
             ( { model
-                | parseResult = Err msg
+                | dateTime = Err msg
               }
             , Cmd.none
             )
@@ -267,7 +251,7 @@ renderDateTimeFail err =
 
 render : Model -> String
 render model =
-    case model.parseResult of
+    case model.dateTime of
         Ok dt ->
             toString dt
 
