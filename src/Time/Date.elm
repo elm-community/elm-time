@@ -28,20 +28,31 @@ module Time.Date
 {-| This module defines a timezone-independent Date type which can
 represent any date of the proleptic Gregorian calendar.
 
+
 # Dates
+
 @docs Date, date, year, month, day, Weekday, weekday
 
+
 # Manipulating Dates
+
 @docs setYear, setMonth, setDay, addYears, addMonths, addDays
 
+
 # Comparing Dates
+
 @docs compare
 
+
 # Subtracting Dates
+
 @docs DateDelta, delta
 
+
 # Helper functions
+
 @docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+
 -}
 
 import Combine exposing ((<$>), (<*>), (*>), (>>=))
@@ -49,7 +60,7 @@ import Combine.Num
 import Time.Internal exposing (padded, intRange)
 
 
-{-| Date is the opaque type for all Date values.  Values of this type
+{-| Date is the opaque type for all Date values. Values of this type
 are guaranteed to represent valid proleptic Gregorian calendar dates.
 -}
 type Date
@@ -115,6 +126,7 @@ day (Date { day }) =
 {-| weekday returns the day of week for a given Date.
 
 This uses Sakamoto's method to determine the day of week.
+
 -}
 weekday : Date -> Weekday
 weekday (Date { year, month, day }) =
@@ -170,7 +182,7 @@ weekday (Date { year, month, day }) =
             Sat
 
 
-{-| setYear updates a Date's year.  Invalid values are clamped to the
+{-| setYear updates a Date's year. Invalid values are clamped to the
 nearest valid date.
 -}
 setYear : Int -> Date -> Date
@@ -178,7 +190,7 @@ setYear year (Date ({ month, day } as date)) =
     firstValid year month day
 
 
-{-| setMonth updates a Date's month.  Invalid values are clamped to the
+{-| setMonth updates a Date's month. Invalid values are clamped to the
 nearest valid date.
 -}
 setMonth : Int -> Date -> Date
@@ -186,7 +198,7 @@ setMonth month (Date ({ year, day } as date)) =
     firstValid year (clampMonth month) day
 
 
-{-| setDay updates a Date's day.  Invalid values are clamped to the
+{-| setDay updates a Date's day. Invalid values are clamped to the
 nearest valid date.
 -}
 setDay : Int -> Date -> Date
@@ -195,7 +207,7 @@ setDay day (Date ({ year, month } as date)) =
 
 
 {-| addYears adds a relative number (positive or negative) of years to
-a Date, ensuring that the return value represents a valid Date.  If
+a Date, ensuring that the return value represents a valid Date. If
 the new date is not valid, days are subtracted from it until a valid
 Date can be produced.
 -}
@@ -205,7 +217,7 @@ addYears years (Date ({ year, month, day } as date)) =
 
 
 {-| addMonths adds a relative number (positive or negative) of months to
-a Date, ensuring that the return value represents a valid Date.  Its
+a Date, ensuring that the return value represents a valid Date. Its
 semantics are the same as `addYears`.
 -}
 addMonths : Int -> Date -> Date
@@ -224,7 +236,7 @@ addMonths months (Date { year, month, day }) =
 
 
 {-| days adds an exact number (positive or negative) of days to a
-Date.  Adding or subtracting days always produces a valid Date so
+Date. Adding or subtracting days always produces a valid Date so
 there is no fuzzing logic here like there is in `add{Months,Years}`.
 -}
 addDays : Int -> Date -> Date
@@ -257,7 +269,11 @@ delta (Date d1) (Date d2) =
 -}
 toISO8601 : Date -> String
 toISO8601 d =
-    toString (year d) ++ "-" ++ padded (month d) ++ "-" ++ padded (day d)
+    (toString (year d) |> String.padLeft 4 '0')
+        ++ "-"
+        ++ padded (month d)
+        ++ "-"
+        ++ padded (day d)
 
 
 {-| toTuple converts a Date value into a (year, month, day) tuple.
@@ -285,12 +301,13 @@ isValidDate year month day =
         |> Maybe.withDefault False
 
 
-{-| isLeapYear returns True if the given year is a leap year.  The
+{-| isLeapYear returns True if the given year is a leap year. The
 rules for leap years are as follows:
 
-* A year that is a multiple of 400 is a leap year.
-* A year that is a multiple of 100 but not of 400 is not a leap year.
-* A year that is a multiple of 4 but not of 100 is a leap year.
+  - A year that is a multiple of 400 is a leap year.
+  - A year that is a multiple of 100 but not of 400 is not a leap year.
+  - A year that is a multiple of 4 but not of 100 is a leap year.
+
 -}
 isLeapYear : Int -> Bool
 isLeapYear y =
@@ -300,8 +317,9 @@ isLeapYear y =
 {-| daysInMonth returns the number of days in a month given a specific
 year, taking leap years into account.
 
-* A regular year has 365 days and the corresponding February has 28 days.
-* A leap year has 366 days and the corresponding February has 29 days.
+  - A regular year has 365 days and the corresponding February has 28 days.
+  - A leap year has 366 days and the corresponding February has 29 days.
+
 -}
 daysInMonth : Int -> Int -> Maybe Int
 daysInMonth y m =
@@ -492,7 +510,11 @@ fromISO8601 input =
     let
         dateTuple =
             (,,)
-                <$> Combine.Num.int
+                <$> (Combine.Num.digit
+                        |> Combine.andThen (\a -> Combine.map (\b -> a * 10 + b) Combine.Num.digit)
+                        |> Combine.andThen (\a -> Combine.map (\b -> a * 10 + b) Combine.Num.digit)
+                        |> Combine.andThen (\a -> Combine.map (\b -> a * 10 + b) Combine.Num.digit)
+                    )
                 <*> (Combine.string "-" *> intRange 1 12)
                 <*> (Combine.string "-" *> intRange 1 31)
 
