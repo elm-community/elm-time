@@ -27,7 +27,7 @@ import Style.Font as Font
 import Style.Transition as Transition
 import Task
 import Time.Date
-import Time.DateTime as TD
+import Time.DateTime
     exposing
         ( DateTime
         , dateTime
@@ -35,6 +35,11 @@ import Time.DateTime as TD
         , fromTuple
         , year
         , month
+        , day
+        , hour
+        , minute
+        , second
+        , millisecond
         )
 import Time.Internal exposing (DateTimeData)
 import Time.ISO8601Error exposing (reflow, renderText)
@@ -61,7 +66,8 @@ type Styles
 stylesheet : StyleSheet Styles variation
 stylesheet =
     Style.styleSheet
-        [ style None []
+        [ style Page
+            []
         , style InputContainer
             [ Style.Color.text black
             , Style.Color.background lightGray
@@ -69,7 +75,6 @@ stylesheet =
             ]
         , style Error
             [ Style.Color.text red
-            , Style.Color.background white
             , Font.typeface [ Font.monospace ]
             ]
         , style DateTimeGrid
@@ -81,7 +86,6 @@ stylesheet =
         , style Box
             [ Border.left 1
             , Border.right 1
-            , Style.Color.background white
             , Font.center
             ]
         ]
@@ -112,7 +116,7 @@ init =
             "1991-02-28T12:25:12.0Z"
 
         initDateTime =
-            TD.dateTime
+            dateTime
                 { year = 1991
                 , month = 2
                 , day = 28
@@ -229,13 +233,13 @@ renderDateTimeSuccess dt =
                 , renderCell 4 0 "Minute"
                 , renderCell 5 0 "Second"
                 , renderCell 6 0 "Millisecond"
-                , renderCell 0 1 (toString <| TD.year dt)
-                , renderCell 1 1 (toString <| TD.month dt)
-                , renderCell 2 1 (toString <| TD.day dt)
-                , renderCell 3 1 (toString <| TD.hour dt)
-                , renderCell 4 1 (toString <| TD.minute dt)
-                , renderCell 5 1 (toString <| TD.second dt)
-                , renderCell 6 1 (toString <| TD.millisecond dt)
+                , renderCell 0 1 (toString <| year dt)
+                , renderCell 1 1 (toString <| month dt)
+                , renderCell 2 1 (toString <| day dt)
+                , renderCell 3 1 (toString <| hour dt)
+                , renderCell 4 1 (toString <| minute dt)
+                , renderCell 5 1 (toString <| second dt)
+                , renderCell 6 1 (toString <| millisecond dt)
                 ]
             }
 
