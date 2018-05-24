@@ -194,11 +194,11 @@ toFromISO8601 =
             , test "toISO8601 of some date is correct" <|
                 renderEq someDate "1992-05-29"
             , test "toISO8601 of a valid year before 1000 is correct" <|
-                renderEq (date 1 1 1) "0001-01-01"
+                renderEq (date 301 10 2) "0301-10-02"
             , test "fromISO8601 of a valid date is correct" <|
                 parseEq "1992-05-29" (date 1992 5 29)
             , test "fromISO8601 of a valid year before 1000 is correct" <|
-                parseEq "0001-01-01" (date 1 1 1)
+                parseEq "0301-10-02" (date 301 10 2)
             , test "fromISO8601 of a badly-formatted date fails" <|
                 parseFails ""
             , test "fromISO8601 of a badly-formatted date fails 2" <|
