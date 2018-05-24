@@ -126,7 +126,6 @@ day (Date { day }) =
 {-| weekday returns the day of week for a given Date.
 
 This uses Sakamoto's method to determine the day of week.
-
 -}
 weekday : Date -> Weekday
 weekday (Date { year, month, day }) =
