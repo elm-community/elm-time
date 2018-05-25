@@ -46,6 +46,18 @@ toFromISO8601 =
                     else
                         Expect.fail ("expected '" ++ Iso8601.fromDateTime actualDateTime ++ "' to equal '" ++ Iso8601.fromDateTime expectedDateTime ++ "' from input '" ++ input ++ "'")
 
+        parseEqDate input expectedDate =
+            case toDate input of
+                Err error ->
+                    toString error
+                        |> Expect.fail
+
+                Ok actualDate ->
+                    if actualDate == expectedDate then
+                        Expect.pass
+                    else
+                        Expect.fail ("expected '" ++ Iso8601.fromDate actualDate ++ "' to equal '" ++ Iso8601.fromDate expectedDate ++ "' from input '" ++ input ++ "'")
+
         parseFails input =
             case toDateTime input of
                 Err _ ->
@@ -62,7 +74,7 @@ toFromISO8601 =
                 Ok dt ->
                     Expect.equal (millisecond dt) ms
     in
-    describe "Time.DateTime.{to,from}ISO8601"
+      describe "Time.DateTime.{to,from}ISO8601"
         [ test "toISO8601 of epoch is correct" <|
             \() ->
                 Iso8601.fromDateTime epoch
@@ -109,6 +121,14 @@ toFromISO8601 =
             \() -> parseMs "2017-07-03T11:27:11.000-0400" 0
         , test "fromISO8601 fraction 001 with offsets" <|
             \() -> parseMs "2017-07-03T11:27:11.001-0400" 1
+        , test "fromISO8601 of a valid year before 1000 (with dashes) is correct" <|
+            \() -> parseEqDate "0301-10-02" (date 301 10 2)
+        , test "fromISO8601 of a valid year before 1000 (without dashes) is correct" <|
+            \() -> parseEqDate "00011002" (date 1 10 2)
+        , test "toISO8601 of a valid year before 1000 is correct" <|
+            \() ->
+                Iso8601.fromDate (date 301 10 2)
+                    |> Expect.equal "0301-10-02"
         , test "toISO8601 should format 3-digit milliseconds" <|
             \() ->
                 epoch
