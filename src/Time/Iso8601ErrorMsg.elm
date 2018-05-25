@@ -1,4 +1,4 @@
-module Time.ISO8601Error
+module Time.Iso8601ErrorMsg
     exposing
         ( reflow
         , renderText

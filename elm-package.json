@@ -9,7 +9,7 @@
     "exposed-modules": [
         "Time.Date",
         "Time.DateTime",
-        "Time.ISO8601Error",
+        "Time.Iso8601ErrorMsg",
         "Time.TimeZone",
         "Time.TimeZones",
         "Time.ZonedDateTime"
