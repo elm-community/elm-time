@@ -87,7 +87,7 @@ type alias Milliseconds =
 
 fromDate : Date -> String
 fromDate date =
-    toString (Date.year date)
+    (toString (Date.year date) |> String.padLeft 4 '0')
         ++ "-"
         ++ padded (Date.month date)
         ++ "-"
