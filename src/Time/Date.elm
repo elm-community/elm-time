@@ -18,7 +18,6 @@ module Time.Date
         , setDay
         , setMonth
         , setYear
-        , toISO8601
         , toTuple
         , weekday
         , year
@@ -50,7 +49,7 @@ represent any date of the proleptic Gregorian calendar.
 
 # Helper functions
 
-@docs toISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 
 -}
 
@@ -263,13 +262,6 @@ delta (Date d1) (Date d2) =
         daysFromYearMonthDay d1.year d1.month d1.day
             - daysFromYearMonthDay d2.year d2.month d2.day
     }
-
-
-{-| toISO8601 converts a Date into its string representation.
--}
-toISO8601 : Date -> String
-toISO8601 d =
-    toString (year d) ++ "-" ++ padded (month d) ++ "-" ++ padded (day d)
 
 
 {-| toTuple converts a Date value into a (year, month, day) tuple.
