@@ -28,7 +28,7 @@ import Parser exposing (Parser, Problem(..))
 import Time.Iso8601 exposing (..)
 
 
-{-| Invoking the renderer. This returns an error string
+{-| Invoking the renderer. This returns an 'elm compiler-style formatted' error string
 -}
 renderText : Parser.Error -> String
 renderText error =
@@ -63,6 +63,9 @@ renderText error =
 
 
 {-| A convenience function to auto-wrap long strings
+
+Use this method to appropriately wrap the error string returned
+from `renderText` above.
 -}
 reflow : String -> String
 reflow s =

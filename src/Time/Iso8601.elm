@@ -10,11 +10,11 @@ module Time.Iso8601
 
 {-|
 
-# Render ISO8601 strings from Date, DateTime, and ZonedDateTime objects
+# Render ISO8601 strings
 
 @docs fromDate, fromDateTime, fromZonedDateTime
 
-# Parse ISO8601 strings into Date, DateTme, and ZonedDateTime objects
+# Parse ISO8601 strings
 
 @docs toDate, toDateTime, toZonedDateTime
 
