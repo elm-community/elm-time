@@ -100,6 +100,9 @@ date year month day =
 
 
 {-| year returns a Date's year as an Int.
+
+    year (date 2018 5 26)
+    --> 2018
 -}
 year : Date -> Int
 year (Date { year }) =
@@ -108,6 +111,9 @@ year (Date { year }) =
 
 {-| month returns a Date's month as an Int. Guaranteed to be in the
 range [1, 12].
+
+    month (date 2018 13 26) -- Note month will be clamped
+    --> 12
 -}
 month : Date -> Int
 month (Date { month }) =
@@ -116,6 +122,15 @@ month (Date { month }) =
 
 {-| day returns a Date's year as an Int. Guaranteed to be valid for
 the Date's (year, month) pair and in the range [1, 31].
+
+    day (date 2018 2 28)
+    --> 28
+
+    day (date 2018 2 29)
+    --> 28    -- observed clamped
+
+    day (date 2000 2 29)
+    --> 29    -- leap year
 -}
 day : Date -> Int
 day (Date { day }) =
@@ -126,6 +141,8 @@ day (Date { day }) =
 
 This uses Sakamoto's method to determine the day of week.
 
+    weekday (date 2018 5 26)
+    --> Sat
 -}
 weekday : Date -> Weekday
 weekday (Date { year, month, day }) =
@@ -183,6 +200,11 @@ weekday (Date { year, month, day }) =
 
 {-| setYear updates a Date's year. Invalid values are clamped to the
 nearest valid date.
+
+    date 2000 5 26
+    |> setYear 2016
+    |> year
+    --> 2016
 -}
 setYear : Int -> Date -> Date
 setYear year (Date ({ month, day } as date)) =
@@ -191,6 +213,16 @@ setYear year (Date ({ month, day } as date)) =
 
 {-| setMonth updates a Date's month. Invalid values are clamped to the
 nearest valid date.
+
+    date 2016 5 26
+    |> setMonth 6
+    |> month
+    --> 6
+
+    date 2016 5 26
+    |> setMonth 13 -- will be clamped
+    |> month
+    --> 12
 -}
 setMonth : Int -> Date -> Date
 setMonth month (Date ({ year, day } as date)) =
@@ -199,6 +231,21 @@ setMonth month (Date ({ year, day } as date)) =
 
 {-| setDay updates a Date's day. Invalid values are clamped to the
 nearest valid date.
+
+    date 2016 2 26
+    |> setDay 28
+    |> day
+    --> 28
+
+    date 2016 2 28
+    |> setDay 29    -- leap year
+    |> day
+    --> 29
+
+    date 2015 2 28
+    |> setDay 29    -- clamped
+    |> day
+    --> 28
 -}
 setDay : Int -> Date -> Date
 setDay day (Date ({ year, month } as date)) =
@@ -209,6 +256,11 @@ setDay day (Date ({ year, month } as date)) =
 a Date, ensuring that the return value represents a valid Date. If
 the new date is not valid, days are subtracted from it until a valid
 Date can be produced.
+
+    date 2000 2 29
+    |> addYears -1  -- will no longer be leap year
+    |> day
+    --> 28
 -}
 addYears : Int -> Date -> Date
 addYears years (Date ({ year, month, day } as date)) =
@@ -218,6 +270,11 @@ addYears years (Date ({ year, month, day } as date)) =
 {-| addMonths adds a relative number (positive or negative) of months to
 a Date, ensuring that the return value represents a valid Date. Its
 semantics are the same as `addYears`.
+
+    date 2018 3 31
+    |> addMonths -1 -- Switch to Feb
+    |> day
+    --> 28
 -}
 addMonths : Int -> Date -> Date
 addMonths months (Date { year, month, day }) =
@@ -237,6 +294,11 @@ addMonths months (Date { year, month, day }) =
 {-| days adds an exact number (positive or negative) of days to a
 Date. Adding or subtracting days always produces a valid Date so
 there is no fuzzing logic here like there is in `add{Months,Years}`.
+
+    date 2018 2 28
+    |> addDays 1
+    |> month
+    --> 3 -- March
 -}
 addDays : Int -> Date -> Date
 addDays days (Date ({ year, month, day } as date)) =
@@ -246,6 +308,15 @@ addDays days (Date ({ year, month, day } as date)) =
 
 
 {-| compare two Dates.
+
+Note: since this conflicts with **Basics.compare**, have to
+preface with **Time.Date.**; see this example:
+
+    date 2018 1 28
+    |> addYears -1
+    |> addMonths 1
+    |> Time.Date.compare (date 2017 2 29)
+    --> EQ
 -}
 compare : Date -> Date -> Order
 compare d1 d2 =
@@ -253,6 +324,12 @@ compare d1 d2 =
 
 
 {-| delta returns the relative number of years, months and days between two Dates.
+
+    delta (date 2018 2 4) (date 2018 2 3)
+    --> { years = 0
+    --> , months = 0
+    --> , days = 1
+    --> }
 -}
 delta : Date -> Date -> DateDelta
 delta (Date d1) (Date d2) =
