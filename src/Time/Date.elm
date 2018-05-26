@@ -377,6 +377,10 @@ delta (Date d1) (Date d2) =
 
 {-| toTuple converts a Date value into a (year, month, day) tuple.
 This is useful if you want to use Dates as Dict keys.
+
+    date 2018 5 26
+    |> toTuple
+    --> (2018, 5, 26)
 -}
 toTuple : Date -> ( Int, Int, Int )
 toTuple (Date { year, month, day }) =
@@ -384,14 +388,38 @@ toTuple (Date { year, month, day }) =
 
 
 {-| fromTuple converts a (year, month, day) tuple into a Date value.
+
+    (2018, 5, 26)
+    |> fromTuple
+    --> date 2018 5 26
 -}
 fromTuple : ( Int, Int, Int ) -> Date
+
 fromTuple ( year, month, day ) =
     date year month day
 
 
 {-| isValidDate returns True if the given year, month and day
 represent a valid date.
+
+NOTE: when you create a Date using `date`, it does not validate
+the `year`, `month`, or `day` used; rather it just clamps out-of-range
+values to "legal" values without notifying you.  If you are worried
+about complete validation, pass the 3 values to this
+method first and it will validate it.  This gives you a chance to
+abort creating a "bad" `Date`.
+
+    isValidDate 2016 12 31
+    --> True
+
+    isValidDate 2016 12 32
+    --> False
+
+    isValidDate 2016 2 29 -- leap year
+    --> True
+
+    isValidDate 2018 2 29 -- not leap year
+    --> False
 -}
 isValidDate : Int -> Int -> Int -> Bool
 isValidDate year month day =
@@ -407,6 +435,20 @@ rules for leap years are as follows:
   - A year that is a multiple of 100 but not of 400 is not a leap year.
   - A year that is a multiple of 4 but not of 100 is a leap year.
 
+    isLeapYear 2016
+    --> True
+
+    isLeapYear 2018
+    --> False
+
+    isLeapYear 400
+    --> True
+
+    isLeapYear 500
+    --> False
+
+    isLeapYear (500 + 4)
+    --> True
 -}
 isLeapYear : Int -> Bool
 isLeapYear y =
@@ -419,6 +461,14 @@ year, taking leap years into account.
   - A regular year has 365 days and the corresponding February has 28 days.
   - A leap year has 366 days and the corresponding February has 29 days.
 
+    daysInMonth 2016 2
+    --> Just 29
+
+    daysInMonth 2018 2
+    --> Just 28
+
+    daysInMonth 2018 13 -- month out of range
+    --> Nothing
 -}
 daysInMonth : Int -> Int -> Maybe Int
 daysInMonth y m =
