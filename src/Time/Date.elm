@@ -325,9 +325,43 @@ compare d1 d2 =
 
 {-| delta returns the relative number of years, months and days between two Dates.
 
-    delta (date 2018 2 4) (date 2018 2 3)
-    --> { years = 0
-    --> , months = 0
+Each field is accumulative by itself.  That is, `days` not only shows the
+difference caused by the two `day` entries in the two `Date` arguments, but
+also the added days caused by differences in `months` and `years`.  For `months`
+and `years`, is the count across month and year change boundaries respectively; illustrated
+by last example below.
+
+
+    -- 3 examples showing that, if the `year` and `month`
+    -- are the same in the two `Date` values, then the
+    -- `years` and `months` result values remain constant
+    -- in spite of large differences in the two inputs'
+    -- `day` setting:
+
+    delta (date 2019 1 1) (date 2018 1 1)
+    --> { years = 1
+    --> , months = 12
+    --> , days = 365
+    --> }
+
+    delta (date 2019 1 31) (date 2018 1 1)
+    --> { years = 1
+    --> , months = 12
+    --> , days = 395
+    --> }
+
+    delta (date 2019 1 1) (date 2018 1 31)
+    --> { years = 1
+    --> , months = 12
+    --> , days = 335
+    --> }
+
+    -- 1 day apart but from last day of year to first
+    -- day of next year:
+
+    delta (date 2019 1 1) (date 2018 12 31)
+    --> { years = 1
+    --> , months = 1
     --> , days = 1
     --> }
 -}
