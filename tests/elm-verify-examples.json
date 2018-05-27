@@ -1,6 +1,7 @@
 {
   "root": "../src",
   "tests": [
-    "Time.Date"
+    "Time.Date",
+    "Time.DateTime"
   ]
 }

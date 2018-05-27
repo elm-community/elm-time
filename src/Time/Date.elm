@@ -430,10 +430,9 @@ isValidDate year month day =
 
 {-| isLeapYear returns True if the given year is a leap year. The
 rules for leap years are as follows:
-
-  - A year that is a multiple of 400 is a leap year.
-  - A year that is a multiple of 100 but not of 400 is not a leap year.
-  - A year that is a multiple of 4 but not of 100 is a leap year.
+* A year that is a multiple of 400 is a leap year.
+* A year that is a multiple of 100 but not of 400 is not a leap year.
+* A year that is a multiple of 4 but not of 100 is a leap year.
 
     isLeapYear 2016
     --> True
