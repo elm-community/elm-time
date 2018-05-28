@@ -22,7 +22,7 @@ unpackTest =
                     Ok value ->
                         let
                             v =
-                                Debug.log "TimeZone" value
+                                value
                         in
                             Expect.pass
 
