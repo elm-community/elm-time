@@ -82,9 +82,13 @@ type alias Milliseconds =
 
 
 {-| fromDate renders a Date in ISO8601 format.
+
+    import Time.Date exposing (..)
+
+    date 2018 5 27
+    |> fromDate
+    --> "2018-05-27"
 -}
-
-
 fromDate : Date -> String
 fromDate date =
     (toString (Date.year date) |> String.padLeft 4 '0')
@@ -95,6 +99,12 @@ fromDate date =
 
 
 {-| fromDateTime renders a DateTime in ISO8601 format.
+    import Time.DateTime exposing (..)
+
+    epoch
+    |> addMilliseconds 61000
+    |> fromDateTime
+    --> "1970-01-01T00:01:01.000Z"
 -}
 fromDateTime : DateTime -> String
 fromDateTime time =
@@ -115,6 +125,14 @@ fromDateTime time =
 
 
 {-| fromZonedDateTime renders a ZonedDateTime in ISO8601 format.
+
+    import Time.ZonedDateTime
+    import Time.TimeZones exposing (america_new_york)
+    import Time.DateTime exposing (epoch)
+
+    Time.ZonedDateTime.fromDateTime (america_new_york ()) epoch
+    |> fromZonedDateTime
+    --> "1969-12-31T19:00:00.000-05:00"
 -}
 fromZonedDateTime : ZonedDateTime -> String
 fromZonedDateTime dateTime =
@@ -136,6 +154,13 @@ fromZonedDateTime dateTime =
 
 {-| toZonedDateTime parses an ISO8601-formatted string into a
 ZonedDateTime object, adjusting for its offset.
+
+    import Time.ZonedDateTime
+    import Time.TimeZones exposing (america_new_york)
+    import Time.DateTime exposing (epoch)
+
+    toZonedDateTime (america_new_york ()) "1970-01-01T00:00:00.000Z"
+    --> Ok (Time.ZonedDateTime.fromDateTime (america_new_york ()) epoch)
 -}
 toZonedDateTime : TimeZone -> String -> Result Parser.Error ZonedDateTime
 toZonedDateTime timeZone input =
@@ -144,6 +169,13 @@ toZonedDateTime timeZone input =
 
 
 {-| toDate parses an ISO8601-formatted date string into a Date.
+    import Time.Date
+
+    toDate "1970-12-01"
+    --> Ok (Time.Date.date 1970 12 1)
+
+    toDate "19701201"
+    --> Ok (Time.Date.date 1970 12 1)
 -}
 toDate : String -> Result Parser.Error Date
 toDate input =
