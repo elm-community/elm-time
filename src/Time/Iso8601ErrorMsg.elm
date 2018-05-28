@@ -45,8 +45,7 @@ import Time.Iso8601 exposing (..)
         , col = 11
         , source = "1991-02-29T12:25:12.0Z"
         , problem = Parser.Fail
-            (  "Expecting the value 29 to be in the range 1 to 28 for the specified\n" ++
-               "year, 1991, and month, 2."
+            (  "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
             )
         , context = [{ row = 1, col = 11, description = "leap-year" }]
         }
