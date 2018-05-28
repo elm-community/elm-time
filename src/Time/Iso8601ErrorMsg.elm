@@ -92,6 +92,10 @@ renderText error =
 
 Use this method to appropriately wrap the error string returned
 from `renderText` above.
+
+    -- \n inserted at 72nt position coz is right margin.
+    reflow "Expecting the value 29 to be in the range 1 to 28 for the specified year, 1991, and month, 2."
+    --> "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
 -}
 reflow : String -> String
 reflow s =
