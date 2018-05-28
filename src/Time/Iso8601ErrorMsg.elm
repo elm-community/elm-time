@@ -32,12 +32,16 @@ import Time.Iso8601 exposing (..)
 
     import Parser
 
+    failString : String
+    failString =
+        "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
+
     renderedString : String
     renderedString =
         "The 'day-of-month' segment is invalid:\n\n" ++
         "    1991-02-29T12:25:12.0Z\n" ++
         "            ^\n\n" ++
-        "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
+        failString
 
     parserError : Parser.Error
     parserError =
@@ -45,7 +49,7 @@ import Time.Iso8601 exposing (..)
         , col = 11
         , source = "1991-02-29T12:25:12.0Z"
         , problem = Parser.Fail
-            (  "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
+            (  failString
             )
         , context = [{ row = 1, col = 11, description = "leap-year" }]
         }
