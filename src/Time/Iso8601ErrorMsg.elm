@@ -32,6 +32,7 @@ import Time.Iso8601 exposing (..)
 
     import Parser
 
+    -- The \n in the middle of the string is to provide for the 72-char right margin
     failString : String
     failString =
         "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
@@ -48,9 +49,7 @@ import Time.Iso8601 exposing (..)
         { row = 1
         , col = 11
         , source = "1991-02-29T12:25:12.0Z"
-        , problem = Parser.Fail
-            (  failString
-            )
+        , problem = Parser.Fail failString
         , context = [{ row = 1, col = 11, description = "leap-year" }]
         }
 
