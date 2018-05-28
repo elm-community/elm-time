@@ -24,11 +24,35 @@ is famous for.
 
 -}
 
-import Parser exposing (Parser, Problem(..))
+import Parser exposing (Parser, Problem(Fail))
 import Time.Iso8601 exposing (..)
 
 
 {-| Invoking the renderer. This returns an 'elm compiler-style formatted' error string
+
+    import Parser
+
+    renderedString : String
+    renderedString =
+        "The 'day-of-month' segment is invalid:\n\n" ++
+        "    1991-02-29T12:25:12.0Z\n" ++
+        "            ^\n\n" ++
+        "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
+
+    parserError : Parser.Error
+    parserError =
+        { row = 1
+        , col = 11
+        , source = "1991-02-29T12:25:12.0Z"
+        , problem = Parser.Fail
+            (  "Expecting the value 29 to be in the range 1 to 28 for the specified\n" ++
+               "year, 1991, and month, 2."
+            )
+        , context = [{ row = 1, col = 11, description = "leap-year" }]
+        }
+
+    renderText parserError
+    --> renderedString
 -}
 renderText : Parser.Error -> String
 renderText error =
