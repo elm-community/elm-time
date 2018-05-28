@@ -42,7 +42,7 @@ import Time.DateTime
         , millisecond
         )
 import Time.Internal exposing (DateTimeData)
-import Time.ISO8601Error exposing (reflow, renderText)
+import Time.Iso8601ErrorMsg exposing (reflow, renderText)
 import Time.Iso8601 exposing (toDateTime)
 import Window
 
@@ -250,19 +250,7 @@ renderDateTimeSuccess dt =
 
 renderDateTimeFail : Error -> Element Styles a b
 renderDateTimeFail err =
-    el Error [] (text <| renderText err)
-
-
-render : Model -> String
-render model =
-    case model.dateTime of
-        Ok dt ->
-            toString dt
-
-        Err err ->
-            renderText err
-                ++ "\n\n"
-                ++ reflow (toString err)
+    el Error [] (text <| renderText err ++ "\n\n---\n\n" ++ reflow "The Elm error returned by parser:\n\n" ++ reflow (toString err))
 
 
 enterKeyCode : KeyCode
