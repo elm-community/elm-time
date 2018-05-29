@@ -125,10 +125,10 @@ fromDateTime timeZone dateTime =
         offset =
             TimeZone.offset timestamp timeZone
     in
-    ZonedDateTime
-        { timeZone = timeZone
-        , dateTime = DateTime.addMilliseconds -offset dateTime
-        }
+        ZonedDateTime
+            { timeZone = timeZone
+            , dateTime = DateTime.addMilliseconds -offset dateTime
+            }
 
 
 {-| toDateTime converts a ZonedDateTime to a UTC DateTime value.

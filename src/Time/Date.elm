@@ -103,6 +103,7 @@ date year month day =
 
     year (date 2018 5 26)
     --> 2018
+
 -}
 year : Date -> Int
 year (Date { year }) =
@@ -114,6 +115,7 @@ range [1, 12].
 
     month (date 2018 13 26) -- Note month will be clamped
     --> 12
+
 -}
 month : Date -> Int
 month (Date { month }) =
@@ -131,6 +133,7 @@ the Date's (year, month) pair and in the range [1, 31].
 
     day (date 2000 2 29)
     --> 29    -- leap year
+
 -}
 day : Date -> Int
 day (Date { day }) =
@@ -143,6 +146,7 @@ This uses Sakamoto's method to determine the day of week.
 
     weekday (date 2018 5 26)
     --> Sat
+
 -}
 weekday : Date -> Weekday
 weekday (Date { year, month, day }) =
@@ -182,20 +186,20 @@ weekday (Date { year, month, day }) =
         d =
             (y + y // 4 - y // 100 + y // 400 + m + day) % 7
     in
-    if d == 0 then
-        Sun
-    else if d == 1 then
-        Mon
-    else if d == 2 then
-        Tue
-    else if d == 3 then
-        Wed
-    else if d == 4 then
-        Thu
-    else if d == 5 then
-        Fri
-    else
-        Sat
+        if d == 0 then
+            Sun
+        else if d == 1 then
+            Mon
+        else if d == 2 then
+            Tue
+        else if d == 3 then
+            Wed
+        else if d == 4 then
+            Thu
+        else if d == 5 then
+            Fri
+        else
+            Sat
 
 
 {-| setYear updates a Date's year. Invalid values are clamped to the
@@ -205,6 +209,7 @@ nearest valid date.
     |> setYear 2016
     |> year
     --> 2016
+
 -}
 setYear : Int -> Date -> Date
 setYear year (Date ({ month, day } as date)) =
@@ -223,6 +228,7 @@ nearest valid date.
     |> setMonth 13 -- will be clamped
     |> month
     --> 12
+
 -}
 setMonth : Int -> Date -> Date
 setMonth month (Date ({ year, day } as date)) =
@@ -246,6 +252,7 @@ nearest valid date.
     |> setDay 29    -- clamped
     |> day
     --> 28
+
 -}
 setDay : Int -> Date -> Date
 setDay day (Date ({ year, month } as date)) =
@@ -261,6 +268,7 @@ Date can be produced.
     |> addYears -1  -- will no longer be leap year
     |> day
     --> 28
+
 -}
 addYears : Int -> Date -> Date
 addYears years (Date ({ year, month, day } as date)) =
@@ -275,6 +283,7 @@ semantics are the same as `addYears`.
     |> addMonths -1 -- Switch to Feb
     |> day
     --> 28
+
 -}
 addMonths : Int -> Date -> Date
 addMonths months (Date { year, month, day }) =
@@ -288,7 +297,7 @@ addMonths months (Date { year, month, day }) =
             else
                 0
     in
-    date (((ms - yo) // 12) + yo) ((ms % 12) + 1) day
+        date (((ms - yo) // 12) + yo) ((ms % 12) + 1) day
 
 
 {-| days adds an exact number (positive or negative) of days to a
@@ -299,6 +308,7 @@ there is no fuzzing logic here like there is in `add{Months,Years}`.
     |> addDays 1
     |> month
     --> 3 -- March
+
 -}
 addDays : Int -> Date -> Date
 addDays days (Date ({ year, month, day } as date)) =
@@ -317,6 +327,7 @@ preface with **Time.Date.**; see this example:
     |> addMonths 1
     |> Time.Date.compare (date 2017 2 29)
     --> EQ
+
 -}
 compare : Date -> Date -> Order
 compare d1 d2 =
@@ -325,12 +336,11 @@ compare d1 d2 =
 
 {-| delta returns the relative number of years, months and days between two Dates.
 
-Each field is accumulative by itself.  That is, `days` not only shows the
+Each field is accumulative by itself. That is, `days` not only shows the
 difference caused by the two `day` entries in the two `Date` arguments, but
-also the added days caused by differences in `months` and `years`.  For `months`
+also the added days caused by differences in `months` and `years`. For `months`
 and `years`, is the count across month and year change boundaries respectively; illustrated
 by last example below.
-
 
     -- 3 examples showing that, if the `year` and `month`
     -- are the same in the two `Date` values, then the
@@ -364,6 +374,7 @@ by last example below.
     --> , months = 1
     --> , days = 1
     --> }
+
 -}
 delta : Date -> Date -> DateDelta
 delta (Date d1) (Date d2) =
@@ -381,6 +392,7 @@ This is useful if you want to use Dates as Dict keys.
     date 2018 5 26
     |> toTuple
     --> (2018, 5, 26)
+
 -}
 toTuple : Date -> ( Int, Int, Int )
 toTuple (Date { year, month, day }) =
@@ -392,9 +404,9 @@ toTuple (Date { year, month, day }) =
     (2018, 5, 26)
     |> fromTuple
     --> date 2018 5 26
+
 -}
 fromTuple : ( Int, Int, Int ) -> Date
-
 fromTuple ( year, month, day ) =
     date year month day
 
@@ -404,9 +416,9 @@ represent a valid date.
 
 NOTE: when you create a Date using `date`, it does not validate
 the `year`, `month`, or `day` used; rather it just clamps out-of-range
-values to "legal" values without notifying you.  If you are worried
+values to "legal" values without notifying you. If you are worried
 about complete validation, pass the 3 values to this
-method first and it will validate it.  This gives you a chance to
+method first and it will validate it. This gives you a chance to
 abort creating a "bad" `Date`.
 
     isValidDate 2016 12 31
@@ -420,6 +432,7 @@ abort creating a "bad" `Date`.
 
     isValidDate 2018 2 29 -- not leap year
     --> False
+
 -}
 isValidDate : Int -> Int -> Int -> Bool
 isValidDate year month day =
@@ -430,9 +443,12 @@ isValidDate year month day =
 
 {-| isLeapYear returns True if the given year is a leap year. The
 rules for leap years are as follows:
-* A year that is a multiple of 400 is a leap year.
-* A year that is a multiple of 100 but not of 400 is not a leap year.
-* A year that is a multiple of 4 but not of 100 is a leap year.
+
+  - A year that is a multiple of 400 is a leap year.
+
+  - A year that is a multiple of 100 but not of 400 is not a leap year.
+
+  - A year that is a multiple of 4 but not of 100 is a leap year.
 
     isLeapYear 2016
     --> True
@@ -448,6 +464,7 @@ rules for leap years are as follows:
 
     isLeapYear (500 + 4)
     --> True
+
 -}
 isLeapYear : Int -> Bool
 isLeapYear y =
@@ -458,6 +475,7 @@ isLeapYear y =
 year, taking leap years into account.
 
   - A regular year has 365 days and the corresponding February has 28 days.
+
   - A leap year has 366 days and the corresponding February has 29 days.
 
     daysInMonth 2016 2
@@ -468,6 +486,7 @@ year, taking leap years into account.
 
     daysInMonth 2018 13 -- month out of range
     --> Nothing
+
 -}
 daysInMonth : Int -> Int -> Maybe Int
 daysInMonth y m =
@@ -522,7 +541,7 @@ firstValid year month day =
             else
                 ( year, month, day - 3 )
     in
-    Date { year = y, month = m, day = d }
+        Date { year = y, month = m, day = d }
 
 
 daysFromYearMonthDay : Int -> Int -> Int -> Int
@@ -537,7 +556,7 @@ daysFromYearMonthDay year month day =
         dds =
             day - 1
     in
-    yds + mds + dds
+        yds + mds + dds
 
 
 daysFromYearMonth : Int -> Int -> Int
@@ -549,7 +568,7 @@ daysFromYearMonth year month =
             else
                 go year (month - 1) (acc + unsafeDaysInMonth year month)
     in
-    go year (month - 1) 0
+        go year (month - 1) 0
 
 
 daysFromYear : Int -> Int
@@ -578,10 +597,10 @@ yearFromDays ds =
         d =
             daysFromYear y
     in
-    if ds <= d then
-        y - 1
-    else
-        y
+        if ds <= d then
+            y - 1
+        else
+            y
 
 
 dateFromDays : Int -> Date
@@ -634,11 +653,11 @@ dateFromDays ds =
             else
                 ( 12, doy - leap 334 + 1 )
     in
-    Date
-        { year = year + y400 * 400
-        , month = month
-        , day = day
-        }
+        Date
+            { year = year + y400 * 400
+            , month = month
+            , day = day
+            }
 
 
 clampMonth : Int -> Int

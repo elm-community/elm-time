@@ -68,6 +68,7 @@ time of day.
 
 @docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple
 
+
 # Deprecated
 
 @docs toISO8601
@@ -130,6 +131,7 @@ of the UNIX Epoch.
     epoch
     |> toISO8601
     --> "1970-01-01T00:00:00.000Z"
+
 -}
 epoch : DateTime
 epoch =
@@ -162,6 +164,7 @@ Invalid values are clamped to the nearest valid date and time.
              }
     |> millisecond
     --> 47
+
 -}
 dateTime : DateTimeData -> DateTime
 dateTime ({ year, month, day } as data) =
@@ -191,6 +194,7 @@ mkDateTime date time =
     makeDateTime (Time.Date.date 2018 13 26) 1047
     |> second
     --> 1
+
 -}
 makeDateTime : Date -> Int -> DateTime
 makeDateTime date offset =
@@ -211,6 +215,7 @@ makeDateTime date offset =
              }
     |> date
     --> Time.Date.date 2018 1 25
+
 -}
 date : DateTime -> Date
 date (DateTime { date }) =
@@ -222,6 +227,7 @@ date (DateTime { date }) =
     dateTime { zero | year = 2015 }
     |> year
     --> 2015
+
 -}
 year : DateTime -> Int
 year (DateTime { date }) =
@@ -237,6 +243,7 @@ year (DateTime { date }) =
     dateTime { zero | month = 0 } -- will be clamped
     |> month
     --> 1
+
 -}
 month : DateTime -> Int
 month (DateTime { date }) =
@@ -252,6 +259,7 @@ month (DateTime { date }) =
     dateTime { zero | day = 32 } -- will be clamped
     |> day
     --> 31
+
 -}
 day : DateTime -> Int
 day (DateTime { date }) =
@@ -265,6 +273,7 @@ day (DateTime { date }) =
     dateTime { zero | year = 2018, month = 5, day = 27 }
     |> weekday
     --> Time.Date.Sun
+
 -}
 weekday : DateTime -> Weekday
 weekday (DateTime { date }) =
@@ -280,6 +289,7 @@ weekday (DateTime { date }) =
     dateTime { zero | hour = 24 } -- will be clamped
     |> hour
     --> 23
+
 -}
 hour : DateTime -> Int
 hour (DateTime { offset }) =
@@ -295,6 +305,7 @@ hour (DateTime { offset }) =
     dateTime { zero | minute = 60 } -- will be clamped
     |> minute
     --> 59
+
 -}
 minute : DateTime -> Int
 minute (DateTime { offset }) =
@@ -310,6 +321,7 @@ minute (DateTime { offset }) =
     dateTime { zero | second = 60 } -- will be clamped
     |> second
     --> 59
+
 -}
 second : DateTime -> Int
 second (DateTime { offset }) =
@@ -325,6 +337,7 @@ second (DateTime { offset }) =
     dateTime { zero | millisecond = 1000 } -- will be clamped
     |> millisecond
     --> 999
+
 -}
 millisecond : DateTime -> Int
 millisecond (DateTime { offset }) =
@@ -339,6 +352,7 @@ millisecond (DateTime { offset }) =
     |> setDate (TD.date 2018 5 27)
     |> date
     --> TD.date 2018 5 27
+
 -}
 setDate : Date -> DateTime -> DateTime
 setDate date (DateTime { offset }) =
@@ -356,6 +370,7 @@ See also `Time.Date.setYear`.
     |> setYear 2018
     |> year
     --> 2018
+
 -}
 setYear : Int -> DateTime -> DateTime
 setYear year (DateTime { date, offset }) =
@@ -373,6 +388,7 @@ See also `Time.Date.setMonth`.
     |> setMonth 12
     |> month
     --> 12
+
 -}
 setMonth : Int -> DateTime -> DateTime
 setMonth month (DateTime { date, offset }) =
@@ -390,6 +406,7 @@ See also `Time.Date.setDay`.
     |> setDay 31
     |> day
     --> 31
+
 -}
 setDay : Int -> DateTime -> DateTime
 setDay day (DateTime { date, offset }) =
@@ -405,6 +422,7 @@ setDay day (DateTime { date, offset }) =
     |> setHour 23
     |> hour
     --> 23
+
 -}
 setHour : Int -> DateTime -> DateTime
 setHour hour ((DateTime { date }) as t) =
@@ -422,6 +440,7 @@ setHour hour ((DateTime { date }) as t) =
     |> setMinute 59
     |> minute
     --> 59
+
 -}
 setMinute : Int -> DateTime -> DateTime
 setMinute minute ((DateTime { date }) as t) =
@@ -434,10 +453,10 @@ setMinute minute ((DateTime { date }) as t) =
 
 
 {-| setSecond sets a DateTime's second.
-    dateTime zero
-    |> setSecond 59
-    |> second
-    --> 59
+dateTime zero
+|> setSecond 59
+|> second
+--> 59
 -}
 setSecond : Int -> DateTime -> DateTime
 setSecond second ((DateTime { date }) as t) =
@@ -455,6 +474,7 @@ setSecond second ((DateTime { date }) as t) =
     |> setMillisecond 999
     |> millisecond
     --> 999
+
 -}
 setMillisecond : Int -> DateTime -> DateTime
 setMillisecond millisecond ((DateTime { date }) as t) =
@@ -474,6 +494,7 @@ See also `Time.Date.addYears`.
     |> addYears 2
     |> year
     --> 2018
+
 -}
 addYears : Int -> DateTime -> DateTime
 addYears years (DateTime { date, offset }) =
@@ -491,6 +512,7 @@ See also `Time.Date.addMonths`.
     |> addMonths 1
     |> month
     --> 2
+
 -}
 addMonths : Int -> DateTime -> DateTime
 addMonths months (DateTime { date, offset }) =
@@ -508,6 +530,7 @@ See also `Time.Date.addDays`.
     |> addDays -11
     |> day
     --> 9
+
 -}
 addDays : Int -> DateTime -> DateTime
 addDays days (DateTime { date, offset }) =
@@ -523,6 +546,7 @@ addDays days (DateTime { date, offset }) =
     |> addHours 1
     |> hour
     --> 0
+
 -}
 addHours : Int -> DateTime -> DateTime
 addHours hours time =
@@ -535,6 +559,7 @@ addHours hours time =
     |> addMinutes 30
     |> minute
     --> 0
+
 -}
 addMinutes : Int -> DateTime -> DateTime
 addMinutes minutes time =
@@ -547,6 +572,7 @@ addMinutes minutes time =
     |> addSeconds 1
     |> second
     --> 0
+
 -}
 addSeconds : Int -> DateTime -> DateTime
 addSeconds seconds time =
@@ -560,6 +586,7 @@ DateTime value.
     |> addMilliseconds 999
     |> second
     --> 11
+
 -}
 addMilliseconds : Int -> DateTime -> DateTime
 addMilliseconds ms (DateTime { date, offset }) =
@@ -576,17 +603,17 @@ addMilliseconds ms (DateTime { date, offset }) =
                     offset =
                         rem total dayMs
                 in
-                if offset == 0 then
-                    ( days + 1, 0 )
-                else
-                    ( days, dayMs + rem offset dayMs )
+                    if offset == 0 then
+                        ( days + 1, 0 )
+                    else
+                        ( days, dayMs + rem offset dayMs )
             else
                 ( total // dayMs, rem total dayMs )
     in
-    DateTime
-        { date = Time.Date.addDays days date
-        , offset = newOffset
-        }
+        DateTime
+            { date = Time.Date.addDays days date
+            , offset = newOffset
+            }
 
 
 {-| compare two DateTimes.
@@ -606,6 +633,7 @@ addMilliseconds ms (DateTime { date, offset }) =
                                }
                              )
     --> EQ
+
 -}
 compare : DateTime -> DateTime -> Order
 compare dt1 dt2 =
@@ -658,14 +686,14 @@ delta (DateTime t1) (DateTime t2) =
         seconds =
             milliseconds // secondMs
     in
-    { years = years
-    , months = months
-    , days = days
-    , hours = hours
-    , minutes = minutes
-    , seconds = seconds
-    , milliseconds = milliseconds
-    }
+        { years = years
+        , months = months
+        , days = days
+        , hours = hours
+        , minutes = minutes
+        , seconds = seconds
+        , milliseconds = milliseconds
+        }
 
 
 {-| isValidTime returns True if the given hour, minute, second and
@@ -676,6 +704,7 @@ millisecond represent a valid time of day.
 
     isValidTime 23 59 59 999
     --> True
+
 -}
 isValidTime : Int -> Int -> Int -> Int -> Bool
 isValidTime hour minute second millisecond =
@@ -688,6 +717,7 @@ representation as milliseconds.
     epoch
     |> toTimestamp
     --> 0.0
+
 -}
 toTimestamp : DateTime -> Time
 toTimestamp time =
@@ -701,6 +731,7 @@ UNIX timestamp into a DateTime value.
 
     fromTimestamp 0.0
     --> epoch
+
 -}
 fromTimestamp : Time -> DateTime
 fromTimestamp timestamp =
@@ -714,6 +745,7 @@ DEPRECATED - unavailable in Elm 0.19
 
     toTuple epoch
     --> (1970, 1, 1, 0, 0, 0, 0)
+
 -}
 toTuple : DateTime -> ( Int, Int, Int, Int, Int, Int, Int )
 toTuple ((DateTime { date }) as t) =
@@ -721,7 +753,7 @@ toTuple ((DateTime { date }) as t) =
         ( year, month, day ) =
             Time.Date.toTuple date
     in
-    ( year, month, day, hour t, minute t, second t, millisecond t )
+        ( year, month, day, hour t, minute t, second t, millisecond t )
 
 
 {-| fromTuple converts a (year, month, day, hour, minute, second,
@@ -731,6 +763,7 @@ DEPRECATED - unavailable in Elm 0.19
 
     fromTuple (1970, 1, 1, 0, 0, 0, 0)
     --> epoch
+
 -}
 fromTuple : ( Int, Int, Int, Int, Int, Int, Int ) -> DateTime
 fromTuple ( year, month, day, hour, minute, second, millisecond ) =
@@ -749,6 +782,7 @@ fromTuple ( year, month, day, hour, minute, second, millisecond ) =
 
 DEPRECATED: this is used as a hack for the compare function above; it is not exposed --
 use the functionality in Iso8601 instead.
+
 -}
 toISO8601 : DateTime -> String
 toISO8601 time =

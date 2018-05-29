@@ -40,10 +40,10 @@ monthDays year month =
             else
                 standardYearMonths
     in
-    monthDays
-        |> List.drop (month - 1)
-        |> List.head
-        |> Maybe.withDefault 0
+        monthDays
+            |> List.drop (month - 1)
+            |> List.head
+            |> Maybe.withDefault 0
 
 
 fuzzDate : String -> (Int -> Int -> Int -> Expectation) -> Test
@@ -60,7 +60,7 @@ constructing =
                     day_ =
                         clamp 1 day (monthDays year month)
                 in
-                datesEqual (date year month day_) ( year, month, day_ )
+                    datesEqual (date year month day_) ( year, month, day_ )
         , test "constructs valid dates" <|
             always <|
                 datesEqual (date 1992 5 29) ( 1992, 5, 29 )
@@ -106,7 +106,7 @@ adders =
                     date2 =
                         date 1993 2 28
                 in
-                Expect.equal date1 date2
+                    Expect.equal date1 date2
         , test "addMonths is relative" <|
             \() ->
                 let
@@ -117,7 +117,7 @@ adders =
                     date2 =
                         date 1992 2 29
                 in
-                Expect.equal date1 date2
+                    Expect.equal date1 date2
         , fuzz3 (intRange -400 3000) (intRange 1 12) (intRange -100 100) "addMonths is revertable" <|
             \year month addage ->
                 let
@@ -127,7 +127,7 @@ adders =
                     date2 =
                         addMonths addage date1
                 in
-                Expect.equal date1 (addMonths -addage date2)
+                    Expect.equal date1 (addMonths -addage date2)
         , fuzz int "addDays is absolute" <|
             \days ->
                 let
@@ -140,7 +140,7 @@ adders =
                     dt =
                         delta date2 date1
                 in
-                Expect.equal days dt.days
+                    Expect.equal days dt.days
         ]
 
 
@@ -158,5 +158,5 @@ toFromTuple =
                             |> toTuple
                             |> fromTuple
                 in
-                Expect.equal date1 date2
+                    Expect.equal date1 date2
         ]

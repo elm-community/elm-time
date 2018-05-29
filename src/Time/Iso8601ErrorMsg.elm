@@ -55,6 +55,7 @@ import Time.Iso8601 exposing (..)
 
     renderText parserError
     --> renderedString
+
 -}
 renderText : Parser.Error -> String
 renderText error =
@@ -79,13 +80,13 @@ renderText error =
                     , tweakCol ctx
                     )
     in
-    diagnosis
-        ++ "\n\n    "
-        ++ relevantSource error
-        ++ "\n    "
-        ++ marker col
-        ++ "\n\n"
-        ++ (reflow <| describeProblem source error.problem)
+        diagnosis
+            ++ "\n\n    "
+            ++ relevantSource error
+            ++ "\n    "
+            ++ marker col
+            ++ "\n\n"
+            ++ (reflow <| describeProblem source error.problem)
 
 
 {-| A convenience function to auto-wrap long strings
@@ -96,6 +97,7 @@ from `renderText` above.
     -- \n inserted at 72nt position coz is right margin.
     reflow "Expecting the value 29 to be in the range 1 to 28 for the specified year, 1991, and month, 2."
     --> "Expecting the value 29 to be in the range 1 to 28 for the specified" ++ "\n" ++ "year, 1991, and month, 2."
+
 -}
 reflow : String -> String
 reflow s =
@@ -119,20 +121,20 @@ reflow s =
                                 Just s ->
                                     s ++ " " ++ word
                     in
-                    if String.length combined > 72 then
-                        ( Just word, sentence :: acc )
-                    else
-                        ( Just combined, acc )
+                        if String.length combined > 72 then
+                            ( Just word, sentence :: acc )
+                        else
+                            ( Just combined, acc )
                 )
                 ( Nothing, [] )
                 words
                 |> uncurry (::)
                 |> reverseFilterMap identity
     in
-    s
-        |> String.lines
-        |> List.map flowLine
-        |> String.join "\n"
+        s
+            |> String.lines
+            |> List.map flowLine
+            |> String.join "\n"
 
 
 reverseFilterMap : (a -> Maybe b) -> List a -> List b
@@ -224,12 +226,12 @@ forContext { description } problem =
             else
                 description
     in
-    case problem of
-        Fail msg ->
-            "The '" ++ segment ++ "' segment is invalid:"
+        case problem of
+            Fail msg ->
+                "The '" ++ segment ++ "' segment is invalid:"
 
-        _ ->
-            "Failed to parse the '" ++ segment ++ "' segment:"
+            _ ->
+                "Failed to parse the '" ++ segment ++ "' segment:"
 
 
 noContext : String

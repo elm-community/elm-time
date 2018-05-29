@@ -2,32 +2,43 @@ module TestDateTimeDelta exposing (..)
 
 import Time.DateTime as DateTime exposing (..)
 import Expect exposing (Expectation)
+
+
 -- import Fuzz exposing (Fuzzer, constant, int, intRange, oneOf)
+
 import Test exposing (..)
 
 
-date1 : DateTime -- hmm
-date1 = DateTime.fromTuple
-    ( 1970
-    , 1
-    , 1
-    , 0
-    , 0
-    , 0
-    , 0
-    )
+date1 : DateTime
+
+
+
+-- hmm
+
+
+date1 =
+    DateTime.fromTuple
+        ( 1970
+        , 1
+        , 1
+        , 0
+        , 0
+        , 0
+        , 0
+        )
 
 
 date2 : DateTime
-date2 = DateTime.fromTuple
-    ( 1969
-    , 12
-    , 31
-    , 23
-    , 59
-    , 59
-    , 999
-    )
+date2 =
+    DateTime.fromTuple
+        ( 1969
+        , 12
+        , 31
+        , 23
+        , 59
+        , 59
+        , 999
+        )
 
 
 expectedDelta : DateTimeDelta
@@ -48,6 +59,6 @@ suite =
         [ test "Exploratory: two dates one millisecond apart at midnight New Years" <|
             \_ ->
                 DateTime.delta date1 date2
---                    |> Debug.log "date2 - date1"
+                    --                    |> Debug.log "date2 - date1"
                     |> Expect.equal expectedDelta
         ]

@@ -215,7 +215,7 @@ renderDateTimeSuccess dt =
     let
         renderCell x y value =
             cell
-                { start = (x, y)
+                { start = ( x, y )
                 , width = 1
                 , height = 1
                 , content = el Box [] (text <| value)

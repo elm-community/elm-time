@@ -59,9 +59,9 @@ dateTimes =
                     (( year, month, day, hour, minute, second, millisecond ) as dateTimeTuple) =
                         ( 1992, 5, 29, 23, 29, 50, 920 )
                 in
-                dateTimesEqual
-                    (dateTime { year = year, month = month, day = day, hour = hour, minute = minute, second = second, millisecond = millisecond })
-                    dateTimeTuple
+                    dateTimesEqual
+                        (dateTime { year = year, month = month, day = day, hour = hour, minute = minute, second = second, millisecond = millisecond })
+                        dateTimeTuple
         , test "clamps invalid dates" <|
             \() ->
                 dateTimesEqual

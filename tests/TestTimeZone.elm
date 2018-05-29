@@ -17,7 +17,6 @@ unpackTimeZoneData =
                 let
                     tz =
                         force (unpack "Africa/Bissau|LMT -01 GMT|12.k 10 0|012|-2ldWV.E 2xonV.E|39e4")
-
                 in
                     Expect.equal (force africa_bissau_l) tz
         ]

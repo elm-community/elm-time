@@ -10,9 +10,11 @@ module Time.Iso8601
 
 {-|
 
+
 # Render ISO8601 strings
 
 @docs fromDate, fromDateTime, fromZonedDateTime
+
 
 # Parse ISO8601 strings
 
@@ -88,6 +90,7 @@ type alias Milliseconds =
     date 2018 5 27
     |> fromDate
     --> "2018-05-27"
+
 -}
 fromDate : Date -> String
 fromDate date =
@@ -99,12 +102,14 @@ fromDate date =
 
 
 {-| fromDateTime renders a DateTime in ISO8601 format.
+
     import Time.DateTime exposing (..)
 
     epoch
     |> addMilliseconds 61000
     |> fromDateTime
     --> "1970-01-01T00:01:01.000Z"
+
 -}
 fromDateTime : DateTime -> String
 fromDateTime time =
@@ -133,6 +138,7 @@ fromDateTime time =
     Time.ZonedDateTime.fromDateTime (america_new_york ()) epoch
     |> fromZonedDateTime
     --> "1969-12-31T19:00:00.000-05:00"
+
 -}
 fromZonedDateTime : ZonedDateTime -> String
 fromZonedDateTime dateTime =
@@ -161,6 +167,7 @@ ZonedDateTime object, adjusting for its offset.
 
     toZonedDateTime (america_new_york ()) "1970-01-01T00:00:00.000Z"
     --> Ok (Time.ZonedDateTime.fromDateTime (america_new_york ()) epoch)
+
 -}
 toZonedDateTime : TimeZone -> String -> Result Parser.Error ZonedDateTime
 toZonedDateTime timeZone input =
@@ -176,6 +183,7 @@ toZonedDateTime timeZone input =
 
     toDate "19701201"
     --> Ok (Time.Date.date 1970 12 1)
+
 -}
 toDate : String -> Result Parser.Error Date
 toDate input =
@@ -244,7 +252,7 @@ complainInvalid ( year, month, day ) =
                     ++ toString month
                     ++ "."
         in
-        fail msg
+            fail msg
 
 
 digitsInRange : String -> Int -> Int -> Int -> Parser Int
@@ -373,7 +381,7 @@ getFraction fractionString =
         denominator =
             10 ^ String.length fractionString
     in
-    Ok (round (Time.Internal.secondMs * toFloat numerator / toFloat denominator))
+        Ok (round (Time.Internal.secondMs * toFloat numerator / toFloat denominator))
 
 
 tZOffset : Parser Milliseconds
