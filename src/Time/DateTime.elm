@@ -89,6 +89,18 @@ type DateTime
 
 {-| DateTimeDelta represents the relative difference between two
 DateTime values.
+
+The fields are all cumulative and rounded down.
+
+    { years = 0
+    , months = 0
+    , days = 0
+    , hours = 23
+    , minutes = 1381
+    , seconds = 82860
+    , milliseconds = 82860900
+    }
+
 -}
 type alias DateTimeDelta =
     { years : Int
