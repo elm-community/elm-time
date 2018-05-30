@@ -64,7 +64,9 @@ update msg model =
                         _ ->
                             TimeZones.utc ()
             in
-                { model | zone = zone } ! []
+                ( { model | zone = zone }
+                , Cmd.none
+                )
 
 
 view : Model -> Html Msg

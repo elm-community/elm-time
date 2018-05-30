@@ -39,7 +39,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick now ->
-            { model | now = DateTime.fromTimestamp now } ! []
+            ( { model | now = DateTime.fromTimestamp now }
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg
