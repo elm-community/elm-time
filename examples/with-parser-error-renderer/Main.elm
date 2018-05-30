@@ -10,23 +10,18 @@ the `elm-time` library.
 
 -}
 
-import Char
 import Color exposing (..)
 import Element exposing (..)
 import Element.Attributes exposing (..)
-import Element.Events
 import Element.Input as Input
 import Html exposing (Html)
 import Keyboard exposing (KeyCode)
 import Parser exposing (Error)
-import String
 import Style exposing (..)
 import Style.Border as Border
 import Style.Color
 import Style.Font as Font
-import Style.Transition as Transition
 import Task
-import Time.Date
 import Time.DateTime
     exposing
         ( DateTime
@@ -41,7 +36,6 @@ import Time.DateTime
         , second
         , millisecond
         )
-import Time.Internal exposing (DateTimeData)
 import Time.Iso8601ErrorMsg exposing (reflow, renderText)
 import Time.Iso8601 exposing (toDateTime)
 import Window
@@ -93,6 +87,7 @@ stylesheet =
 
 {-| The "entry"
 -}
+main : Program Never Model Msg
 main =
     Html.program
         { init = init
