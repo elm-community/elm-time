@@ -93,6 +93,14 @@ type alias DateDelta =
 
 {-| date constructs a Date value given a year, a month and a day.
 Invalid values are clamped to the nearest valid date.
+
+    d : Date
+    d =
+        date 2018 5 29
+
+    year d --> 2018
+    month d --> 5
+    day d --> 29
 -}
 date : Int -> Int -> Int -> Date
 date year month day =
