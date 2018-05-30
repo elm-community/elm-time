@@ -53,11 +53,6 @@ represent any date of the proleptic Gregorian calendar.
 
 -}
 
-import Time.Internal
-    exposing
-        ( padded
-        )
-
 
 {-| Date is the opaque type for all Date values. Values of this type
 are guaranteed to represent valid proleptic Gregorian calendar dates.
