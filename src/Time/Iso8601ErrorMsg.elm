@@ -25,8 +25,6 @@ is famous for.
 -}
 
 import Parser exposing (Parser, Problem(Fail))
-import Time.Iso8601 exposing (..)
-
 
 {-| Invoking the renderer. This returns an 'elm compiler-style formatted' error string
 
