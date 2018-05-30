@@ -1,9 +1,9 @@
 module Main exposing (..)
 
 import Html as H exposing (Html)
-import Html.Attributes as A
-import Html.Events as E
-import Json.Decode as JD
+--import Html.Attributes as A
+--import Html.Events as E
+--import Json.Decode as JD
 import Time exposing (Time)
 import Time.DateTime as DateTime exposing (DateTime)
 
