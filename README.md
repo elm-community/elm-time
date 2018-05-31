@@ -25,7 +25,7 @@ now has extensive
 
 ## Examples
 
-* **[Error Rendering Example](./examples/with-parser-error-renderer/README.md)**
+* **[Error Rendering Example](https://github.com/elm-community/elm-time/blob/daa0e1b60a912519af5b699cc26c0b17a6e06257/examples/with-parser-error-renderer/README.md)**
 * **[Running and Understanding Timezone Examples](https://github.com/elm-community/elm-time/wiki/The-Examples)**
 
 ## Dates
