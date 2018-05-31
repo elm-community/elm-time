@@ -1,19 +1,13 @@
 language: node_js
 node_js: node
 
-
 cache:
   directories:
     - elm-stuff/build-artifacts
-    - elm-stuff/packages
-    - test/elm-stuff/build-artifacts
-    - test/elm-stuff/packages
+    - tests/elm-stuff/build-artifacts
     - sysconfcpus
 
 before_install:
-  - if [ ${TRAVIS_OS_NAME} == "osx" ];
-    then brew update; brew install nvm; mkdir ~/.nvm; export NVM_DIR=~/.nvm; source $(brew --prefix nvm)/nvm.sh;
-    fi
   - | # epic build time improvement - see https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
     if [ ! -d sysconfcpus/bin ];
     then
@@ -23,5 +17,15 @@ before_install:
       make && make install;
       cd ..;
     fi
+
 install:
-  - npm install -g elm elm-test@0.18.6
+  - npm install -g elm@0.18.0 elm-test@0.18.12 elm-verify-examples@2.3.1 elm-format@0.6.1-alpha
+  - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
+  - printf '%s\n\n' '#!/bin/bash' 'echo "Running elm-make with sysconfcpus -n 2"' '$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old "$@"' > $(npm config get prefix)/bin/elm-make
+  - chmod +x $(npm config get prefix)/bin/elm-make
+  - elm-package install --yes
+
+script:
+  - elm-format --validate src tests examples
+  - elm-test
+  - elm-verify-examples
