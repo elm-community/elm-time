@@ -3,26 +3,24 @@ module Time.Date
         ( Date
         , DateDelta
         , Weekday(..)
-        , date
-        , year
-        , month
-        , day
-        , weekday
-        , setYear
-        , setMonth
-        , setDay
-        , addYears
-        , addMonths
         , addDays
+        , addMonths
+        , addYears
         , compare
-        , delta
-        , toISO8601
-        , fromISO8601
-        , toTuple
-        , fromTuple
-        , isValidDate
-        , isLeapYear
+        , date
+        , day
         , daysInMonth
+        , delta
+        , fromTuple
+        , isLeapYear
+        , isValidDate
+        , month
+        , setDay
+        , setMonth
+        , setYear
+        , toTuple
+        , weekday
+        , year
         )
 
 {-| This module defines a timezone-independent Date type which can
@@ -51,13 +49,9 @@ represent any date of the proleptic Gregorian calendar.
 
 # Helper functions
 
-@docs toISO8601, fromISO8601, toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
 
 -}
-
-import Combine exposing ((<$>), (<*>), (*>), (>>=))
-import Combine.Num
-import Time.Internal exposing (padded, intRange)
 
 
 {-| Date is the opaque type for all Date values. Values of this type
@@ -94,6 +88,14 @@ type alias DateDelta =
 
 {-| date constructs a Date value given a year, a month and a day.
 Invalid values are clamped to the nearest valid date.
+
+    d : Date
+    d =
+        date 2018 5 29
+
+    year d --> 2018
+    month d --> 5
+    day d --> 29
 -}
 date : Int -> Int -> Int -> Date
 date year month day =
@@ -101,6 +103,10 @@ date year month day =
 
 
 {-| year returns a Date's year as an Int.
+
+    year (date 2018 5 26)
+    --> 2018
+
 -}
 year : Date -> Int
 year (Date { year }) =
@@ -109,6 +115,10 @@ year (Date { year }) =
 
 {-| month returns a Date's month as an Int. Guaranteed to be in the
 range [1, 12].
+
+    month (date 2018 13 26) -- Note month will be clamped
+    --> 12
+
 -}
 month : Date -> Int
 month (Date { month }) =
@@ -117,6 +127,16 @@ month (Date { month }) =
 
 {-| day returns a Date's year as an Int. Guaranteed to be valid for
 the Date's (year, month) pair and in the range [1, 31].
+
+    day (date 2018 2 28)
+    --> 28
+
+    day (date 2018 2 29)
+    --> 28    -- observed clamped
+
+    day (date 2000 2 29)
+    --> 29    -- leap year
+
 -}
 day : Date -> Int
 day (Date { day }) =
@@ -126,6 +146,10 @@ day (Date { day }) =
 {-| weekday returns the day of week for a given Date.
 
 This uses Sakamoto's method to determine the day of week.
+
+    weekday (date 2018 5 26)
+    --> Sat
+
 -}
 weekday : Date -> Weekday
 weekday (Date { year, month, day }) =
@@ -183,6 +207,12 @@ weekday (Date { year, month, day }) =
 
 {-| setYear updates a Date's year. Invalid values are clamped to the
 nearest valid date.
+
+    date 2000 5 26
+    |> setYear 2016
+    |> year
+    --> 2016
+
 -}
 setYear : Int -> Date -> Date
 setYear year (Date ({ month, day } as date)) =
@@ -191,6 +221,17 @@ setYear year (Date ({ month, day } as date)) =
 
 {-| setMonth updates a Date's month. Invalid values are clamped to the
 nearest valid date.
+
+    date 2016 5 26
+    |> setMonth 6
+    |> month
+    --> 6
+
+    date 2016 5 26
+    |> setMonth 13 -- will be clamped
+    |> month
+    --> 12
+
 -}
 setMonth : Int -> Date -> Date
 setMonth month (Date ({ year, day } as date)) =
@@ -199,6 +240,22 @@ setMonth month (Date ({ year, day } as date)) =
 
 {-| setDay updates a Date's day. Invalid values are clamped to the
 nearest valid date.
+
+    date 2016 2 26
+    |> setDay 28
+    |> day
+    --> 28
+
+    date 2016 2 28
+    |> setDay 29    -- leap year
+    |> day
+    --> 29
+
+    date 2015 2 28
+    |> setDay 29    -- clamped
+    |> day
+    --> 28
+
 -}
 setDay : Int -> Date -> Date
 setDay day (Date ({ year, month } as date)) =
@@ -209,6 +266,12 @@ setDay day (Date ({ year, month } as date)) =
 a Date, ensuring that the return value represents a valid Date. If
 the new date is not valid, days are subtracted from it until a valid
 Date can be produced.
+
+    date 2000 2 29
+    |> addYears -1  -- will no longer be leap year
+    |> day
+    --> 28
+
 -}
 addYears : Int -> Date -> Date
 addYears years (Date ({ year, month, day } as date)) =
@@ -218,6 +281,12 @@ addYears years (Date ({ year, month, day } as date)) =
 {-| addMonths adds a relative number (positive or negative) of months to
 a Date, ensuring that the return value represents a valid Date. Its
 semantics are the same as `addYears`.
+
+    date 2018 3 31
+    |> addMonths -1 -- Switch to Feb
+    |> day
+    --> 28
+
 -}
 addMonths : Int -> Date -> Date
 addMonths months (Date { year, month, day }) =
@@ -237,15 +306,31 @@ addMonths months (Date { year, month, day }) =
 {-| days adds an exact number (positive or negative) of days to a
 Date. Adding or subtracting days always produces a valid Date so
 there is no fuzzing logic here like there is in `add{Months,Years}`.
+
+    date 2018 2 28
+    |> addDays 1
+    |> month
+    --> 3 -- March
+
 -}
 addDays : Int -> Date -> Date
 addDays days (Date ({ year, month, day } as date)) =
     daysFromYearMonthDay year month day
-        |> ((+) days)
+        |> (+) days
         |> dateFromDays
 
 
 {-| compare two Dates.
+
+Note: since this conflicts with **Basics.compare**, have to
+preface with **Time.Date.**; see this example:
+
+    date 2018 1 28
+    |> addYears -1
+    |> addMonths 1
+    |> Time.Date.compare (date 2017 2 29)
+    --> EQ
+
 -}
 compare : Date -> Date -> Order
 compare d1 d2 =
@@ -253,6 +338,46 @@ compare d1 d2 =
 
 
 {-| delta returns the relative number of years, months and days between two Dates.
+
+Each field is accumulative by itself. That is, `days` not only shows the
+difference caused by the two `day` entries in the two `Date` arguments, but
+also the added days caused by differences in `months` and `years`. For `months`
+and `years`, is the count across month and year change boundaries respectively; illustrated
+by last example below.
+
+    -- 3 examples showing that, if the `year` and `month`
+    -- are the same in the two `Date` values, then the
+    -- `years` and `months` result values remain constant
+    -- in spite of large differences in the two inputs'
+    -- `day` setting:
+
+    delta (date 2019 1 1) (date 2018 1 1)
+    --> { years = 1
+    --> , months = 12
+    --> , days = 365
+    --> }
+
+    delta (date 2019 1 31) (date 2018 1 1)
+    --> { years = 1
+    --> , months = 12
+    --> , days = 395
+    --> }
+
+    delta (date 2019 1 1) (date 2018 1 31)
+    --> { years = 1
+    --> , months = 12
+    --> , days = 335
+    --> }
+
+    -- 1 day apart but from last day of year to first
+    -- day of next year:
+
+    delta (date 2019 1 1) (date 2018 12 31)
+    --> { years = 1
+    --> , months = 1
+    --> , days = 1
+    --> }
+
 -}
 delta : Date -> Date -> DateDelta
 delta (Date d1) (Date d2) =
@@ -264,19 +389,13 @@ delta (Date d1) (Date d2) =
     }
 
 
-{-| toISO8601 converts a Date into its string representation.
--}
-toISO8601 : Date -> String
-toISO8601 d =
-    (toString (year d) |> String.padLeft 4 '0')
-        ++ "-"
-        ++ padded (month d)
-        ++ "-"
-        ++ padded (day d)
-
-
 {-| toTuple converts a Date value into a (year, month, day) tuple.
 This is useful if you want to use Dates as Dict keys.
+
+    date 2018 5 26
+    |> toTuple
+    --> (2018, 5, 26)
+
 -}
 toTuple : Date -> ( Int, Int, Int )
 toTuple (Date { year, month, day }) =
@@ -284,6 +403,11 @@ toTuple (Date { year, month, day }) =
 
 
 {-| fromTuple converts a (year, month, day) tuple into a Date value.
+
+    (2018, 5, 26)
+    |> fromTuple
+    --> date 2018 5 26
+
 -}
 fromTuple : ( Int, Int, Int ) -> Date
 fromTuple ( year, month, day ) =
@@ -292,6 +416,26 @@ fromTuple ( year, month, day ) =
 
 {-| isValidDate returns True if the given year, month and day
 represent a valid date.
+
+NOTE: when you create a Date using `date`, it does not validate
+the `year`, `month`, or `day` used; rather it just clamps out-of-range
+values to "legal" values without notifying you. If you are worried
+about complete validation, pass the 3 values to this
+method first and it will validate it. This gives you a chance to
+abort creating a "bad" `Date`.
+
+    isValidDate 2016 12 31
+    --> True
+
+    isValidDate 2016 12 32
+    --> False
+
+    isValidDate 2016 2 29 -- leap year
+    --> True
+
+    isValidDate 2018 2 29 -- not leap year
+    --> False
+
 -}
 isValidDate : Int -> Int -> Int -> Bool
 isValidDate year month day =
@@ -304,8 +448,25 @@ isValidDate year month day =
 rules for leap years are as follows:
 
   - A year that is a multiple of 400 is a leap year.
+
   - A year that is a multiple of 100 but not of 400 is not a leap year.
+
   - A year that is a multiple of 4 but not of 100 is a leap year.
+
+    isLeapYear 2016
+    --> True
+
+    isLeapYear 2018
+    --> False
+
+    isLeapYear 400
+    --> True
+
+    isLeapYear 500
+    --> False
+
+    isLeapYear (500 + 4)
+    --> True
 
 -}
 isLeapYear : Int -> Bool
@@ -317,7 +478,17 @@ isLeapYear y =
 year, taking leap years into account.
 
   - A regular year has 365 days and the corresponding February has 28 days.
+
   - A leap year has 366 days and the corresponding February has 29 days.
+
+    daysInMonth 2016 2
+    --> Just 29
+
+    daysInMonth 2018 2
+    --> Just 28
+
+    daysInMonth 2018 13 -- month out of range
+    --> Nothing
 
 -}
 daysInMonth : Int -> Int -> Maybe Int
@@ -452,7 +623,7 @@ dateFromDays ds =
 
         leap =
             if isLeapYear year then
-                ((+) 1)
+                (+) 1
             else
                 identity
 
@@ -500,36 +671,3 @@ clampMonth month =
 clampDay : Int -> Int
 clampDay day =
     clamp 1 31 day
-
-
-{-| fromISO8601 parses an ISO8601-formatted date string into a Date.
--}
-fromISO8601 : String -> Result String Date
-fromISO8601 input =
-    let
-        dateTuple =
-            (,,)
-                <$> (Combine.Num.digit
-                        |> Combine.andThen (\a -> Combine.map (\b -> a * 10 + b) Combine.Num.digit)
-                        |> Combine.andThen (\a -> Combine.map (\b -> a * 10 + b) Combine.Num.digit)
-                        |> Combine.andThen (\a -> Combine.map (\b -> a * 10 + b) Combine.Num.digit)
-                    )
-                <*> (Combine.string "-" *> intRange 1 12)
-                <*> (Combine.string "-" *> intRange 1 31)
-
-        convert ( year, month, day ) =
-            if isValidDate year month day then
-                Combine.succeed (date year month day)
-            else
-                Combine.fail "invalid date"
-    in
-        case Combine.parse (dateTuple >>= convert) input of
-            Ok ( _, _, date ) ->
-                Ok date
-
-            Err ( _, { position }, es ) ->
-                let
-                    messages =
-                        String.join " or " es
-                in
-                    Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)

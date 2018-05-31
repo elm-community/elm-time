@@ -11,27 +11,58 @@ module Time.TimeZone
 
 {-| This module defines a representations for Timezone information.
 
+
 # TimeZone values
+
 @docs TimeZone, name, abbreviation, offset, offsetString
 
+
 # Manipulating TimeZones
+
 @docs setName
 
+
 # Constructing TimeZones
+
 @docs unpack
+
 -}
 
 import Char
-import Combine exposing (..)
-import Combine.Num
+import Debug
+    exposing
+        ( log
+        )
+import Parser
+    exposing
+        ( (|.)
+        , (|=)
+        , Count(..)
+        , Error
+        , Parser
+        , andThen
+        , delayedCommit
+        , end
+        , fail
+        , ignore
+        , inContext
+        , keep
+        , map
+        , oneOf
+        , oneOrMore
+        , run
+        , succeed
+        , zeroOrMore
+        )
 import Time exposing (Time)
 import Time.Internal exposing (..)
 
 
-{-| TimeZone represents the opaque type of timezone values.  These are
+{-| TimeZone represents the opaque type of timezone values. These are
 generally loaded from an external source via `unpack`.
 
-See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/.
+See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>.
+
 -}
 type TimeZone
     = TimeZone
@@ -40,10 +71,11 @@ type TimeZone
         }
 
 
-{-| Spans represent variations within a TimeZone.  A Time has an
+{-| Spans represent variations within a TimeZone. A Time has an
 associated Span if `.from <= t < .until`.
 
 `offset` is the Span's UTC offset in milliseconds.
+
 -}
 type alias Span =
     { from : Time
@@ -124,63 +156,34 @@ name (TimeZone { name }) =
     name
 
 
-{-| unpack decodes a packed zone data object into a TimeZone value.
+{-| unpackNew decodes a packed zone data object into a TimeZone value.
 
-See also http://momentjs.com/timezone/docs/#/data-formats/packed-format/
+See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
+
 -}
-unpack : String -> Result (List String) TimeZone
+unpack : String -> Result Error TimeZone
 unpack data =
-    case Combine.parse packedTimeZone data of
-        Ok ( _, _, zone ) ->
-            Ok zone
-
-        Err ( _, _, errors ) ->
-            Err errors
+    run packedTimeZone data
 
 
-type alias PackedTimeZone =
-    { name : String
-    , abbrevs : List String
-    , offsets : List Float
-    , indices : List Int
-    , diffs : List Float
-    }
-
-
-{-| packedTimeZone parses a zone data string into a TimeZone, validating that
-the data fromat invariants hold.
+{-| packedTimeZoneNew parses a zone data string into a TimeZone, validating that
+the data format invariants hold.
 -}
-packedTimeZone : Parser s TimeZone
+packedTimeZone : Parser TimeZone
 packedTimeZone =
     let
-        name =
-            Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        abbrevs =
-            Combine.sepBy1 (Combine.string " ") (Combine.regex "[^ |]+")
-                <* Combine.string "|"
-
-        offsets =
-            Combine.sepBy1 (Combine.string " ") base60
-                <* Combine.string "|"
-
-        indices =
-            (\s -> List.map (\n -> floor <| unsafeBase60 1 n "") (String.split "" s))
-                <$> Combine.regex "[^|]+"
-                <* Combine.string "|"
-
-        diffs =
-            List.map ((*) 60000)
-                <$> Combine.sepBy (Combine.string " ") base60
-
         decode =
-            PackedTimeZone
-                <$> name
-                <*> abbrevs
-                <*> offsets
-                <*> indices
-                <*> diffs
+            (succeed PackedTimeZone
+                |= parseName
+                |. pipe
+                |= parseAbbrevs
+                |. pipe
+                |= parseOffsets
+                |. pipe
+                |= parseIndices
+                |. pipe
+                |= parseDiffs
+            )
 
         validate data =
             let
@@ -195,11 +198,11 @@ packedTimeZone =
                         |> Maybe.withDefault 0
             in
                 if abbrevs /= offsets then
-                    Combine.fail "abbrevs and offsets have different lengths"
+                    fail "abbrevs and offsets have different lengths"
                 else if maxIndex >= abbrevs then
-                    Combine.fail "highest index is longer than both abbrevs and offsets"
+                    fail "highest index is longer than both abbrevs and offsets"
                 else
-                    Combine.succeed data
+                    succeed data
 
         span times data i idx =
             { from = times !! i
@@ -225,30 +228,238 @@ packedTimeZone =
                     , spans = List.indexedMap (span paddedTimes data) data.indices
                     }
     in
-        convert <$> (decode >>= validate)
+        decode
+            |> andThen validate
+            |> map convert
 
 
-base60 : Parser s Float
-base60 =
+type alias PackedTimeZone =
+    { name : String
+    , abbrevs : List String
+    , offsets : List Float
+    , indices : List Int
+    , diffs : List Float
+    }
+
+
+{-| Parse the name of the timezone
+-}
+parseName : Parser String
+parseName =
+    inContext "name" <|
+        succeed identity
+            |= keep oneOrMore ((/=) '|')
+
+
+{-| Parse the first abbrev and then use `abbrevsHelp` to find
+the remaining ones.
+-}
+parseAbbrevs : Parser (List String)
+parseAbbrevs =
     let
-        decode =
-            (,,)
-                <$> Combine.Num.sign
-                <*> Combine.optional "" base60String
-                <*> Combine.optional "" (Combine.string "." *> base60String)
+        abbrev : Parser String
+        abbrev =
+            keep oneOrMore (\c -> c /= ' ' && c /= '|')
 
-        convert ( sign, whole, frac ) =
-            if whole == "" && frac == "" then
-                Combine.fail "expected an alphanumeric character or ."
-            else
-                Combine.succeed <| unsafeBase60 sign whole frac
+        helper : List String -> Parser (List String)
+        helper revTerms =
+            oneOf
+                [ next
+                    |> andThen (\s -> helper (s :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
+
+        next : Parser String
+        next =
+            succeed identity
+                |. parseSpace
+                |= abbrev
     in
-        decode >>= convert
+        inContext "abbrevs" <|
+            succeed identity
+                |= andThen (\s -> helper [ s ]) abbrev
 
 
-base60String : Parser s String
-base60String =
-    Combine.regex "[0-9a-zA-Z]+"
+parseOffsets : Parser (List Float)
+parseOffsets =
+    let
+        offset : Parser Float
+        offset =
+            (succeed (,,)
+                |= parseSign
+                |= parseWhole
+                |= parseFrac
+            )
+                |> andThen convertBase60
+
+        convertBase60 : ( Int, String, String ) -> Parser Float
+        convertBase60 ( sign, whole, frac ) =
+            if whole == "" && frac == "" then
+                fail "expected an alphanumeric character or ."
+            else
+                succeed <| unsafeBase60 sign whole frac
+
+        convertFrac : String -> Parser String
+        convertFrac frac =
+            succeed frac
+
+        helper : List Float -> Parser (List Float)
+        helper revTerms =
+            oneOf
+                [ next
+                    |> andThen (\f -> helper (f :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
+
+        next : Parser Float
+        next =
+            succeed identity
+                |. parseSpace
+                |= offset
+    in
+        inContext "offsets" <|
+            succeed identity
+                |= andThen (\f -> helper [ f ]) offset
+
+
+parseIndices : Parser (List Int)
+parseIndices =
+    let
+        helper : List Int -> Parser (List Int)
+        helper revTerms =
+            oneOf
+                [ next
+                    |> andThen (\i -> helper (i :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
+
+        next : Parser Int
+        next =
+            succeed identity
+                |= index
+
+        index : Parser Int
+        index =
+            keep (Exactly 1) (\c -> Char.isDigit c)
+                |> andThen convertDecimal
+
+        convertDecimal : String -> Parser Int
+        convertDecimal digit =
+            case String.toInt digit of
+                Err msg ->
+                    fail msg
+
+                Ok value ->
+                    succeed value
+    in
+        inContext "indices" <|
+            succeed identity
+                |= andThen (\i -> helper [ i ]) index
+
+
+parseDiffs : Parser (List Float)
+parseDiffs =
+    let
+        emptyDiffs : Parser (List Float)
+        emptyDiffs =
+            (succeed identity
+                |. pipe
+            )
+                |> andThen (\_ -> succeed [])
+
+        diffsEnd : Parser (List Float)
+        diffsEnd =
+            (succeed identity
+                |. end
+            )
+                |> andThen (\_ -> succeed [])
+
+        helper : List Float -> Parser (List Float)
+        helper revTerms =
+            oneOf
+                [ next
+                    |> andThen (\f -> helper (f :: revTerms))
+                , succeed (List.reverse revTerms)
+                ]
+
+        next : Parser Float
+        next =
+            succeed identity
+                |. parseSpace
+                |= diff
+
+        diff : Parser Float
+        diff =
+            (succeed (,,)
+                |= parseSign
+                |= parseWhole
+                |= parseFrac
+            )
+                |> andThen convertBase60Times60000
+
+        convertBase60Times60000 : ( Int, String, String ) -> Parser Float
+        convertBase60Times60000 ( sign, whole, frac ) =
+            if whole == "" && frac == "" then
+                fail "expected an alphanumeric character or ."
+            else
+                succeed <| (*) 60000 (unsafeBase60 sign whole frac)
+    in
+        inContext "diffs" <|
+            oneOf
+                [ emptyDiffs
+                , diffsEnd
+                , andThen (\f -> helper [ f ]) diff
+                ]
+
+
+pipe : Parser ()
+pipe =
+    ignore (Exactly 1) ((==) '|')
+
+
+parseSpace : Parser ()
+parseSpace =
+    ignore (Exactly 1) ((==) ' ')
+
+
+parseSign : Parser Int
+parseSign =
+    let
+        minusOne : String -> Parser Int
+        minusOne hyphen =
+            succeed -1
+    in
+        oneOf
+            [ keep (Exactly 1) (\c -> c == '-')
+                |> andThen minusOne
+            , succeed 1
+            ]
+
+
+parseWhole : Parser String
+parseWhole =
+    keep zeroOrMore (\c -> unsafeBase60Digit c)
+
+
+parseFrac : Parser String
+parseFrac =
+    oneOf
+        [ parseSuccessfulFrac
+        , succeed ""
+        ]
+
+
+unsafeBase60Digit : Char -> Bool
+unsafeBase60Digit c =
+    Char.isDigit c || Char.isUpper c || Char.isLower c
+
+
+parseSuccessfulFrac : Parser String
+parseSuccessfulFrac =
+    (succeed identity
+        |. ignore (Exactly 1) (\c -> c == '.')
+        |= keep oneOrMore (\c -> unsafeBase60Digit c)
+    )
 
 
 unsafeBase60 : Int -> String -> String -> Float

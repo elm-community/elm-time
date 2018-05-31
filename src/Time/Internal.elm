@@ -1,8 +1,5 @@
 module Time.Internal exposing (..)
 
-import Combine exposing (..)
-import Combine.Num
-
 
 type alias DateTimeData =
     { year : Int
@@ -26,7 +23,7 @@ type alias TimeData d =
 
 offsetFromTimeData : TimeData d -> Int
 offsetFromTimeData { hour, minute, second, millisecond } =
-    (clamp 0 23 hour) * hourMs + (clamp 0 59 minute) * minuteMs + (clamp 0 59 second) * secondMs + (clamp 0 999 millisecond)
+    clamp 0 23 hour * hourMs + clamp 0 59 minute * minuteMs + clamp 0 59 second * secondMs + clamp 0 999 millisecond
 
 
 zero : DateTimeData
@@ -72,54 +69,3 @@ minuteMs =
 secondMs : number
 secondMs =
     1000
-
-
-
--- Shared parsers
--- --------------
-
-
-paddedInt : Parser s Int
-paddedInt =
-    Combine.optional "" (Combine.string "0") *> Combine.Num.int
-
-
-digitsInRange : Int -> Int -> Int -> Parser s Int
-digitsInRange digitsToParse lo hi =
-    let
-        failure =
-            Combine.fail
-                ("expected "
-                    ++ toString digitsToParse
-                    ++ " digits in the range ["
-                    ++ toString lo
-                    ++ ", "
-                    ++ toString hi
-                    ++ "]"
-                )
-    in
-        Combine.regex (String.repeat digitsToParse "\\d")
-            |> andThen
-                (\digits ->
-                    case String.toInt digits of
-                        Ok int ->
-                            if int >= lo && int <= hi then
-                                Combine.succeed int
-                            else
-                                failure
-
-                        Err _ ->
-                            failure
-                )
-
-
-intRange : Int -> Int -> Parser s Int
-intRange lo hi =
-    let
-        validate n =
-            if n >= lo && n <= hi then
-                Combine.succeed n
-            else
-                Combine.fail ("expected an integer in the range [" ++ toString lo ++ ", " ++ toString hi ++ "]")
-    in
-        paddedInt >>= validate

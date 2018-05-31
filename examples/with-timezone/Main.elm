@@ -5,10 +5,11 @@ import Html.Attributes as A
 import Html.Events as E
 import Json.Decode as JD
 import Time exposing (Time)
-import Time.DateTime as DateTime exposing (DateTime)
+import Time.DateTime as DT exposing (DateTime)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
-import Time.ZonedDateTime as ZonedDateTime
+import Time.Iso8601
+import Time.ZonedDateTime
 
 
 type alias Flags =
@@ -38,7 +39,7 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init { now } =
-    { now = DateTime.fromTimestamp now
+    { now = DT.fromTimestamp now
     , zone = TimeZones.utc ()
     }
         ! []
@@ -48,7 +49,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick now ->
-            { model | now = DateTime.fromTimestamp now } ! []
+            { model | now = DT.fromTimestamp now } ! []
 
         ChangeZone zoneString ->
             let
@@ -63,7 +64,9 @@ update msg model =
                         _ ->
                             TimeZones.utc ()
             in
-                { model | zone = zone } ! []
+                ( { model | zone = zone }
+                , Cmd.none
+                )
 
 
 view : Model -> Html Msg
@@ -75,8 +78,8 @@ view { now, zone } =
             , H.option [ A.value "US/Central" ] [ H.text "US/Central" ]
             ]
         , H.br [] []
-        , ZonedDateTime.fromDateTime zone now
-            |> ZonedDateTime.toISO8601
+        , Time.ZonedDateTime.fromDateTime zone now
+            |> Time.Iso8601.fromZonedDateTime
             |> H.text
         ]
 

@@ -1,0 +1,9 @@
+{
+  "root": "../src",
+  "tests": [
+    "Time.Date",
+    "Time.DateTime",
+    "Time.Iso8601",
+    "Time.Iso8601ErrorMsg"
+  ]
+}

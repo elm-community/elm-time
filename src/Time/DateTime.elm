@@ -2,42 +2,42 @@ module Time.DateTime
     exposing
         ( DateTime
         , DateTimeDelta
-        , dateTime
-        , zero
-        , epoch
-        , date
-        , year
-        , month
-        , day
-        , weekday
-        , hour
-        , minute
-        , second
-        , millisecond
-        , setDate
-        , setYear
-        , setMonth
-        , setDay
-        , setHour
-        , setMinute
-        , setSecond
-        , setMillisecond
-        , addYears
-        , addMonths
         , addDays
         , addHours
-        , addMinutes
-        , addSeconds
         , addMilliseconds
+        , addMinutes
+        , addMonths
+        , addSeconds
+        , addYears
         , compare
+        , date
+        , dateTime
+        , day
         , delta
-        , isValidTime
-        , toTimestamp
+        , epoch
         , fromTimestamp
-        , toTuple
         , fromTuple
+        , hour
+        , isValidTime
+        , millisecond
+        , minute
+        , makeDateTime
+        , month
+        , second
+        , setDate
+        , setDay
+        , setHour
+        , setMillisecond
+        , setMinute
+        , setMonth
+        , setSecond
+        , setYear
         , toISO8601
-        , fromISO8601
+        , toTimestamp
+        , toTuple
+        , weekday
+        , year
+        , zero
         )
 
 {-| This module defines a time representation based on a Date and the
@@ -51,7 +51,7 @@ time of day.
 
 # Manipulating DateTimes
 
-@docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
+@docs makeDateTime, setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
 
 # Comparing DateTimes
@@ -66,16 +66,19 @@ time of day.
 
 # Helper functions
 
-@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple, toISO8601, fromISO8601
+@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple
+
+
+# Deprecated
+
+@docs toISO8601
 
 -}
 
-import Combine exposing (..)
-import Combine.Num
-import String
 import Time exposing (Time)
 import Time.Date exposing (Date, Weekday, isValidDate)
 import Time.Internal exposing (..)
+
 
 {-| DateTime is the opaque type for all DateTime values. Values of this
 type represent a valid Date and a time offset from midnight.
@@ -87,8 +90,10 @@ type DateTime
         }
 
 
-{-| DateTimeDelta represents the relative difference between two
-DateTime values.
+{-| DateTimeDelta represents the difference between two
+DateTime values in terms of each of the different "units".
+
+See `Time.DateTime.delta` for an "aha!" example.
 -}
 type alias DateTimeDelta =
     { years : Int
@@ -104,14 +109,17 @@ type alias DateTimeDelta =
 {-| zero represents the first millisecond of the first day of the
 current era. Use it to construct `DateTime` values:
 
-    -- 0-01-01T00:00:00Z
     dateTime zero
+    |> toISO8601
+    --> "0-01-01T00:00:00.000Z"
 
-    -- 2016-01-01T00:00:00Z
     dateTime { zero | year = 2016 }
+    |> toISO8601
+    --> "2016-01-01T00:00:00.000Z"
 
-    -- 2016-05-29T13:00:00Z
     dateTime { zero | year = 2016, month = 5, day = 29, hour = 13 }
+    |> toISO8601
+    --> "2016-05-29T13:00:00.000Z"
 
 -}
 zero : DateTimeData
@@ -121,6 +129,11 @@ zero =
 
 {-| epoch is the instant in time that represents the first millisecond
 of the UNIX Epoch.
+
+    epoch
+    |> toISO8601
+    --> "1970-01-01T00:00:00.000Z"
+
 -}
 epoch : DateTime
 epoch =
@@ -129,6 +142,31 @@ epoch =
 
 {-| dateTime constructs a DateTime value given a date and a time.
 Invalid values are clamped to the nearest valid date and time.
+
+    import Time.Date
+
+    dateTime { year = 2018
+             , month = 13   -- will be clamped
+             , day = 25
+             , hour = 0
+             , minute = 0
+             , second = 0
+             , millisecond = 47
+             }
+    |> date
+    --> Time.Date.date 2018 12 25
+
+    dateTime { year = 2018
+             , month = 13
+             , day = 25
+             , hour = 0
+             , minute = 0
+             , second = 0
+             , millisecond = 47
+             }
+    |> millisecond
+    --> 47
+
 -}
 dateTime : DateTimeData -> DateTime
 dateTime ({ year, month, day } as data) =
@@ -143,7 +181,43 @@ mkDateTime date time =
     DateTime { date = date, offset = offsetFromTimeData time }
 
 
+{-| Create a DateTime given its date and millisecond offset
+
+    import Time.Date
+
+    makeDateTime (Time.Date.date 2018 13 26) 1047
+    |> date
+    --> Time.Date.date 2018 13 26
+
+    makeDateTime (Time.Date.date 2018 13 26) 1047
+    |> millisecond
+    --> 47
+
+    makeDateTime (Time.Date.date 2018 13 26) 1047
+    |> second
+    --> 1
+
+-}
+makeDateTime : Date -> Int -> DateTime
+makeDateTime date offset =
+    DateTime { date = date, offset = offset }
+
+
 {-| date returns a DateTime's Date.
+
+    import Time.Date
+
+    dateTime { year = 2018
+             , month = 0   -- will be clamped
+             , day = 25
+             , hour = 0
+             , minute = 0
+             , second = 0
+             , millisecond = 47
+             }
+    |> date
+    --> Time.Date.date 2018 1 25
+
 -}
 date : DateTime -> Date
 date (DateTime { date }) =
@@ -151,6 +225,11 @@ date (DateTime { date }) =
 
 
 {-| year returns a DateTime's year.
+
+    dateTime { zero | year = 2015 }
+    |> year
+    --> 2015
+
 -}
 year : DateTime -> Int
 year (DateTime { date }) =
@@ -158,6 +237,15 @@ year (DateTime { date }) =
 
 
 {-| month returns a DateTime's month.
+
+    dateTime { zero | month = 7 }
+    |> month
+    --> 7
+
+    dateTime { zero | month = 0 } -- will be clamped
+    |> month
+    --> 1
+
 -}
 month : DateTime -> Int
 month (DateTime { date }) =
@@ -165,6 +253,15 @@ month (DateTime { date }) =
 
 
 {-| day returns a DateTime's day.
+
+    dateTime { zero | day = 31 }
+    |> day
+    --> 31
+
+    dateTime { zero | day = 32 } -- will be clamped
+    |> day
+    --> 31
+
 -}
 day : DateTime -> Int
 day (DateTime { date }) =
@@ -172,6 +269,13 @@ day (DateTime { date }) =
 
 
 {-| weekday returns a DateTime's day of the week.
+
+    import Time.Date
+
+    dateTime { zero | year = 2018, month = 5, day = 27 }
+    |> weekday
+    --> Time.Date.Sun
+
 -}
 weekday : DateTime -> Weekday
 weekday (DateTime { date }) =
@@ -179,6 +283,15 @@ weekday (DateTime { date }) =
 
 
 {-| hour returns a DateTime's hour.
+
+    dateTime { zero | hour = 23 }
+    |> hour
+    --> 23
+
+    dateTime { zero | hour = 24 } -- will be clamped
+    |> hour
+    --> 23
+
 -}
 hour : DateTime -> Int
 hour (DateTime { offset }) =
@@ -186,6 +299,15 @@ hour (DateTime { offset }) =
 
 
 {-| minute returns a DateTime's minute.
+
+    dateTime { zero | minute = 59 }
+    |> minute
+    --> 59
+
+    dateTime { zero | minute = 60 } -- will be clamped
+    |> minute
+    --> 59
+
 -}
 minute : DateTime -> Int
 minute (DateTime { offset }) =
@@ -193,6 +315,15 @@ minute (DateTime { offset }) =
 
 
 {-| second returns a DateTime's second.
+
+    dateTime { zero | second = 59 }
+    |> second
+    --> 59
+
+    dateTime { zero | second = 60 } -- will be clamped
+    |> second
+    --> 59
+
 -}
 second : DateTime -> Int
 second (DateTime { offset }) =
@@ -200,6 +331,15 @@ second (DateTime { offset }) =
 
 
 {-| millisecond returns a DateTime's millisecond.
+
+    dateTime { zero | millisecond = 999 }
+    |> millisecond
+    --> 999
+
+    dateTime { zero | millisecond = 1000 } -- will be clamped
+    |> millisecond
+    --> 999
+
 -}
 millisecond : DateTime -> Int
 millisecond (DateTime { offset }) =
@@ -207,6 +347,14 @@ millisecond (DateTime { offset }) =
 
 
 {-| setDate sets a DateTime's Date.
+
+    import Time.Date as TD
+
+    dateTime zero
+    |> setDate (TD.date 2018 5 27)
+    |> date
+    --> TD.date 2018 5 27
+
 -}
 setDate : Date -> DateTime -> DateTime
 setDate date (DateTime { offset }) =
@@ -219,6 +367,11 @@ setDate date (DateTime { offset }) =
 {-| setYear sets a DateTime's year.
 
 See also `Time.Date.setYear`.
+
+    dateTime zero
+    |> setYear 2018
+    |> year
+    --> 2018
 
 -}
 setYear : Int -> DateTime -> DateTime
@@ -233,6 +386,11 @@ setYear year (DateTime { date, offset }) =
 
 See also `Time.Date.setMonth`.
 
+    dateTime zero
+    |> setMonth 12
+    |> month
+    --> 12
+
 -}
 setMonth : Int -> DateTime -> DateTime
 setMonth month (DateTime { date, offset }) =
@@ -246,6 +404,11 @@ setMonth month (DateTime { date, offset }) =
 
 See also `Time.Date.setDay`.
 
+    dateTime zero
+    |> setDay 31
+    |> day
+    --> 31
+
 -}
 setDay : Int -> DateTime -> DateTime
 setDay day (DateTime { date, offset }) =
@@ -256,6 +419,12 @@ setDay day (DateTime { date, offset }) =
 
 
 {-| setHour sets a DateTime's hour.
+
+    dateTime zero
+    |> setHour 23
+    |> hour
+    --> 23
+
 -}
 setHour : Int -> DateTime -> DateTime
 setHour hour ((DateTime { date }) as t) =
@@ -267,8 +436,13 @@ setHour hour ((DateTime { date }) as t) =
         }
 
 
-{-| setMinute sets a DateTime's minute, returning Nothing if the
-updated time is invalid or Just the new DateTime.
+{-| setMinute sets a DateTime's minute.
+
+    dateTime zero
+    |> setMinute 59
+    |> minute
+    --> 59
+
 -}
 setMinute : Int -> DateTime -> DateTime
 setMinute minute ((DateTime { date }) as t) =
@@ -280,8 +454,11 @@ setMinute minute ((DateTime { date }) as t) =
         }
 
 
-{-| setSecond sets a DateTime's second, returning Nothing if the
-updated time is invalid or Just the new DateTime.
+{-| setSecond sets a DateTime's second.
+dateTime zero
+|> setSecond 59
+|> second
+--> 59
 -}
 setSecond : Int -> DateTime -> DateTime
 setSecond second ((DateTime { date }) as t) =
@@ -293,8 +470,13 @@ setSecond second ((DateTime { date }) as t) =
         }
 
 
-{-| setMillisecond sets a DateTime's millisecond, returning Nothing if
-the updated time is invalid or Just the new DateTime.
+{-| setMillisecond sets a DateTime's millisecond.
+
+    dateTime zero
+    |> setMillisecond 999
+    |> millisecond
+    --> 999
+
 -}
 setMillisecond : Int -> DateTime -> DateTime
 setMillisecond millisecond ((DateTime { date }) as t) =
@@ -310,6 +492,11 @@ setMillisecond millisecond ((DateTime { date }) as t) =
 
 See also `Time.Date.addYears`.
 
+    dateTime { zero | year = 2016 }
+    |> addYears 2
+    |> year
+    --> 2018
+
 -}
 addYears : Int -> DateTime -> DateTime
 addYears years (DateTime { date, offset }) =
@@ -323,6 +510,11 @@ addYears years (DateTime { date, offset }) =
 
 See also `Time.Date.addMonths`.
 
+    dateTime { zero | month = 1 }
+    |> addMonths 1
+    |> month
+    --> 2
+
 -}
 addMonths : Int -> DateTime -> DateTime
 addMonths months (DateTime { date, offset }) =
@@ -332,9 +524,14 @@ addMonths months (DateTime { date, offset }) =
         }
 
 
-{-| addDays adds an absolute number of days to a DateTime value.
+{-| addDays adds a relative number of days to a DateTime value.
 
 See also `Time.Date.addDays`.
+
+    dateTime { zero | day = 20 }
+    |> addDays -11
+    |> day
+    --> 9
 
 -}
 addDays : Int -> DateTime -> DateTime
@@ -346,6 +543,12 @@ addDays days (DateTime { date, offset }) =
 
 
 {-| addHours adds a relative number of hours to a DateTime value.
+
+    dateTime { zero | hour = 23 }
+    |> addHours 1
+    |> hour
+    --> 0
+
 -}
 addHours : Int -> DateTime -> DateTime
 addHours hours time =
@@ -353,6 +556,12 @@ addHours hours time =
 
 
 {-| addMinutes adds a relative number of minutes to a DateTime value.
+
+    dateTime { zero | minute = 30 }
+    |> addMinutes 30
+    |> minute
+    --> 0
+
 -}
 addMinutes : Int -> DateTime -> DateTime
 addMinutes minutes time =
@@ -360,6 +569,12 @@ addMinutes minutes time =
 
 
 {-| addSeconds adds a relative number of seconds to a DateTime value.
+
+    dateTime { zero | second = 59 }
+    |> addSeconds 1
+    |> second
+    --> 0
+
 -}
 addSeconds : Int -> DateTime -> DateTime
 addSeconds seconds time =
@@ -368,6 +583,12 @@ addSeconds seconds time =
 
 {-| addMilliseconds adds an absolute number of milliseconds to a
 DateTime value.
+
+    dateTime { zero | second = 10, millisecond = 1 }
+    |> addMilliseconds 999
+    |> second
+    --> 11
+
 -}
 addMilliseconds : Int -> DateTime -> DateTime
 addMilliseconds ms (DateTime { date, offset }) =
@@ -398,6 +619,23 @@ addMilliseconds ms (DateTime { date, offset }) =
 
 
 {-| compare two DateTimes.
+
+    import Basics exposing (Order(..))
+
+    epoch
+    |> addMilliseconds -1
+    |> Time.DateTime.compare (dateTime
+                               { year = 1969
+                               , month = 12
+                               , day = 31
+                               , hour = 23
+                               , minute = 59
+                               , second = 59
+                               , millisecond = 999
+                               }
+                             )
+    --> EQ
+
 -}
 compare : DateTime -> DateTime -> Order
 compare dt1 dt2 =
@@ -406,6 +644,52 @@ compare dt1 dt2 =
 
 
 {-| delta computes the relative difference between two DateTime values.
+See also `Time.Date.delta`.
+
+    upper : DateTime
+    upper = dateTime
+        { year = 1970
+        , month = 1
+        , day = 1
+        , hour = 0
+        , minute = 0
+        , second = 0
+        , millisecond = 0
+        }
+
+    upper
+    |> addYears -1
+    |> delta upper
+    --> { years = 1
+    --> , months = 12
+    --> , days = 365
+    --> , hours = 8760
+    --> , minutes = 525600
+    --> , seconds = 31536000
+    --> , milliseconds = 31536000000
+    --> }
+
+    -- Note what is counted is the number of transitions
+    -- to get from one unit to another.  Hence
+    -- the following shows that the difference of
+    -- 1 day makes a big difference when it separates
+    -- Dec 31 and Jan 1 as shown here.  Observe
+    -- that years, months, and days are the same because
+    -- each only requires one transition to get from
+    -- one date to the other.
+
+    upper
+    |> addDays -1
+    |> delta upper
+    --> { years = 1
+    --> , months = 1
+    --> , days = 1
+    --> , hours = 24
+    --> , minutes = 1440
+    --> , seconds = 86400
+    --> , milliseconds = 86400000
+    --> }
+
 -}
 delta : DateTime -> DateTime -> DateTimeDelta
 delta (DateTime t1) (DateTime t2) =
@@ -437,14 +721,26 @@ delta (DateTime t1) (DateTime t2) =
 
 {-| isValidTime returns True if the given hour, minute, second and
 millisecond represent a valid time of day.
+
+    isValidTime 24 0 0 0
+    --> False
+
+    isValidTime 23 59 59 999
+    --> True
+
 -}
-isValidTime : Int -> Int -> Int -> Time -> Bool
+isValidTime : Int -> Int -> Int -> Int -> Bool
 isValidTime hour minute second millisecond =
     hour >= 0 && hour < 24 && minute >= 0 && minute < 60 && second >= 0 && second < 60 && millisecond >= 0 && millisecond < 1000
 
 
 {-| toTimestamp converts a DateTime value to its UNIX timestamp
 representation as milliseconds.
+
+    epoch
+    |> toTimestamp
+    --> 0.0
+
 -}
 toTimestamp : DateTime -> Time
 toTimestamp time =
@@ -455,6 +751,10 @@ toTimestamp time =
 
 {-| fromTimestamp converts the millisecond representation of a
 UNIX timestamp into a DateTime value.
+
+    fromTimestamp 0.0
+    --> epoch
+
 -}
 fromTimestamp : Time -> DateTime
 fromTimestamp timestamp =
@@ -463,6 +763,12 @@ fromTimestamp timestamp =
 
 {-| toTuple converts a DateTime into a (year, month, day, hour, miunte,
 second, millisecond) tuple.
+
+DEPRECATED - unavailable in Elm 0.19
+
+    toTuple epoch
+    --> (1970, 1, 1, 0, 0, 0, 0)
+
 -}
 toTuple : DateTime -> ( Int, Int, Int, Int, Int, Int, Int )
 toTuple ((DateTime { date }) as t) =
@@ -475,6 +781,12 @@ toTuple ((DateTime { date }) as t) =
 
 {-| fromTuple converts a (year, month, day, hour, minute, second,
 millisecond) tuple into a DateTime.
+
+DEPRECATED - unavailable in Elm 0.19
+
+    fromTuple (1970, 1, 1, 0, 0, 0, 0)
+    --> epoch
+
 -}
 fromTuple : ( Int, Int, Int, Int, Int, Int, Int ) -> DateTime
 fromTuple ( year, month, day, hour, minute, second, millisecond ) =
@@ -490,6 +802,10 @@ fromTuple ( year, month, day, hour, minute, second, millisecond ) =
 
 
 {-| toISO8601 renders a DateTime in ISO8601 format.
+
+DEPRECATED: this is used as a hack for the compare function above; it is not exposed --
+use the functionality in Iso8601 instead.
+
 -}
 toISO8601 : DateTime -> String
 toISO8601 time =
@@ -507,104 +823,3 @@ toISO8601 time =
         ++ "."
         ++ padded3 (millisecond time)
         ++ "Z"
-
-
-{-| fromISO8601 parses an ISO8601-formatted date time string into a
-DateTime object, adjusting for its offset.
--}
-fromISO8601 : String -> Result String DateTime
-fromISO8601 input =
-    let
-        fraction =
-            let
-                getFractionString =
-                    (\p -> p) <$> Combine.regex "\\d*"
-
-                parseInteger s =
-                    case String.toInt s of
-                        Err msg ->
-                            0
-
-                        Ok divisor  ->
-                            divisor
-
-                keepUpTo3Places fractionString =
-                    let
-                        numerator =
-                            parseInteger fractionString
-
-                        denominator =
-                            10 ^ (String.length fractionString)
-                    in
-                        round (Time.Internal.secondMs * (toFloat numerator) / (toFloat denominator))
-
-                convert fractionString =
-                    keepUpTo3Places fractionString
-
-            in
-                convert <$> getFractionString
-
-        extendedDate =
-            (,,)
-                <$> Combine.Num.int
-                <*> (Combine.string "-" *> intRange 1 12)
-                <*> (Combine.string "-" *> intRange 1 31)
-
-        basicDate =
-            (,,)
-                <$> digitsInRange 4 0 9999
-                <*> digitsInRange 2 1 12
-                <*> digitsInRange 2 1 31
-
-        extendedTime =
-            (,,,)
-                <$> (Combine.string "T" *> intRange 0 23)
-                <*> (Combine.string ":" *> intRange 0 59)
-                <*> (Combine.string ":" *> intRange 0 59)
-                <*> Combine.optional 0 (Combine.regex "[,.]" *> fraction)
-
-        basicTime =
-            (,,,)
-                <$> (Combine.string "T" *> digitsInRange 2 0 23)
-                <*> digitsInRange 2 0 59
-                <*> digitsInRange 2 0 59
-                <*> Combine.optional 0 (Combine.regex "[,.]" *> fraction)
-
-        offset =
-            (0 <$ Combine.string "Z")
-                <|> ((\s h m -> s * h * 60 + s * m)
-                        <$> Combine.choice
-                                [ 1 <$ Combine.string "+"
-                                , -1 <$ Combine.string "-"
-                                , -1 <$ Combine.string "−" --U+2212
-                                ]
-                        <*> digitsInRange 2 0 23
-                        <*> (Combine.optional ":" (Combine.string ":") *> digitsInRange 2 0 59)
-                    )
-
-        datetime =
-            (,,)
-                <$> (extendedDate <|> basicDate)
-                <*> (extendedTime <|> basicTime)
-                <*> offset
-                <* Combine.end
-
-        convert ( ( year, month, day ), ( hour, minute, second, millisecond ), offset ) =
-            if isValidDate year month day && isValidTime hour minute second 0 then
-                DateTimeData year month day hour minute second millisecond
-                    |> dateTime
-                    |> addMinutes -offset
-                    |> Combine.succeed
-            else
-                Combine.fail "invalid date"
-    in
-        case Combine.parse (datetime >>= convert) input of
-            Ok ( _, _, dt ) ->
-                Ok dt
-
-            Err ( _, { position }, es ) ->
-                let
-                    messages =
-                        String.join " or " es
-                in
-                    Err ("Errors encountered at position " ++ toString position ++ ": " ++ messages)

@@ -29,4 +29,4 @@ namedTimeZoneTest =
                 test (timeZoneName ++ "'s TimeZone is named " ++ timeZoneName) <|
                     \() -> loadTimeZone () |> Time.TimeZone.name |> Expect.equal timeZoneName
         in
-        Dict.toList Time.TimeZones.all |> List.map check
+            Dict.toList Time.TimeZones.all |> List.map check
