@@ -94,6 +94,7 @@ type DateTime
 DateTime values in terms of each of the different "units".
 
 See `Time.DateTime.delta` for an "aha!" example.
+
 -}
 type alias DateTimeDelta =
     { years : Int

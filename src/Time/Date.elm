@@ -96,6 +96,7 @@ Invalid values are clamped to the nearest valid date.
     year d --> 2018
     month d --> 5
     day d --> 29
+
 -}
 date : Int -> Int -> Int -> Date
 date year month day =
