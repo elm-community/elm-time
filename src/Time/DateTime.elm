@@ -90,8 +90,10 @@ type DateTime
         }
 
 
-{-| DateTimeDelta represents the relative difference between two
-DateTime values.
+{-| DateTimeDelta represents the difference between two
+DateTime values in terms of each of the different "units".
+
+See `Time.DateTime.delta` for an "aha!" example.
 -}
 type alias DateTimeDelta =
     { years : Int
@@ -665,6 +667,27 @@ See also `Time.Date.delta`.
     --> , minutes = 525600
     --> , seconds = 31536000
     --> , milliseconds = 31536000000
+    --> }
+
+    -- Note what is counted is the number of transitions
+    -- to get from one unit to another.  Hence
+    -- the following shows that the difference of
+    -- 1 day makes a big difference when it separates
+    -- Dec 31 and Jan 1 as shown here.  Observe
+    -- that years, months, and days are the same because
+    -- each only requires one transition to get from
+    -- one date to the other.
+
+    upper
+    |> addDays -1
+    |> delta upper
+    --> { years = 1
+    --> , months = 1
+    --> , days = 1
+    --> , hours = 24
+    --> , minutes = 1440
+    --> , seconds = 86400
+    --> , milliseconds = 86400000
     --> }
 
 -}
