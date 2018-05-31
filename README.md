@@ -22,11 +22,11 @@ of them:
 * Each of the public APIs in `Time.Date`, `Time.DateTime`, `Time.ZonedDateTime`, `Iso8601`, and `Iso8601ErrorMsg`
 now has extensive
 **["verify examples"](https://github.com/stoeffel/elm-verify-examples)** documentation.
-* *TODO*
 
 ## Examples
 
-* **[Running and Understanding Examples](https://github.com/elm-community/elm-time/wiki/The-Examples)**
+* **[Error Rendering Example](./examples/with-parser-error-renderer/README.md)**
+* **[Running and Understanding Timezone Examples](https://github.com/elm-community/elm-time/wiki/The-Examples)**
 
 ## Dates
 
