@@ -29,7 +29,17 @@ represent any date of the proleptic Gregorian calendar.
 
 # Dates
 
-@docs Date, date, year, month, day, Weekday, weekday
+@docs Date
+
+
+# Constructing Dates
+
+@docs date, fromTuple, toTuple
+
+
+# Inspecting Dates
+
+@docs year, month, day, Weekday, weekday
 
 
 # Manipulating Dates
@@ -39,17 +49,12 @@ represent any date of the proleptic Gregorian calendar.
 
 # Comparing Dates
 
-@docs compare
-
-
-# Subtracting Dates
-
-@docs DateDelta, delta
+@docs compare, DateDelta, delta
 
 
 # Helper functions
 
-@docs toTuple, fromTuple, isValidDate, isLeapYear, daysInMonth
+@docs isValidDate, isLeapYear, daysInMonth
 
 -}
 
@@ -96,6 +101,7 @@ Invalid values are clamped to the nearest valid date.
     year d --> 2018
     month d --> 5
     day d --> 29
+
 -}
 date : Int -> Int -> Int -> Date
 date year month day =

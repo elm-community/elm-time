@@ -46,27 +46,32 @@ time of day.
 
 # DateTimes
 
-@docs DateTime, zero, epoch, dateTime, date, year, month, day, weekday, hour, minute, second, millisecond
+@docs DateTime
+
+
+# Constructing DateTimes
+
+@docs zero, epoch, dateTime, makeDateTime, fromTimestamp, toTimestamp, fromTuple, toTuple
+
+
+# Inspecting DateTimes
+
+@docs date, year, month, day, weekday, hour, minute, second, millisecond
 
 
 # Manipulating DateTimes
 
-@docs makeDateTime, setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
+@docs setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
 
 
 # Comparing DateTimes
 
-@docs compare
-
-
-# Subtracting DateTimes
-
-@docs DateTimeDelta, delta
+@docs compare, DateTimeDelta, delta
 
 
 # Helper functions
 
-@docs isValidTime, toTimestamp, fromTimestamp, toTuple, fromTuple
+@docs isValidTime
 
 
 # Deprecated
@@ -94,6 +99,7 @@ type DateTime
 DateTime values in terms of each of the different "units".
 
 See `Time.DateTime.delta` for an "aha!" example.
+
 -}
 type alias DateTimeDelta =
     { years : Int
