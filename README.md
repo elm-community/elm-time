@@ -4,7 +4,29 @@
 elm package install elm-community/elm-time
 ```
 
-* **[Running and Understanding Examples](https://github.com/elm-community/elm-time/wiki/The-Examples)**
+## Major Changes!
+
+This release prepares **elm-time** to be upgraded to Elm `0.19` by changing
+out the **ISO8601** and **Timezone Name** parsing from the 
+**[parser-combinators](http://package.elm-lang.org/packages/elm-community/parser-combinators/latest)** parser to
+Evan's **[parser](http://package.elm-lang.org/packages/elm-tools/parser/latest)**.
+
+> NOTE: this release is probably the last Elm `0.18` release.
+
+Hence, the changes are extensive and some API's have changed.  Here's a summary
+of them:
+
+* **ISO8601** processing has been broken out into its own module: `Time.Iso8601`.
+* An "Elm-style" error renderer for **ISO8601** parsing errors is provided: `Time.Iso8601ErrorMsg`.
+* An example Elm client-application showing the error handling is provided in `/examples/with-parser-error-renderer`.
+* Each of the public APIs in `Time.Date`, `Time.DateTime`, `Time.ZonedDateTime`, `Iso8601`, and `Iso8601ErrorMsg`
+now has extensive
+**["verify examples"](https://github.com/stoeffel/elm-verify-examples)** documentation.
+
+## Examples
+
+* **[Error Rendering Example](./examples/with-parser-error-renderer/README.md)**
+* **[Running and Understanding Timezone Examples](https://github.com/elm-community/elm-time/wiki/The-Examples)**
 
 ## Dates
 
@@ -34,16 +56,16 @@ Date { year = 1992, month = 2, day = 29 } : Date
 Use `year`, `month`, and `day` to inspect `Date`s.
 
 ``` elm
-> birthday = date 1992 5 29
+> d = date 1992 5 29
 Date { year = 1992, month = 5, day = 29 } : Date
 
-> Date.year birthday
+> Date.year d
 1992 : Int
 
-> Date.month birthday
+> Date.month d
 5 : Int
 
-> Date.day birthday
+> Date.day d
 29 : Int
 ```
 
@@ -61,28 +83,31 @@ to a date.  If the target date is invalid, these functions continually
 subtract one day until a valid date is found.
 
 ``` elm
+import Time.Date as Date exposing (Date, date, addYears)
+import Time.Iso8601
+
 > date 1992 1 31
-|   |> Date.addYears 1
-|   |> Date.toISO8601
+|   |> addYears 1
+|   |> Time.Iso8601.fromDate
 "1993-01-31" : String
 
 > date 1992 2 29
-|   |> Date.addYears 1
-|   |> Date.toISO8601
+|   |> addYears 1
+|   |> Time.Iso8601.fromDate
 "1993-02-28" : String
 
 > date 1992 1 31
 |   |> Date.addMonths 1
-|   |> Date.toISO8601
+|   |> Time.Iso8601.fromDate
 "1992-02-28" : String
 ```
 
 ## DateTimes
 
-`DateTimes` represent a `Date` together with a time offset from midnight.
+`DateTimes` represent a `Date` together with the time information starting on midnight for the `Date`.
 
 ``` elm
-import Time.DateTime as DateTime exposing (DateTime, dateTime)
+import Time.DateTime as DateTime exposing (DateTime, dateTime, year, month, day, hour, minute, second, millisecond)
 ```
 
 ### Constructing DateTimes
@@ -94,11 +119,41 @@ containing fields for `year`, `month`, `day`, `hour`, `minute`,
 `second` and `millisecond`:
 
 ``` elm
-> dateTime { year = 1992, month = 5, day = 29, hour = 0, minute = 0, second = 0, millisecond = 0 }
-DateTime { date = Date { year = 1992, month = 5, day = 29 }, offset = 0 } : Date
+dt : DateTime
+dt =
+    dateTime { year = 1992, month = 5, day = 29, hour = 0, minute = 0, second = 0, millisecond = 0 }
+    
+year dt --> 1992
+month dt --> 5
+day dt --> 29
+hour dt --> 0
+minute dt --> 0
+second --> 0
+millisecond --> 0    
 
-> dateTime { year = 1992, month = 2, day = 31, hour = 0, minute = 0, second = 0, millisecond = 0 }
-DateTime { date = Date { year = 1992, month = 2, day = 29 }, offset = 0 } : Date
+dt : DateTime
+dt =
+    dateTime { year = 1992, month = 2, day = 31, hour = 0, minute = 0, second = 0, millisecond = 0 }
+    
+year dt --> 1992
+month dt --> 2
+day dt --> 29 - Note clamped.
+hour dt --> 0
+minute dt --> 0
+second --> 0
+millisecond --> 0    
+
+dt : DateTime
+dt =
+    dateTime { year = 1993, month = 2, day = 31, hour = 0, minute = 0, second = 0, millisecond = 0 }
+    
+year dt --> 1993
+month dt --> 2
+day dt --> 28 - Note clamped.
+hour dt --> 0
+minute dt --> 0
+second --> 0
+millisecond --> 0    
 ```
 
 To make constructing `DateTimes` less tedious, the library provides

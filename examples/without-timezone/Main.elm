@@ -1,9 +1,6 @@
 module Main exposing (..)
 
 import Html as H exposing (Html)
-import Html.Attributes as A
-import Html.Events as E
-import Json.Decode as JD
 import Time exposing (Time)
 import Time.DateTime as DateTime exposing (DateTime)
 
@@ -42,7 +39,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick now ->
-            { model | now = DateTime.fromTimestamp now } ! []
+            ( { model | now = DateTime.fromTimestamp now }
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg
