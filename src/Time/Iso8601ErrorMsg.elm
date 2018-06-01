@@ -26,6 +26,7 @@ is famous for.
 
 import Parser exposing (Parser, Problem(Fail))
 
+
 {-| Invoking the renderer. This returns an 'elm compiler-style formatted' error string
 
     import Parser

@@ -176,6 +176,7 @@ toZonedDateTime timeZone input =
 
 
 {-| toDate parses an ISO8601-formatted date string into a Date.
+
     import Time.Date
 
     toDate "1970-12-01"
