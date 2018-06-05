@@ -11,6 +11,7 @@ module Time.Date
         , day
         , daysInMonth
         , delta
+        , fromCoreDate
         , fromTuple
         , isLeapYear
         , isValidDate
@@ -34,7 +35,7 @@ represent any date of the proleptic Gregorian calendar.
 
 # Constructing Dates
 
-@docs date, fromTuple, toTuple
+@docs date, fromCoreDate, fromTuple, toTuple
 
 
 # Inspecting Dates
@@ -57,6 +58,8 @@ represent any date of the proleptic Gregorian calendar.
 @docs isValidDate, isLeapYear, daysInMonth
 
 -}
+
+import Date as CoreDate exposing (Month(..))
 
 
 {-| Date is the opaque type for all Date values. Values of this type
@@ -106,6 +109,53 @@ Invalid values are clamped to the nearest valid date.
 date : Int -> Int -> Int -> Date
 date year month day =
     firstValid year (clampMonth month) (clampDay day)
+
+
+{-| Construct a date from an elm-lang/date.
+-}
+fromCoreDate : CoreDate.Date -> Date
+fromCoreDate coreDate =
+    let
+        monthToInt : Month -> Int
+        monthToInt month =
+            case month of
+                Jan ->
+                    1
+
+                Feb ->
+                    2
+
+                Mar ->
+                    3
+
+                Apr ->
+                    4
+
+                May ->
+                    5
+
+                Jun ->
+                    6
+
+                Jul ->
+                    7
+
+                Aug ->
+                    8
+
+                Sep ->
+                    9
+
+                Oct ->
+                    10
+
+                Nov ->
+                    11
+
+                Dec ->
+                    12
+    in
+        date (CoreDate.year coreDate) ((CoreDate.month >> monthToInt) coreDate) (CoreDate.day coreDate)
 
 
 {-| year returns a Date's year as an Int.
