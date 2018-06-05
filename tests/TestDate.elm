@@ -1,6 +1,7 @@
 module TestDate exposing (..)
 
 import Expect exposing (Expectation)
+import Date as CoreDate
 import Fuzz exposing (int, intRange)
 import Test exposing (..)
 import Time.Date exposing (..)
@@ -70,6 +71,11 @@ constructing =
         , test "clamps invalid dates" <|
             always <|
                 datesEqual (date 1993 2 29) ( 1993, 2, 28 )
+        , test "creates Date from an elm-lang/date" <|
+            always <|
+                Expect.equal (date 1969 12 31) <|
+                    fromCoreDate <|
+                        CoreDate.fromTime 0.0
         ]
 
 
