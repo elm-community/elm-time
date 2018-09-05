@@ -36,7 +36,11 @@ for (let name in zones) {
   let fullName = names[name];
 
   name = sanitize(name);
-  timeZoneData.push(`${name}_l = unpack "${zone}"`);
+  timeZoneData.push(`
+${name}_l =
+    unpack "${zone}"
+
+`);
   timeZones.push({name, fullName, link: false});
   tests.push(`
         , test "time zone ${name}" <|
@@ -163,7 +167,8 @@ ${fns.join("\n")}
 -- Utils
 -- -----
 {-| A mapping from TimeZone names to their respective functions.  Use
-this to look up TimeZones by name. -}
+this to look up TimeZones by name.
+-}
 all : Dict String TimeZone
 all =
     Dict.fromList <|
@@ -172,7 +177,8 @@ all =
             ]
 
 
-{-| Look up a TimeZone by name. -}
+{-| Look up a TimeZone by name.
+-}
 fromName : String -> Maybe TimeZone
 fromName name =
   Dict.get name all
