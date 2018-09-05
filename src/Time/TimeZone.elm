@@ -2,7 +2,7 @@ module Time.TimeZone exposing
     ( TimeZone, name, abbreviation, offset, offsetString
     , setName
     , unpack
-    , errorZone
+    , errorZone, find, parseAbbrevs, parseDiffs, parseIndices, parseName, parseOffsets, pipe
     )
 
 {-| This module defines a representations for Timezone information.
@@ -24,11 +24,8 @@ module Time.TimeZone exposing
 
 -}
 
+import Array
 import Char
-import Debug
-    exposing
-        ( log
-        )
 import List.Extra
 import Parser
     exposing
@@ -60,24 +57,28 @@ See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>.
 type TimeZone
     = TimeZone
         { name : String
-        , spans : List Span
+        , spans : SpanList
         }
+
+
+type SpanList
+    = Default Span
+    | More Span SpanList
 
 
 errorZone : String -> TimeZone
 errorZone errors =
-    TimeZone { name = "error: " ++ errors, spans = [] }
+    TimeZone { name = "error: " ++ errors, spans = Default { until = 0, abbreviation = "error", offset = 0 } }
 
 
 {-| Spans represent variations within a TimeZone. A Time has an
-associated Span if `.from <= t < .until`.
+associated Span if it is has the least .until, such that `t < .until`.
 
 `offset` is the Span's UTC offset in milliseconds.
 
 -}
 type alias Span =
-    { from : Posix
-    , until : Posix
+    { until : Float
     , abbreviation : String
     , offset : Int
     }
@@ -124,22 +125,26 @@ offsetString time timeZone =
         "-" ++ string
 
 
-find : Posix -> List Span -> Span
+find : Posix -> SpanList -> Span
 find time spans =
     let
-        go xs =
-            case xs of
-                [] ->
-                    Debug.todo "find: invalid span list"
+        ms =
+            Time.posixToMillis time |> toFloat
 
-                x :: ys ->
-                    if Time.posixToMillis time >= Time.posixToMillis x.from && Time.posixToMillis time < Time.posixToMillis x.until then
-                        x
+        go : Float -> SpanList -> Span
+        go prev xs =
+            case xs of
+                Default span ->
+                    span
+
+                More span other ->
+                    if prev <= ms && ms < span.until then
+                        span
 
                     else
-                        go ys
+                        go span.until other
     in
-    go spans
+    go (-1 / 0) spans
 
 
 {-| setName updates a TimeZone's name.
@@ -185,58 +190,75 @@ packedTimeZone =
                 |. pipe
                 |= parseDiffs
 
-        validate : PackedTimeZone -> Parser PackedTimeZone
-        validate data =
+        unpack_ : PackedTimeZone -> Parser UnpackedTimeZone
+        unpack_ data =
             let
+                -- Only the first timestamp is absolute; the rest are relative offsets.
+                untils =
+                    data.diffs |> List.Extra.scanl1 (+)
+
+                -- The packed format implicitly has an additional span at the end which continues
+                -- indefinitely, so we add +Infinity to the list
+                paddedUntils =
+                    untils ++ [ 1 / 0 ]
+
+                abbrArray =
+                    Array.fromList data.abbrevs
+
                 abbrevs =
-                    List.length data.abbrevs
+                    List.filterMap (\index -> Array.get index abbrArray) data.indices
+
+                offsetsArray =
+                    data.offsets
+                        |> List.map round
+                        |> List.map ((*) minuteMs)
+                        |> Array.fromList
 
                 offsets =
-                    List.length data.offsets
-
-                maxIndex =
-                    List.maximum data.indices
-                        |> Maybe.withDefault 0
+                    List.filterMap (\index -> Array.get index offsetsArray) data.indices
             in
-            if abbrevs /= offsets then
-                problem "abbrevs and offsets have different lengths"
+            if List.length abbrevs /= List.length paddedUntils then
+                problem <|
+                    "abbrevs was of length "
+                        ++ (String.fromInt <| List.length abbrevs)
+                        ++ "expected "
+                        ++ (String.fromInt <| List.length paddedUntils)
 
-            else if maxIndex >= abbrevs then
-                problem "highest index is longer than both abbrevs and offsets"
+            else if List.length offsets /= List.length paddedUntils then
+                problem <|
+                    "offsets was of length "
+                        ++ (String.fromInt <| List.length offsets)
+                        ++ "expected "
+                        ++ (String.fromInt <| List.length paddedUntils)
 
             else
-                succeed data
+                succeed
+                    { name = data.name
+                    , spans = List.map3 Span paddedUntils abbrevs offsets
+                    }
 
-        span : List Float -> PackedTimeZone -> Int -> Int -> Span
-        span times data i idx =
-            { from = Time.millisToPosix <| round <| getIndex times i
-            , until = Time.millisToPosix <| round <| getIndex times (i + 1)
-            , abbreviation = getIndex data.abbrevs idx
-            , offset = round (getIndex data.offsets idx * minuteMs)
-            }
+        convert : UnpackedTimeZone -> Parser TimeZone
+        convert unpacked =
+            case List.reverse unpacked.spans of
+                [] ->
+                    problem "no spans"
 
-        convert : PackedTimeZone -> TimeZone
-        convert data =
-            let
-                times =
-                    if not <| List.isEmpty data.diffs then
-                        List.Extra.scanl (+) (getIndex data.diffs 0) (List.drop 1 data.diffs)
-
-                    else
-                        []
-
-                -- surround times with - and +infinity
-                paddedTimes =
-                    [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
-            in
-            TimeZone
-                { name = data.name
-                , spans = List.indexedMap (span paddedTimes data) data.indices
-                }
+                default :: others ->
+                    succeed <|
+                        TimeZone
+                            { name = unpacked.name
+                            , spans = List.foldl More (Default default) others
+                            }
     in
     decode
-        |> andThen validate
-        |> map convert
+        |> andThen unpack_
+        |> andThen convert
+
+
+type alias UnpackedTimeZone =
+    { name : String
+    , spans : List Span
+    }
 
 
 type alias PackedTimeZone =
@@ -511,13 +533,3 @@ unsafeBase60 sign whole frac =
     toWhole (String.toList whole) 0
         |> toFrac (String.toList frac) 1
         |> (*) (toFloat sign)
-
-
-getIndex : List a -> Int -> a
-getIndex xs i =
-    case List.head (List.drop i xs) of
-        Nothing ->
-            Debug.todo ("index too large: xs=" ++ Debug.toString xs ++ " i=" ++ String.fromInt i)
-
-        Just x ->
-            x

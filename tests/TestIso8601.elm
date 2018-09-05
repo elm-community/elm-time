@@ -254,49 +254,49 @@ summerTimes =
         [ test "Zoned from DateTime applies correct offset before the end of summer time" <|
             \() ->
                 DT.dateTime { zero | year = 2016, month = 10, day = 29, hour = 23, minute = 59 }
-                    |> ZonedDateTime.fromDateTime (europe_bucharest ())
+                    |> ZonedDateTime.fromDateTime europe_bucharest
                     |> fromZonedDateTime
                     |> Expect.equal "2016-10-30T02:59:00.000+03:00"
         , test "Zoned from DateTime applies correct offset during the end of summer time" <|
             \() ->
                 DT.dateTime { zero | year = 2016, month = 10, day = 30, hour = 0 }
-                    |> ZonedDateTime.fromDateTime (europe_bucharest ())
+                    |> ZonedDateTime.fromDateTime europe_bucharest
                     |> fromZonedDateTime
                     |> Expect.equal "2016-10-30T03:00:00.000+02:00"
         , test "Zoned from DateTime applies correct offset after the end of summer time" <|
             \() ->
                 DT.dateTime { zero | year = 2016, month = 10, day = 30, hour = 1 }
-                    |> ZonedDateTime.fromDateTime (europe_bucharest ())
+                    |> ZonedDateTime.fromDateTime europe_bucharest
                     |> fromZonedDateTime
                     |> Expect.equal "2016-10-30T03:00:00.000+02:00"
         , test "Zoned constructor applies correct offset before the end of summer time" <|
             \() ->
-                zonedDateTime (europe_bucharest ()) { zero | year = 2016, month = 10, day = 30, hour = 2 }
+                zonedDateTime europe_bucharest { zero | year = 2016, month = 10, day = 30, hour = 2 }
                     |> fromZonedDateTime
                     |> Expect.equal "2016-10-30T02:00:00.000+03:00"
         , test "Zoned constructor applies correct offset during the end of summer time" <|
             \() ->
-                zonedDateTime (europe_bucharest ()) { zero | year = 2016, month = 10, day = 30, hour = 3 }
+                zonedDateTime europe_bucharest { zero | year = 2016, month = 10, day = 30, hour = 3 }
                     |> fromZonedDateTime
                     |> Expect.equal "2016-10-30T03:00:00.000+02:00"
         , test "Zoned constructor applies correct offset after the end of summer time" <|
             \() ->
-                zonedDateTime (europe_bucharest ()) { zero | year = 2016, month = 10, day = 30, hour = 4 }
+                zonedDateTime europe_bucharest { zero | year = 2016, month = 10, day = 30, hour = 4 }
                     |> fromZonedDateTime
                     |> Expect.equal "2016-10-30T04:00:00.000+02:00"
         , test "toISO8601 should format 3-digit milliseconds" <|
             \() ->
-                zonedDateTime (europe_bucharest ()) { zero | year = 2017, millisecond = 396 }
+                zonedDateTime europe_bucharest { zero | year = 2017, millisecond = 396 }
                     |> fromZonedDateTime
                     |> Expect.equal "2017-01-01T00:00:00.396+02:00"
         , test "toISO8601 should format 2-digit milliseconds" <|
             \() ->
-                zonedDateTime (europe_bucharest ()) { zero | year = 2017, millisecond = 96 }
+                zonedDateTime europe_bucharest { zero | year = 2017, millisecond = 96 }
                     |> fromZonedDateTime
                     |> Expect.equal "2017-01-01T00:00:00.096+02:00"
         , test "toISO8601 should format 1-digit milliseconds" <|
             \() ->
-                zonedDateTime (europe_bucharest ()) { zero | year = 2017, millisecond = 6 }
+                zonedDateTime europe_bucharest { zero | year = 2017, millisecond = 6 }
                     |> fromZonedDateTime
                     |> Expect.equal "2017-01-01T00:00:00.006+02:00"
         ]

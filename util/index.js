@@ -81,13 +81,13 @@ for (let i = 0; i < timeZones.length; i++) {
   if (timeZone.link) {
     fns.push(`
 {-| ${timeZone.fullName} -}
-${timeZone.name} : () -> TimeZone
-${timeZone.name} () = link "${timeZone.fullName}" ${timeZone.timeZone}_l`);
+${timeZone.name} : TimeZone
+${timeZone.name} = link "${timeZone.fullName}" ${timeZone.timeZone}_l`);
   } else {
     fns.push(`
 {-| ${timeZone.fullName} -}
-${timeZone.name} : () -> TimeZone
-${timeZone.name} () = ${timeZone.name}_l`);
+${timeZone.name} : TimeZone
+${timeZone.name} = ${timeZone.name}_l`);
   }
 }
 
@@ -138,17 +138,14 @@ module Time.TimeZones exposing (..)
 {-| This module contains TimeZone definitions for all Timezones as they
 are defined in the IANA zoneinfo database.
 
-TimeZone data is parsed lazily so, in order to retrieve a zone's value you
-must apply \`()\` to it.  For example:
+Make sure to use --optimize for production, to strip out unused zone
+data from your production app.
 
     import Time.DateTime exposing (epoch, toTimestamp)
     import Time.TimeZone exposing (abbreviation)
     import Time.TimeZones exposing (europe_bucharest)
 
-    let
-        timezone = europe_bucharest ()
-    in
-        abbreviation (toTimestamp epoch) timezone
+    abbreviation (toTimestamp epoch) europe_bucharest
 
 @docs all, fromName, ${docs.join(", ")}
 -}
@@ -167,7 +164,7 @@ ${fns.join("\n")}
 -- -----
 {-| A mapping from TimeZone names to their respective functions.  Use
 this to look up TimeZones by name. -}
-all : Dict String (() -> TimeZone)
+all : Dict String TimeZone
 all =
     Dict.fromList <|
         List.concat
@@ -178,12 +175,7 @@ all =
 {-| Look up a TimeZone by name. -}
 fromName : String -> Maybe TimeZone
 fromName name =
-  case Dict.get name all of
-    Nothing ->
-      Nothing
-
-    Just f ->
-      Just (f ())
+  Dict.get name all
 `.trim();
 
   fs.write(fd, content, (err) => {
