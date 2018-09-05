@@ -1,4 +1,4 @@
-module Time.Internal exposing (..)
+module Time.Internal exposing (DateTimeData, TimeData, dayMs, hourMs, minuteMs, offsetFromTimeData, padded, padded3, secondMs, zero)
 
 
 type alias DateTimeData =
@@ -41,14 +41,15 @@ zero =
 padded : Int -> String
 padded n =
     if n < 10 then
-        "0" ++ toString n
+        "0" ++ String.fromInt n
+
     else
-        toString n
+        String.fromInt n
 
 
 padded3 : Int -> String
 padded3 n =
-    String.padLeft 3 '0' (toString n)
+    String.padLeft 3 '0' (String.fromInt n)
 
 
 dayMs : number

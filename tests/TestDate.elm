@@ -1,7 +1,7 @@
-module TestDate exposing (..)
+module TestDate exposing (adders, constructing, datesEqual, fuzzDate, leapYearMonths, leapYears, monthDays, someDate, standardYearMonths, toFromTuple, validLeapYears)
 
 import Expect exposing (Expectation)
-import Fuzz exposing (int, intRange)
+import Fuzz exposing (Fuzzer, int, intRange)
 import Test exposing (..)
 import Time.Date exposing (..)
 
@@ -34,16 +34,17 @@ leapYearMonths =
 monthDays : Int -> Int -> Int
 monthDays year month =
     let
-        monthDays =
+        monthDays_ =
             if isLeapYear year then
                 leapYearMonths
+
             else
                 standardYearMonths
     in
-        monthDays
-            |> List.drop (month - 1)
-            |> List.head
-            |> Maybe.withDefault 0
+    monthDays_
+        |> List.drop (month - 1)
+        |> List.head
+        |> Maybe.withDefault 0
 
 
 fuzzDate : String -> (Int -> Int -> Int -> Expectation) -> Test
@@ -60,7 +61,7 @@ constructing =
                     day_ =
                         clamp 1 day (monthDays year month)
                 in
-                    datesEqual (date year month day_) ( year, month, day_ )
+                datesEqual (date year month day_) ( year, month, day_ )
         , test "constructs valid dates" <|
             always <|
                 datesEqual (date 1992 5 29) ( 1992, 5, 29 )
@@ -80,15 +81,16 @@ leapYears =
             [ fuzz (intRange -400 2020) "is correct given any year" <|
                 \year ->
                     if List.member year validLeapYears then
-                        Expect.true ("Expected " ++ toString year ++ " to be a leap year") (isLeapYear year)
+                        Expect.true ("Expected " ++ String.fromInt year ++ " to be a leap year") (isLeapYear year)
+
                     else
-                        Expect.false (toString year ++ " is not a leap year") (isLeapYear year)
+                        Expect.false (String.fromInt year ++ " is not a leap year") (isLeapYear year)
             ]
         , describe "daysInMonth"
             [ fuzz2 (intRange -400 2020) (intRange 1 12) "is correct given any year, month pair" <|
                 \year month ->
                     daysInMonth year month
-                        |> Expect.equal (Just <| monthDays year month)
+                        |> Expect.equal (monthDays year month)
             ]
         ]
 
@@ -106,7 +108,7 @@ adders =
                     date2 =
                         date 1993 2 28
                 in
-                    Expect.equal date1 date2
+                Expect.equal date1 date2
         , test "addMonths is relative" <|
             \() ->
                 let
@@ -117,7 +119,7 @@ adders =
                     date2 =
                         date 1992 2 29
                 in
-                    Expect.equal date1 date2
+                Expect.equal date1 date2
         , fuzz3 (intRange -400 3000) (intRange 1 12) (intRange -100 100) "addMonths is revertable" <|
             \year month addage ->
                 let
@@ -127,7 +129,7 @@ adders =
                     date2 =
                         addMonths addage date1
                 in
-                    Expect.equal date1 (addMonths -addage date2)
+                Expect.equal date1 (addMonths -addage date2)
         , fuzz int "addDays is absolute" <|
             \days ->
                 let
@@ -140,7 +142,7 @@ adders =
                     dt =
                         delta date2 date1
                 in
-                    Expect.equal days dt.days
+                Expect.equal days dt.days
         ]
 
 
@@ -158,5 +160,5 @@ toFromTuple =
                             |> toTuple
                             |> fromTuple
                 in
-                    Expect.equal date1 date2
+                Expect.equal date1 date2
         ]

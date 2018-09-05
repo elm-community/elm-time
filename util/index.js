@@ -27,7 +27,7 @@ let sanitize = (name) => {
 };
 
 // Data file
-let timeZones = [], timeZoneData = [];
+let timeZones = [], timeZoneData = [], tests = [];
 
 // Date file: Populate canonical zone data.
 for (let name in zones) {
@@ -36,8 +36,22 @@ for (let name in zones) {
   let fullName = names[name];
 
   name = sanitize(name);
-  timeZoneData.push(`${name}_l = unpack "${zone}"`);
+  timeZoneData.push(`
+${name}_l =
+    unpack "${zone}"
+`);
   timeZones.push({name, fullName, link: false});
+  tests.push(`
+        , test "time zone ${name}" <|
+            \\() ->
+                let
+                    tzName =
+                        name Data.${name}_l
+                in
+                tzName
+                    |> String.contains "error"
+                    |> Expect.false (tzName ++ " should not include error")
+`);
 }
 
 // Data file: Populate aliases.
@@ -65,18 +79,25 @@ for (let i = 0; i < timeZones.length; i++) {
   let timeZone = timeZones[i];
 
   docs.push(timeZone.name);
-  all.push(`("${timeZone.fullName}", ${timeZone.name})`);
+  all.push(`( "${timeZone.fullName}", ${timeZone.name} )`);
+  const commentName = timeZone.fullName.replace(/_/g, '\\_');
 
   if (timeZone.link) {
     fns.push(`
-{-| ${timeZone.fullName} -}
-${timeZone.name} : () -> TimeZone
-${timeZone.name} () = force (link "${timeZone.fullName}" ${timeZone.timeZone}_l)`);
+{-| ${commentName}
+-}
+${timeZone.name} : TimeZone
+${timeZone.name} =
+    link "${timeZone.fullName}" ${timeZone.timeZone}_l
+`);
   } else {
     fns.push(`
-{-| ${timeZone.fullName} -}
-${timeZone.name} : () -> TimeZone
-${timeZone.name} () = force ${timeZone.name}_l`);
+{-| ${commentName}
+-}
+${timeZone.name} : TimeZone
+${timeZone.name} =
+    ${timeZone.name}_l
+`);
   }
 }
 
@@ -84,32 +105,24 @@ fs.open("../src/Time/TimeZoneData.elm", "w", (err, fd) => {
   let content = `
 module Time.TimeZoneData exposing (..)
 
-import Lazy exposing (Lazy, force, lazy)
 import String
-import Time.TimeZone exposing (TimeZone, setName)
+import Parser exposing (deadEndsToString)
+import Time.TimeZone exposing (TimeZone, setName, errorZone)
 
 
-unpack : String -> Lazy TimeZone
+unpack : String -> TimeZone
 unpack data =
-    let
-        helper () =
-            case Time.TimeZone.unpack data of
-                Err errors ->
-                    let
-                        messages =
-                            String.join " or " errors
-                    in
-                        Debug.crash ("failed to parse zone '" ++ data ++ "': " ++ messages)
+    case Time.TimeZone.unpack data of
+        Err errors ->
+            Time.TimeZone.errorZone <| "failed to parse zone '" ++ data ++ "': " ++ (deadEndsToString errors)
 
-                Ok zone ->
-                    zone
-    in
-        lazy helper
+        Ok zone ->
+            zone
 
 
-link : String -> Lazy TimeZone -> Lazy TimeZone
-link link lz =
-    Lazy.map (setName link) lz
+link : String -> TimeZone -> TimeZone
+link name tz =
+    setName name tz
 
 
 -- Data
@@ -135,37 +148,38 @@ module Time.TimeZones exposing (..)
 {-| This module contains TimeZone definitions for all Timezones as they
 are defined in the IANA zoneinfo database.
 
-TimeZone data is parsed lazily so, in order to retrieve a zone's value you
-must apply \`()\` to it.  For example:
+Make sure to use --optimize for production, to strip out unused zone
+data from your production app.
 
     import Time.DateTime exposing (epoch, toTimestamp)
     import Time.TimeZone exposing (abbreviation)
     import Time.TimeZones exposing (europe_bucharest)
 
-    let
-        timezone = europe_bucharest ()
-    in
-        abbreviation (toTimestamp epoch) timezone
+    abbreviation (toTimestamp epoch) europe_bucharest
 
 @docs all, fromName, ${docs.join(", ")}
 -}
 
 import Dict exposing (Dict)
-import Lazy exposing (Lazy, force)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZoneData exposing (..)
 
 
+
 -- TimeZones
 -- ---------
+
 ${fns.join("\n")}
 
 
 -- Utils
 -- -----
-{-| A mapping from TimeZone names to their respective functions.  Use
-this to look up TimeZones by name. -}
-all : Dict String (() -> TimeZone)
+
+
+{-| A mapping from TimeZone names to their respective functions. Use
+this to look up TimeZones by name.
+-}
+all : Dict String TimeZone
 all =
     Dict.fromList <|
         List.concat
@@ -173,18 +187,37 @@ all =
             ]
 
 
-{-| Look up a TimeZone by name. -}
+{-| Look up a TimeZone by name.
+-}
 fromName : String -> Maybe TimeZone
 fromName name =
-  case Dict.get name all of
-    Nothing ->
-      Nothing
-
-    Just f ->
-      Just (f ())
+    Dict.get name all
 `.trim();
 
   fs.write(fd, content, (err) => {
     if (err) throw new err;
+  });
+});
+
+fs.open("../tests/TestTimeZoneData.elm", "w", (err, fd) => {
+  let content = `
+module TestTimeZoneData exposing (checkAllValid)
+
+import Expect exposing (Expectation)
+import Test exposing (..)
+import Time.TimeZone exposing (name)
+import Time.TimeZoneData as Data
+
+
+checkAllValid : Test
+checkAllValid =
+    describe "Time.TimeZoneData" <|
+        [ test "skip" <| \\() -> Expect.true "skip" True
+        ${tests.join('')}
+        ]
+`.trim();
+
+  fs.write(fd, content, (err) => {
+    if(err) throw new err;
   });
 });

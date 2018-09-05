@@ -1,8 +1,7 @@
-module TestDateTime exposing (..)
+module TestDateTime exposing (addition, dateTimes, dateTimesEqual, posInt, setters)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, constant, int, intRange, oneOf)
-import Parser exposing (Context, Error, Parser, Problem)
 import Test exposing (..)
 import Time.Date as Date
 import Time.DateTime as DateTime
@@ -28,7 +27,6 @@ import Time.DateTime as DateTime
         , setMonth
         , setSecond
         , setYear
-        , toTuple
         , year
         , zero
         )
@@ -40,9 +38,20 @@ posInt =
     Fuzz.map abs int
 
 
-dateTimesEqual : DateTime -> ( Int, Int, Int, Int, Int, Int, Int ) -> Expect.Expectation
-dateTimesEqual dateTime dateTimeTuple =
-    Expect.equal (toTuple dateTime) dateTimeTuple
+type alias DTRecord =
+    { year : Int
+    , month : Int
+    , day : Int
+    , hour : Int
+    , minute : Int
+    , second : Int
+    , millisecond : Int
+    }
+
+
+dateTimesEqual : DTRecord -> DateTime -> Expect.Expectation
+dateTimesEqual record =
+    Expect.equal (DateTime.dateTime record)
 
 
 dateTimes : Test
@@ -50,23 +59,25 @@ dateTimes =
     describe "Time.DateTime.{dateTime,epoch}"
         [ test "epoch is the epoch" <|
             \() ->
-                Expect.equal
-                    epoch
-                    (dateTime { zero | year = 1970 })
+                Expect.equal epoch (dateTime { zero | year = 1970 })
         , test "can construt valid dates" <|
             \() ->
-                let
-                    (( year, month, day, hour, minute, second, millisecond ) as dateTimeTuple) =
-                        ( 1992, 5, 29, 23, 29, 50, 920 )
-                in
-                    dateTimesEqual
-                        (dateTime { year = year, month = month, day = day, hour = hour, minute = minute, second = second, millisecond = millisecond })
-                        dateTimeTuple
+                dateTime
+                    { year = 1992
+                    , month = 5
+                    , day = 29
+                    , hour = 23
+                    , minute = 29
+                    , second = 50
+                    , millisecond = 920
+                    }
+                    |> dateTimesEqual
+                        { year = 1992, month = 5, day = 29, hour = 23, minute = 29, second = 50, millisecond = 920 }
         , test "clamps invalid dates" <|
             \() ->
-                dateTimesEqual
-                    (dateTime { zero | year = 1993, month = 2, day = 29 })
-                    ( 1993, 2, 28, 0, 0, 0, 0 )
+                dateTime { zero | year = 1993, month = 2, day = 29 }
+                    |> dateTimesEqual
+                        { zero | year = 1993, month = 2, day = 28 }
         ]
 
 
@@ -151,16 +162,21 @@ setters =
                     |> setDay 29
                     |> date
                     |> Expect.equal (Date.date 1991 2 28)
-        , fuzz4 int int int int "invalid times are clamped" <|
-            \hour minute second millisecond ->
+        , fuzz int4Fuzzer "invalid times are clamped" <|
+            \{ hour, minute, second, millisecond } ->
                 dateTime zero
                     |> setHour hour
                     |> setMinute minute
                     |> setSecond second
                     |> setMillisecond millisecond
-                    |> (\d -> ( DateTime.hour d, DateTime.minute d, DateTime.second d, DateTime.millisecond d ))
-                    |> Expect.equal ( clamp 0 23 hour, clamp 0 59 minute, clamp 0 59 second, clamp 0 999 millisecond )
+                    |> (\d -> [ DateTime.hour d, DateTime.minute d, DateTime.second d, DateTime.millisecond d ])
+                    |> Expect.equal [ clamp 0 23 hour, clamp 0 59 minute, clamp 0 59 second, clamp 0 999 millisecond ]
         ]
+
+
+int4Fuzzer : Fuzzer { hour : Int, minute : Int, second : Int, millisecond : Int }
+int4Fuzzer =
+    Fuzz.map4 (\h m s ms -> { hour = h, minute = m, second = s, millisecond = ms }) int int int int
 
 
 addition : Test
@@ -170,60 +186,66 @@ addition =
             \() ->
                 epoch
                     |> addHours 26
-                    |> toTuple
-                    |> Expect.equal ( 1970, 1, 2, 2, 0, 0, 0 )
+                    |> dateTimesEqual { zero | year = 1970, day = 2, hour = 2 }
         , test "can add a negative number of hours" <|
             \() ->
                 epoch
                     |> addHours -24
-                    |> toTuple
-                    |> Expect.equal ( 1969, 12, 31, 0, 0, 0, 0 )
+                    |> dateTimesEqual { zero | year = 1969, month = 12, day = 31 }
         , test "can add a positive number of minutes" <|
             \() ->
                 epoch
                     |> addMinutes 5
-                    |> toTuple
-                    |> Expect.equal ( 1970, 1, 1, 0, 5, 0, 0 )
+                    |> dateTimesEqual { zero | year = 1970, minute = 5 }
         , test "can add a negative number of minutes" <|
             \() ->
                 epoch
                     |> addMinutes -1
-                    |> toTuple
-                    |> Expect.equal ( 1969, 12, 31, 23, 59, 0, 0 )
+                    |> dateTimesEqual { zero | year = 1969, month = 12, day = 31, hour = 23, minute = 59 }
         , test "can add a positive number of seconds" <|
             \() ->
                 epoch
                     |> addSeconds 30
-                    |> toTuple
-                    |> Expect.equal ( 1970, 1, 1, 0, 0, 30, 0 )
+                    |> dateTimesEqual { zero | year = 1970, second = 30 }
         , test "can add a positive number of seconds as an absolute quantity" <|
             \() ->
                 epoch
                     |> addSeconds 3600
-                    |> toTuple
-                    |> Expect.equal ( 1970, 1, 1, 1, 0, 0, 0 )
+                    |> dateTimesEqual { zero | year = 1970, hour = 1 }
         , test "can add a negative number of seconds" <|
             \() ->
                 epoch
                     |> addSeconds -1
-                    |> toTuple
-                    |> Expect.equal ( 1969, 12, 31, 23, 59, 59, 0 )
+                    |> dateTimesEqual
+                        { zero
+                            | year = 1969
+                            , month = 12
+                            , day = 31
+                            , hour = 34
+                            , minute = 59
+                            , second = 59
+                        }
         , test "can add a positive number of milliseconds" <|
             \() ->
                 epoch
                     |> addMilliseconds 30
-                    |> toTuple
-                    |> Expect.equal ( 1970, 1, 1, 0, 0, 0, 30 )
+                    |> dateTimesEqual { zero | year = 1970, millisecond = 30 }
         , test "can add a positive number of milliseconds as an absolute quantity" <|
             \() ->
                 epoch
                     |> addMilliseconds 86400000
-                    |> toTuple
-                    |> Expect.equal ( 1970, 1, 2, 0, 0, 0, 0 )
+                    |> dateTimesEqual { zero | year = 1970, day = 2 }
         , test "can add a negative number of milliseconds" <|
             \() ->
                 epoch
                     |> addMilliseconds -1
-                    |> toTuple
-                    |> Expect.equal ( 1969, 12, 31, 23, 59, 59, 999 )
+                    |> dateTimesEqual
+                        { year = 1969
+                        , month = 12
+                        , day = 31
+                        , hour = 23
+                        , minute = 59
+                        , second = 59
+                        , millisecond = 999
+                        }
         ]

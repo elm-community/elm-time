@@ -10,13 +10,15 @@ the `elm-time` library.
 
 -}
 
-import Color exposing (..)
+import Browser
+import Browser.Dom
+import Browser.Events
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Element.Input as Input
 import Html exposing (Html)
-import Keyboard exposing (KeyCode)
-import Parser exposing (Error)
+import Json.Decode as JD
+import Parser.Advanced exposing (DeadEnd)
 import Style exposing (..)
 import Style.Border as Border
 import Style.Color
@@ -26,25 +28,23 @@ import Time.DateTime
     exposing
         ( DateTime
         , dateTime
-        , fromTimestamp
-        , fromTuple
-        , year
-        , month
         , day
         , hour
-        , minute
-        , second
         , millisecond
+        , minute
+        , month
+        , second
+        , year
         )
+import Time.Iso8601 exposing (Problem, toDateTime)
 import Time.Iso8601ErrorMsg exposing (reflow, renderText)
-import Time.Iso8601 exposing (toDateTime)
-import Window
 
 
 type Msg
     = ChangeText String
-    | Resize Window.Size
-    | KeyDown Keyboard.KeyCode
+    | Resize Int Int
+    | EnterPressed
+    | NoOp
 
 
 type Styles
@@ -55,6 +55,18 @@ type Styles
     | DateTimeRow
     | Box
     | Error
+
+
+black =
+    Style.rgb 0 0 0
+
+
+red =
+    Style.rgb 1 0 0
+
+
+lightGray =
+    Style.rgb 0.8 0.8 0.8
 
 
 stylesheet : StyleSheet Styles variation
@@ -87,10 +99,10 @@ stylesheet =
 
 {-| The "entry"
 -}
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
-        { init = init
+    Browser.element
+        { init = \_ -> init
         , update = update
         , view = view
         , subscriptions = subscriptions
@@ -99,7 +111,7 @@ main =
 
 type alias Model =
     { iso8601input : String
-    , dateTime : Result Error DateTime
+    , dateTime : Result (List (DeadEnd String Problem)) DateTime
     , device : Device
     }
 
@@ -120,13 +132,16 @@ init =
                 , second = 12
                 , millisecond = 0
                 }
+
+        getViewport =
+            Task.perform (\vp -> Resize (round vp.viewport.width) (round vp.viewport.height)) Browser.Dom.getViewport
     in
-        ( { iso8601input = initInput
-          , dateTime = Ok initDateTime
-          , device = classifyDevice (Window.Size 0 0)
-          }
-        , Task.perform Resize Window.size
-        )
+    ( { iso8601input = initInput
+      , dateTime = Ok initDateTime
+      , device = classifyDevice { width = 0, height = 0 }
+      }
+    , getViewport
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -139,18 +154,18 @@ update msg model =
             , Cmd.none
             )
 
-        Resize size ->
+        Resize width height ->
             ( { model
-                | device = classifyDevice size
+                | device = classifyDevice { width = width, height = height }
               }
             , Cmd.none
             )
 
-        KeyDown keyCode ->
-            if enterKeyCode == keyCode then
-                runParse model
-            else
-                ( model, Cmd.none )
+        EnterPressed ->
+            runParse model
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -175,15 +190,28 @@ view model =
                         renderDateTimeSuccess v
 
                     Err err ->
-                        renderDateTimeFail err
+                        renderDateTimeFail model.iso8601input err
                 ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        decoder : JD.Decoder Msg
+        decoder =
+            JD.field "key" JD.string
+                |> JD.map
+                    (\key ->
+                        if key == "Enter" then
+                            EnterPressed
+
+                        else
+                            NoOp
+                    )
+    in
     Sub.batch
-        [ Window.resizes Resize
-        , Keyboard.downs KeyDown
+        [ Browser.Events.onResize Resize
+        , Browser.Events.onKeyDown decoder
         ]
 
 
@@ -216,38 +244,36 @@ renderDateTimeSuccess dt =
                 , content = el Box [] (text <| value)
                 }
     in
-        grid DateTimeGrid
-            []
-            { columns = [ px 100, px 100, px 100 ]
-            , rows = [ px 20, px 20 ]
-            , cells =
-                [ renderCell 0 0 "Year"
-                , renderCell 1 0 "Month"
-                , renderCell 2 0 "Day"
-                , renderCell 3 0 "Hour"
-                , renderCell 4 0 "Minute"
-                , renderCell 5 0 "Second"
-                , renderCell 6 0 "Millisecond"
-                , renderCell 0 1 (toString <| year dt)
-                , renderCell 1 1 (toString <| month dt)
-                , renderCell 2 1 (toString <| day dt)
-                , renderCell 3 1 (toString <| hour dt)
-                , renderCell 4 1 (toString <| minute dt)
-                , renderCell 5 1 (toString <| second dt)
-                , renderCell 6 1 (toString <| millisecond dt)
-                ]
-            }
+    grid DateTimeGrid
+        []
+        { columns = [ px 100, px 100, px 100 ]
+        , rows = [ px 20, px 20 ]
+        , cells =
+            [ renderCell 0 0 "Year"
+            , renderCell 1 0 "Month"
+            , renderCell 2 0 "Day"
+            , renderCell 3 0 "Hour"
+            , renderCell 4 0 "Minute"
+            , renderCell 5 0 "Second"
+            , renderCell 6 0 "Millisecond"
+            , renderCell 0 1 (String.fromInt <| year dt)
+            , renderCell 1 1 (String.fromInt <| month dt)
+            , renderCell 2 1 (String.fromInt <| day dt)
+            , renderCell 3 1 (String.fromInt <| hour dt)
+            , renderCell 4 1 (String.fromInt <| minute dt)
+            , renderCell 5 1 (String.fromInt <| second dt)
+            , renderCell 6 1 (String.fromInt <| millisecond dt)
+            ]
+        }
 
 
 
---    el Success [] (text <| toString dateTime)
+--    el Success [] (text <| Debug.toString dateTime)
 
 
-renderDateTimeFail : Error -> Element Styles a b
-renderDateTimeFail err =
-    el Error [] (text <| renderText err ++ "\n\n---\n\n" ++ reflow "The Elm error returned by parser:\n\n" ++ reflow (toString err))
-
-
-enterKeyCode : KeyCode
-enterKeyCode =
-    13
+renderDateTimeFail : String -> List (DeadEnd String Problem) -> Element Styles a b
+renderDateTimeFail input errors =
+    List.map (renderText input) errors
+        |> String.join "\n\n---\n\n"
+        |> text
+        |> el Error []

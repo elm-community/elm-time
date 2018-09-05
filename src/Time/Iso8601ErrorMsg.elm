@@ -1,8 +1,7 @@
-module Time.Iso8601ErrorMsg
-    exposing
-        ( reflow
-        , renderText
-        )
+module Time.Iso8601ErrorMsg exposing
+    ( renderText
+    , reflow
+    )
 
 {-| A renderer to format error messages resulting from
 ISO8601 parsing errors.
@@ -24,17 +23,19 @@ is famous for.
 
 -}
 
-import Parser exposing (Parser, Problem(Fail))
+import Parser.Advanced exposing (DeadEnd)
+import Time.Iso8601 exposing (Problem(..))
 
 
 {-| Invoking the renderer. This returns an 'elm compiler-style formatted' error string
 
-    import Parser
+    import Parser.Advanced exposing (DeadEnd)
+    import Time.Iso8601 exposing (Problem)
 
     -- The \n in the middle of the string is to provide for the 72-char right margin
     failString : String
     failString =
-        "Expecting the value 29 to be in the range 1 to 28 for the specified\nyear, 1991, and month, 2."
+        "1991-02-29 is not a valid date"
 
     renderedString : String
     renderedString =
@@ -43,49 +44,50 @@ import Parser exposing (Parser, Problem(Fail))
         "            ^\n\n" ++
         failString
 
-    parserError : Parser.Error
-    parserError =
-        { row = 1
-        , col = 11
-        , source = "1991-02-29T12:25:12.0Z"
-        , problem = Parser.Fail failString
-        , context = [{ row = 1, col = 11, description = "leap-year" }]
-        }
+    showError : String -> String
+    showError input =
+       case Time.Iso8601.toDateTime input of
+           Ok _ ->
+               "success?! what?!"
+           Err errors ->
+               String.join "\n" <| List.map (renderText input) errors
 
-    renderText parserError
+
+    showError "1991-02-29T12:25:12.0Z"
     --> renderedString
 
 -}
-renderText : Parser.Error -> String
-renderText error =
+renderText : String -> DeadEnd String Problem -> String
+renderText source error =
     let
         -- Hack: special handling of the leap year.
         -- This sets the marker under the beginning of the
         -- day-of-month segment.
+        tweakCol : ParserContext -> Int
         tweakCol ctx =
-            if ctx.description == "leap-year" then
+            if ctx.context == "leap-year" then
                 ctx.col - 2
+
             else
                 ctx.col
 
-        ( source, diagnosis, col ) =
-            case List.head error.context of
+        ( diagnosis, col ) =
+            case List.head error.contextStack of
                 Nothing ->
-                    ( Nothing, noContext, error.col )
+                    ( noContext, error.col )
 
                 Just ctx ->
-                    ( Just ctx.description
-                    , forContext ctx error.problem
+                    ( forContext ctx error.problem
                     , tweakCol ctx
                     )
     in
-        diagnosis
-            ++ "\n\n    "
-            ++ relevantSource error
-            ++ "\n    "
-            ++ marker col
-            ++ "\n\n"
-            ++ (reflow <| describeProblem source error.problem)
+    diagnosis
+        ++ "\n\n    "
+        ++ relevantSource source error
+        ++ "\n    "
+        ++ marker col
+        ++ "\n\n"
+        ++ (reflow <| describeProblem error.problem)
 
 
 {-| A convenience function to auto-wrap long strings
@@ -102,8 +104,8 @@ reflow : String -> String
 reflow s =
     let
         flowLine : String -> String
-        flowLine s =
-            String.words s
+        flowLine str =
+            String.words str
                 |> makeSentences
                 |> String.join "\n"
 
@@ -117,23 +119,24 @@ reflow s =
                                 Nothing ->
                                     word
 
-                                Just s ->
-                                    s ++ " " ++ word
+                                Just str ->
+                                    str ++ " " ++ word
                     in
-                        if String.length combined > 72 then
-                            ( Just word, sentence :: acc )
-                        else
-                            ( Just combined, acc )
+                    if String.length combined > 72 then
+                        ( Just word, sentence :: acc )
+
+                    else
+                        ( Just combined, acc )
                 )
                 ( Nothing, [] )
                 words
-                |> uncurry (::)
+                |> (\( a, b ) -> (::) a b)
                 |> reverseFilterMap identity
     in
-        s
-            |> String.lines
-            |> List.map flowLine
-            |> String.join "\n"
+    s
+        |> String.lines
+        |> List.map flowLine
+        |> String.join "\n"
 
 
 reverseFilterMap : (a -> Maybe b) -> List a -> List b
@@ -151,59 +154,62 @@ reverseFilterMap toMaybe list =
         list
 
 
-relevantSource : Parser.Error -> String
-relevantSource { row, source } =
+relevantSource : String -> DeadEnd String Problem -> String
+relevantSource source { row } =
     String.lines source
         |> List.drop (row - 1)
         |> List.head
         |> Maybe.withDefault ""
 
 
-describeProblem : Maybe String -> Parser.Problem -> String
-describeProblem probableCause problem =
+describeProblem : Problem -> String
+describeProblem problem =
     case problem of
-        Parser.BadInt ->
-            "Unable to read an integer here."
+        ExpectingDigit ->
+            "Expecting a digit here"
 
-        Parser.BadFloat ->
-            "Unable to read a float here"
+        ExpectingRange value low high ->
+            "Expecting "
+                ++ String.fromInt value
+                ++ " to be between "
+                ++ String.fromInt low
+                ++ " and "
+                ++ String.fromInt high
 
-        Parser.BadRepeat ->
-            case probableCause of
-                Just cause ->
-                    "Can't find a " ++ cause ++ "."
+        ExpectingDot ->
+            "Expecting a '.' here"
 
-                Nothing ->
-                    "I got stuck here. I'm probably looking for something specific and not making any progress here."
+        ExpectingZ ->
+            "Expecting a Z here"
 
-        Parser.ExpectingEnd ->
-            "String should have stopped here, but it goes on."
+        ExpectingSign ->
+            "Expecting a sign (+ or -) here"
 
-        -- Usurped for bad day in month due to leap year:
-        Parser.ExpectingSymbol s ->
-            "Expecting a `" ++ s ++ "` here."
+        BadInt ->
+            "Unable to parse a valid integer"
 
-        Parser.ExpectingKeyword s ->
-            "Expecting a keyword `" ++ s ++ "` here."
+        InvalidDate ( year, month, day ) ->
+            let
+                pad : Int -> Int -> String
+                pad amount =
+                    String.fromInt >> String.padLeft amount '0'
 
-        Parser.ExpectingVariable ->
-            "Expecting a variable here."
+                dateStr =
+                    String.join "-" [ pad 4 year, pad 2 month, pad 2 day ]
+            in
+            dateStr ++ " is not a valid date"
 
-        Parser.ExpectingClosing s ->
-            "Expecting a closing `" ++ s ++ "` here."
+        ExpectingNDigits count string ->
+            "Expecting to get " ++ String.fromInt count ++ " digits here, not " ++ string
 
-        Parser.Fail s ->
-            s
-
-        Parser.BadOneOf problems ->
-            "Encountering multiple problems:\n\n"
-                ++ (List.map (describeProblem probableCause) problems |> String.join "\n\n")
+        Other str ->
+            str
 
 
-adjustMarker : Parser.Error -> Parser.Context -> Int
+adjustMarker : DeadEnd String Problem -> ParserContext -> Int
 adjustMarker error context =
     case error.problem of
-        Fail msg ->
+        Other msg ->
             context.col
 
         _ ->
@@ -215,22 +221,33 @@ marker col =
     String.repeat (col - 1) " " ++ "^"
 
 
-forContext : Parser.Context -> Parser.Problem -> String
-forContext { description } problem =
+type alias ParserContext =
+    { row : Int, col : Int, context : String }
+
+
+forContext : ParserContext -> Problem -> String
+forContext { context } problem =
     let
         -- hack; can't find any better way to do this.
         segment =
-            if description == "leap-year" then
+            if context == "leap-year" then
                 "day-of-month"
-            else
-                description
-    in
-        case problem of
-            Fail msg ->
-                "The '" ++ segment ++ "' segment is invalid:"
 
-            _ ->
-                "Failed to parse the '" ++ segment ++ "' segment:"
+            else
+                context
+    in
+    case problem of
+        InvalidDate _ ->
+            "The '" ++ segment ++ "' segment is invalid:"
+
+        ExpectingRange _ _ _ ->
+            "The '" ++ segment ++ "' segment is invalid:"
+
+        ExpectingNDigits _ _ ->
+            "The '" ++ segment ++ "' segment is invalid:"
+
+        _ ->
+            "Failed to parse the '" ++ segment ++ "' segment:"
 
 
 noContext : String

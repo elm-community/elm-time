@@ -13,7 +13,7 @@ the error message.
 
 | **Name** | **Version** | **Installation** |
 |---|---|---|
-| elm | \>=&nbsp;0.18.0 | **[Install](https://guide.elm-lang.org/install.html)** |
+| elm | \>=&nbsp;0.19.0 | **[Install](https://guide.elm-lang.org/install.html)** |
 | node | v8.9.3 | **[node dist](https://nodejs.org/dist/v8.9.3/)** |
 | npm | 5.8.0 | Included as part of **node** install above |
 | elm-live | \>=&nbsp;v2.7.5 | `npm install -g elm-live` |
@@ -25,7 +25,7 @@ into your directory of other Elm projects as follows:
 
 1. `cd` into your Elm projects' folder into which you want to clone
    `elm-time`.
-   
+
 1. Perform the following commands:
     ```bash
     git clone git@github.com:elm-community/elm-time.git
