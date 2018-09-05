@@ -156,7 +156,7 @@ fromDateTime time =
     import Time.TimeZones exposing (america_new_york)
     import Time.DateTime exposing (epoch)
 
-    Time.ZonedDateTime.fromDateTime (america_new_york ()) epoch
+    Time.ZonedDateTime.fromDateTime america_new_york epoch
     |> fromZonedDateTime
     --> "1969-12-31T19:00:00.000-05:00"
 
@@ -186,8 +186,8 @@ ZonedDateTime object, adjusting for its offset.
     import Time.TimeZones exposing (america_new_york)
     import Time.DateTime exposing (epoch)
 
-    toZonedDateTime (america_new_york ()) "1970-01-01T00:00:00.000Z"
-    --> Ok (Time.ZonedDateTime.fromDateTime (america_new_york ()) epoch)
+    toZonedDateTime america_new_york "1970-01-01T00:00:00.000Z"
+    --> Ok (Time.ZonedDateTime.fromDateTime america_new_york epoch)
 
 -}
 toZonedDateTime : TimeZone -> String -> Result (List IsoDeadEnd) ZonedDateTime

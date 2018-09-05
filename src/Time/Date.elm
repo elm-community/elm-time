@@ -540,7 +540,13 @@ rules for leap years are as follows:
 -}
 isLeapYear : Int -> Bool
 isLeapYear y =
-    modBy 400 y == 0 || modBy 100 y /= 0 && modBy 4 y == 0
+    -- There is a strange bug in the 0.19 compiler, which causes 0 /= 0 to return 0, not False, at
+    -- runtime
+    if modBy 400 y == 0 || modBy 100 y /= 0 && modBy 4 y == 0 then
+        True
+
+    else
+        False
 
 
 {-| daysInMonth returns the number of days in a month given a specific
@@ -550,11 +556,11 @@ year, taking leap years into account.
 
   - A leap year has 366 days and the corresponding February has 29 days.
 
-    daysInMonth 2016 Feb
-    --> Just 29
+    daysInMonth 2016 2
+    --> 29
 
-    daysInMonth 2018 Feb
-    --> Just 28
+    daysInMonth 2018 2
+    --> 28
 
 -}
 daysInMonth : Int -> Int -> Int
@@ -782,9 +788,6 @@ dateFromDays ds =
 clampMonth : Int -> Month
 clampMonth month_ =
     case month_ of
-        1 ->
-            Jan
-
         2 ->
             Feb
 
@@ -815,8 +818,12 @@ clampMonth month_ =
         11 ->
             Nov
 
-        _ ->
-            Dec
+        other ->
+            if other <= 1 then
+                Jan
+
+            else
+                Dec
 
 
 clampDay : Int -> Int
