@@ -77,6 +77,8 @@ type alias DateTimeDelta =
 {-| zero represents the first millisecond of the first day of the
 current era. Use it to construct `DateTime` values:
 
+    import Time.Iso8601
+
     dateTime zero
     |> Time.Iso8601.fromDateTime
     --> "0-01-01T00:00:00.000Z"
@@ -97,6 +99,8 @@ zero =
 
 {-| epoch is the instant in time that represents the first millisecond
 of the UNIX Epoch.
+
+    import Time.Iso8601
 
     epoch
     |> Time.Iso8601.fromDateTime
@@ -714,9 +718,11 @@ isValidTime h m s ms =
 {-| toPosix converts a DateTime value to the equivalent elm/time Posix
 representation.
 
+    import Time
+
     epoch
     |> toPosix
-    --> 0.0
+    --> Time.millisToPosix 0
 
 -}
 toPosix : DateTime -> Posix
@@ -729,6 +735,7 @@ toPosix time =
 {-| fromPosix converts the elm/time Posix representation of a
 UNIX timestamp into a DateTime value.
 
+    import Time
     0 |> Time.millisToPosix |> fromPosix
     --> epoch
 
