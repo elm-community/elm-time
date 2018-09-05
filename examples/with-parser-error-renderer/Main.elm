@@ -26,18 +26,18 @@ import Time.DateTime
     exposing
         ( DateTime
         , dateTime
+        , day
         , fromTimestamp
         , fromTuple
-        , year
-        , month
-        , day
         , hour
-        , minute
-        , second
         , millisecond
+        , minute
+        , month
+        , second
+        , year
         )
-import Time.Iso8601ErrorMsg exposing (reflow, renderText)
 import Time.Iso8601 exposing (toDateTime)
+import Time.Iso8601ErrorMsg exposing (reflow, renderText)
 import Window
 
 
@@ -121,12 +121,12 @@ init =
                 , millisecond = 0
                 }
     in
-        ( { iso8601input = initInput
-          , dateTime = Ok initDateTime
-          , device = classifyDevice (Window.Size 0 0)
-          }
-        , Task.perform Resize Window.size
-        )
+    ( { iso8601input = initInput
+      , dateTime = Ok initDateTime
+      , device = classifyDevice (Window.Size 0 0)
+      }
+    , Task.perform Resize Window.size
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -149,6 +149,7 @@ update msg model =
         KeyDown keyCode ->
             if enterKeyCode == keyCode then
                 runParse model
+
             else
                 ( model, Cmd.none )
 
@@ -216,36 +217,36 @@ renderDateTimeSuccess dt =
                 , content = el Box [] (text <| value)
                 }
     in
-        grid DateTimeGrid
-            []
-            { columns = [ px 100, px 100, px 100 ]
-            , rows = [ px 20, px 20 ]
-            , cells =
-                [ renderCell 0 0 "Year"
-                , renderCell 1 0 "Month"
-                , renderCell 2 0 "Day"
-                , renderCell 3 0 "Hour"
-                , renderCell 4 0 "Minute"
-                , renderCell 5 0 "Second"
-                , renderCell 6 0 "Millisecond"
-                , renderCell 0 1 (toString <| year dt)
-                , renderCell 1 1 (toString <| month dt)
-                , renderCell 2 1 (toString <| day dt)
-                , renderCell 3 1 (toString <| hour dt)
-                , renderCell 4 1 (toString <| minute dt)
-                , renderCell 5 1 (toString <| second dt)
-                , renderCell 6 1 (toString <| millisecond dt)
-                ]
-            }
+    grid DateTimeGrid
+        []
+        { columns = [ px 100, px 100, px 100 ]
+        , rows = [ px 20, px 20 ]
+        , cells =
+            [ renderCell 0 0 "Year"
+            , renderCell 1 0 "Month"
+            , renderCell 2 0 "Day"
+            , renderCell 3 0 "Hour"
+            , renderCell 4 0 "Minute"
+            , renderCell 5 0 "Second"
+            , renderCell 6 0 "Millisecond"
+            , renderCell 0 1 (String.fromInt <| year dt)
+            , renderCell 1 1 (String.fromInt <| month dt)
+            , renderCell 2 1 (String.fromInt <| day dt)
+            , renderCell 3 1 (String.fromInt <| hour dt)
+            , renderCell 4 1 (String.fromInt <| minute dt)
+            , renderCell 5 1 (String.fromInt <| second dt)
+            , renderCell 6 1 (String.fromInt <| millisecond dt)
+            ]
+        }
 
 
 
---    el Success [] (text <| toString dateTime)
+--    el Success [] (text <| Debug.toString dateTime)
 
 
 renderDateTimeFail : Error -> Element Styles a b
 renderDateTimeFail err =
-    el Error [] (text <| renderText err ++ "\n\n---\n\n" ++ reflow "The Elm error returned by parser:\n\n" ++ reflow (toString err))
+    el Error [] (text <| renderText err ++ "\n\n---\n\n" ++ reflow "The Elm error returned by parser:\n\n" ++ reflow (Debug.toString err))
 
 
 enterKeyCode : KeyCode

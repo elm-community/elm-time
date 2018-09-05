@@ -1,27 +1,11 @@
-module Time.Date
-    exposing
-        ( Date
-        , DateDelta
-        , Weekday(..)
-        , addDays
-        , addMonths
-        , addYears
-        , compare
-        , date
-        , day
-        , daysInMonth
-        , delta
-        , fromTuple
-        , isLeapYear
-        , isValidDate
-        , month
-        , setDay
-        , setMonth
-        , setYear
-        , toTuple
-        , weekday
-        , year
-        )
+module Time.Date exposing
+    ( Date
+    , date, fromTuple, toTuple
+    , year, month, day, Weekday(..), weekday
+    , setYear, setMonth, setDay, addYears, addMonths, addDays
+    , compare, DateDelta, delta
+    , isValidDate, isLeapYear, daysInMonth
+    )
 
 {-| This module defines a timezone-independent Date type which can
 represent any date of the proleptic Gregorian calendar.
@@ -104,8 +88,8 @@ Invalid values are clamped to the nearest valid date.
 
 -}
 date : Int -> Int -> Int -> Date
-date year month day =
-    firstValid year (clampMonth month) (clampDay day)
+date year_ month_ day_ =
+    firstValid year_ (clampMonth month_) (clampDay day_)
 
 
 {-| year returns a Date's year as an Int.
@@ -115,8 +99,8 @@ date year month day =
 
 -}
 year : Date -> Int
-year (Date { year }) =
-    year
+year (Date inner) =
+    inner.year
 
 
 {-| month returns a Date's month as an Int. Guaranteed to be in the
@@ -127,8 +111,8 @@ range [1, 12].
 
 -}
 month : Date -> Int
-month (Date { month }) =
-    month
+month (Date inner) =
+    inner.month
 
 
 {-| day returns a Date's year as an Int. Guaranteed to be valid for
@@ -145,8 +129,8 @@ the Date's (year, month) pair and in the range [1, 31].
 
 -}
 day : Date -> Int
-day (Date { day }) =
-    day
+day (Date inner) =
+    inner.day
 
 
 {-| weekday returns the day of week for a given Date.
@@ -158,57 +142,75 @@ This uses Sakamoto's method to determine the day of week.
 
 -}
 weekday : Date -> Weekday
-weekday (Date { year, month, day }) =
+weekday (Date inner) =
     let
         m =
-            if month == 1 then
+            if inner.month == 1 then
                 0
-            else if month == 2 then
+
+            else if inner.month == 2 then
                 3
-            else if month == 3 then
+
+            else if inner.month == 3 then
                 2
-            else if month == 4 then
+
+            else if inner.month == 4 then
                 5
-            else if month == 5 then
+
+            else if inner.month == 5 then
                 0
-            else if month == 6 then
+
+            else if inner.month == 6 then
                 3
-            else if month == 7 then
+
+            else if inner.month == 7 then
                 5
-            else if month == 8 then
+
+            else if inner.month == 8 then
                 1
-            else if month == 9 then
+
+            else if inner.month == 9 then
                 4
-            else if month == 10 then
+
+            else if inner.month == 10 then
                 6
-            else if month == 11 then
+
+            else if inner.month == 11 then
                 2
+
             else
                 4
 
         y =
-            if month < 3 then
-                year - 1
+            if inner.month < 3 then
+                inner.year - 1
+
             else
-                year
+                inner.year
 
         d =
-            (y + y // 4 - y // 100 + y // 400 + m + day) % 7
+            modBy 7 (y + y // 4 - y // 100 + y // 400 + m + inner.day)
     in
-        if d == 0 then
-            Sun
-        else if d == 1 then
-            Mon
-        else if d == 2 then
-            Tue
-        else if d == 3 then
-            Wed
-        else if d == 4 then
-            Thu
-        else if d == 5 then
-            Fri
-        else
-            Sat
+    if d == 0 then
+        Sun
+
+    else if d == 1 then
+        Mon
+
+    else if d == 2 then
+        Tue
+
+    else if d == 3 then
+        Wed
+
+    else if d == 4 then
+        Thu
+
+    else if d == 5 then
+        Fri
+
+    else
+        Sat
 
 
 {-| setYear updates a Date's year. Invalid values are clamped to the
@@ -221,8 +223,8 @@ nearest valid date.
 
 -}
 setYear : Int -> Date -> Date
-setYear year (Date ({ month, day } as date)) =
-    firstValid year month day
+setYear newYear (Date d) =
+    firstValid newYear d.month d.day
 
 
 {-| setMonth updates a Date's month. Invalid values are clamped to the
@@ -240,8 +242,8 @@ nearest valid date.
 
 -}
 setMonth : Int -> Date -> Date
-setMonth month (Date ({ year, day } as date)) =
-    firstValid year (clampMonth month) day
+setMonth newMonth (Date d) =
+    firstValid d.year (clampMonth newMonth) d.day
 
 
 {-| setDay updates a Date's day. Invalid values are clamped to the
@@ -264,8 +266,8 @@ nearest valid date.
 
 -}
 setDay : Int -> Date -> Date
-setDay day (Date ({ year, month } as date)) =
-    firstValid year month (clampDay day)
+setDay newDay (Date d) =
+    firstValid d.year d.month (clampDay newDay)
 
 
 {-| addYears adds a relative number (positive or negative) of years to
@@ -280,8 +282,8 @@ Date can be produced.
 
 -}
 addYears : Int -> Date -> Date
-addYears years (Date ({ year, month, day } as date)) =
-    firstValid (year + years) month day
+addYears years (Date d) =
+    firstValid (d.year + years) d.month d.day
 
 
 {-| addMonths adds a relative number (positive or negative) of months to
@@ -295,18 +297,19 @@ semantics are the same as `addYears`.
 
 -}
 addMonths : Int -> Date -> Date
-addMonths months (Date { year, month, day }) =
+addMonths months (Date d) =
     let
         ms =
-            year * 12 + month - 1 + months
+            d.year * 12 + d.month - 1 + months
 
         yo =
             if ms < 0 then
                 -1
+
             else
                 0
     in
-        date (((ms - yo) // 12) + yo) ((ms % 12) + 1) day
+    date (((ms - yo) // 12) + yo) (modBy 12 ms + 1) d.day
 
 
 {-| days adds an exact number (positive or negative) of days to a
@@ -320,8 +323,8 @@ there is no fuzzing logic here like there is in `add{Months,Years}`.
 
 -}
 addDays : Int -> Date -> Date
-addDays days (Date ({ year, month, day } as date)) =
-    daysFromYearMonthDay year month day
+addDays days (Date d) =
+    daysFromYearMonthDay d.year d.month d.day
         |> (+) days
         |> dateFromDays
 
@@ -404,8 +407,8 @@ This is useful if you want to use Dates as Dict keys.
 
 -}
 toTuple : Date -> ( Int, Int, Int )
-toTuple (Date { year, month, day }) =
-    ( year, month, day )
+toTuple (Date d) =
+    ( d.year, d.month, d.day )
 
 
 {-| fromTuple converts a (year, month, day) tuple into a Date value.
@@ -416,8 +419,8 @@ toTuple (Date { year, month, day }) =
 
 -}
 fromTuple : ( Int, Int, Int ) -> Date
-fromTuple ( year, month, day ) =
-    date year month day
+fromTuple ( year_, month_, day_ ) =
+    date year_ month_ day_
 
 
 {-| isValidDate returns True if the given year, month and day
@@ -444,9 +447,9 @@ abort creating a "bad" `Date`.
 
 -}
 isValidDate : Int -> Int -> Int -> Bool
-isValidDate year month day =
-    daysInMonth year month
-        |> Maybe.map (\days -> day >= 1 && day <= days)
+isValidDate year_ month_ day_ =
+    daysInMonth year_ month_
+        |> Maybe.map (\days -> day_ >= 1 && day_ <= days)
         |> Maybe.withDefault False
 
 
@@ -477,7 +480,7 @@ rules for leap years are as follows:
 -}
 isLeapYear : Int -> Bool
 isLeapYear y =
-    y % 400 == 0 || y % 100 /= 0 && y % 4 == 0
+    modBy 400 y == 0 || modBy 100 y /= 0 && modBy 4 y == 0
 
 
 {-| daysInMonth returns the number of days in a month given a specific
@@ -501,6 +504,7 @@ daysInMonth : Int -> Int -> Maybe Int
 daysInMonth y m =
     if m >= 1 && m <= 12 then
         Just <| unsafeDaysInMonth y m
+
     else
         Nothing
 
@@ -509,75 +513,92 @@ unsafeDaysInMonth : Int -> Int -> Int
 unsafeDaysInMonth y m =
     if m == 1 then
         31
+
     else if m == 2 && isLeapYear y then
         29
+
     else if m == 2 then
         28
+
     else if m == 3 then
         31
+
     else if m == 4 then
         30
+
     else if m == 5 then
         31
+
     else if m == 6 then
         30
+
     else if m == 7 then
         31
+
     else if m == 8 then
         31
+
     else if m == 9 then
         30
+
     else if m == 10 then
         31
+
     else if m == 11 then
         30
+
     else if m == 12 then
         31
+
     else
-        Debug.crash <| "invalid call to unsafeDaysInMonth: year=" ++ toString y ++ " month=" ++ toString m
+        Debug.todo <| "invalid call to unsafeDaysInMonth: year=" ++ String.fromInt y ++ " month=" ++ String.fromInt m
 
 
 firstValid : Int -> Int -> Int -> Date
-firstValid year month day =
+firstValid year_ month_ day_ =
     let
         ( y, m, d ) =
-            if isValidDate year month day then
-                ( year, month, day )
-            else if isValidDate year month (day - 1) then
-                ( year, month, day - 1 )
-            else if isValidDate year month (day - 2) then
-                ( year, month, day - 2 )
+            if isValidDate year_ month_ day_ then
+                ( year_, month_, day_ )
+
+            else if isValidDate year_ month_ (day_ - 1) then
+                ( year_, month_, day_ - 1 )
+
+            else if isValidDate year_ month_ (day_ - 2) then
+                ( year_, month_, day_ - 2 )
+
             else
-                ( year, month, day - 3 )
+                ( year_, month_, day_ - 3 )
     in
-        Date { year = y, month = m, day = d }
+    Date { year = y, month = m, day = d }
 
 
 daysFromYearMonthDay : Int -> Int -> Int -> Int
-daysFromYearMonthDay year month day =
+daysFromYearMonthDay year_ month_ day_ =
     let
         yds =
-            daysFromYear year
+            daysFromYear year_
 
         mds =
-            daysFromYearMonth year month
+            daysFromYearMonth year_ month_
 
         dds =
-            day - 1
+            day_ - 1
     in
-        yds + mds + dds
+    yds + mds + dds
 
 
 daysFromYearMonth : Int -> Int -> Int
-daysFromYearMonth year month =
+daysFromYearMonth year_ month_ =
     let
-        go year month acc =
-            if month == 0 then
+        go y m acc =
+            if m == 0 then
                 acc
+
             else
-                go year (month - 1) (acc + unsafeDaysInMonth year month)
+                go y (m - 1) (acc + unsafeDaysInMonth y m)
     in
-        go year (month - 1) 0
+    go year_ (month_ - 1) 0
 
 
 daysFromYear : Int -> Int
@@ -588,11 +609,13 @@ daysFromYear y =
             + ((y - 1) // 4)
             - ((y - 1) // 100)
             + ((y - 1) // 400)
+
     else if y < 0 then
         (y * 365)
             + (y // 4)
             - (y // 100)
             + (y // 400)
+
     else
         0
 
@@ -606,10 +629,11 @@ yearFromDays ds =
         d =
             daysFromYear y
     in
-        if ds <= d then
-            y - 1
-        else
-            y
+    if ds <= d then
+        y - 1
+
+    else
+        y
 
 
 dateFromDays : Int -> Date
@@ -622,58 +646,70 @@ dateFromDays ds =
             ds // d400
 
         d =
-            rem ds d400
+            remainderBy d400 ds
 
-        year =
+        year_ =
             yearFromDays (d + 1)
 
         leap =
-            if isLeapYear year then
+            if isLeapYear year_ then
                 (+) 1
+
             else
                 identity
 
         doy =
-            d - daysFromYear year
+            d - daysFromYear year_
 
-        ( month, day ) =
+        ( month_, day_ ) =
             if doy < 31 then
                 ( 1, doy + 1 )
+
             else if doy < leap 59 then
                 ( 2, doy - 31 + 1 )
+
             else if doy < leap 90 then
                 ( 3, doy - leap 59 + 1 )
+
             else if doy < leap 120 then
                 ( 4, doy - leap 90 + 1 )
+
             else if doy < leap 151 then
                 ( 5, doy - leap 120 + 1 )
+
             else if doy < leap 181 then
                 ( 6, doy - leap 151 + 1 )
+
             else if doy < leap 212 then
                 ( 7, doy - leap 181 + 1 )
+
             else if doy < leap 243 then
                 ( 8, doy - leap 212 + 1 )
+
             else if doy < leap 273 then
                 ( 9, doy - leap 243 + 1 )
+
             else if doy < leap 304 then
                 ( 10, doy - leap 273 + 1 )
+
             else if doy < leap 334 then
                 ( 11, doy - leap 304 + 1 )
+
             else
                 ( 12, doy - leap 334 + 1 )
     in
-        Date
-            { year = year + y400 * 400
-            , month = month
-            , day = day
-            }
+    Date
+        { year = year_ + y400 * 400
+        , month = month_
+        , day = day_
+        }
 
 
 clampMonth : Int -> Int
-clampMonth month =
-    clamp 1 12 month
+clampMonth month_ =
+    clamp 1 12 month_
 
 
 clampDay : Int -> Int
-clampDay day =
-    clamp 1 31 day
+clampDay day_ =
+    clamp 1 31 day_

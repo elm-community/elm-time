@@ -27,7 +27,7 @@ let sanitize = (name) => {
 };
 
 // Data file
-let timeZones = [], timeZoneData = [];
+let timeZones = [], timeZoneData = [], tests = [];
 
 // Date file: Populate canonical zone data.
 for (let name in zones) {
@@ -38,6 +38,17 @@ for (let name in zones) {
   name = sanitize(name);
   timeZoneData.push(`${name}_l = unpack "${zone}"`);
   timeZones.push({name, fullName, link: false});
+  tests.push(`
+        , test "time zone ${name}" <|
+            \\() ->
+                let
+                    tzName =
+                        name Data.${name}_l
+                in
+                tzName
+                    |> String.contains "error"
+                    |> Expect.false (tzName ++ " should not include error")
+`);
 }
 
 // Data file: Populate aliases.
@@ -71,12 +82,12 @@ for (let i = 0; i < timeZones.length; i++) {
     fns.push(`
 {-| ${timeZone.fullName} -}
 ${timeZone.name} : () -> TimeZone
-${timeZone.name} () = force (link "${timeZone.fullName}" ${timeZone.timeZone}_l)`);
+${timeZone.name} () = link "${timeZone.fullName}" ${timeZone.timeZone}_l`);
   } else {
     fns.push(`
 {-| ${timeZone.fullName} -}
 ${timeZone.name} : () -> TimeZone
-${timeZone.name} () = force ${timeZone.name}_l`);
+${timeZone.name} () = ${timeZone.name}_l`);
   }
 }
 
@@ -84,32 +95,24 @@ fs.open("../src/Time/TimeZoneData.elm", "w", (err, fd) => {
   let content = `
 module Time.TimeZoneData exposing (..)
 
-import Lazy exposing (Lazy, force, lazy)
 import String
-import Time.TimeZone exposing (TimeZone, setName)
+import Parser exposing (deadEndsToString)
+import Time.TimeZone exposing (TimeZone, setName, errorZone)
 
 
-unpack : String -> Lazy TimeZone
+unpack : String -> TimeZone
 unpack data =
-    let
-        helper () =
-            case Time.TimeZone.unpack data of
-                Err errors ->
-                    let
-                        messages =
-                            String.join " or " errors
-                    in
-                        Debug.crash ("failed to parse zone '" ++ data ++ "': " ++ messages)
+    case Time.TimeZone.unpack data of
+        Err errors ->
+            Time.TimeZone.errorZone <| "failed to parse zone '" ++ data ++ "': " ++ (deadEndsToString errors)
 
-                Ok zone ->
-                    zone
-    in
-        lazy helper
+        Ok zone ->
+            zone
 
 
-link : String -> Lazy TimeZone -> Lazy TimeZone
-link link lz =
-    Lazy.map (setName link) lz
+link : String -> TimeZone -> TimeZone
+link name tz =
+    setName name tz
 
 
 -- Data
@@ -151,7 +154,6 @@ must apply \`()\` to it.  For example:
 -}
 
 import Dict exposing (Dict)
-import Lazy exposing (Lazy, force)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZoneData exposing (..)
 
@@ -186,5 +188,28 @@ fromName name =
 
   fs.write(fd, content, (err) => {
     if (err) throw new err;
+  });
+});
+
+fs.open("../tests/TestTimeZoneData.elm", "w", (err, fd) => {
+  let content = `
+module TestTimeZoneData exposing (checkAllValid)
+
+import Expect exposing (Expectation)
+import Test exposing (..)
+import Time.TimeZone exposing (name)
+import Time.TimeZoneData as Data
+
+
+checkAllValid : Test
+checkAllValid =
+    describe "Time.TimeZoneData" <|
+        [ test "skip" <| \\() -> Expect.true "skip" True
+        ${tests.join('')}
+        ]
+`.trim();
+
+  fs.write(fd, content, (err) => {
+    if(err) throw new err;
   });
 });

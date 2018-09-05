@@ -1,12 +1,10 @@
-module TestDateTimeDelta exposing (..)
-
-import Time.DateTime as DateTime exposing (..)
-import Expect exposing (Expectation)
-
+module TestDateTimeDelta exposing (date1, date2, expectedDelta, suite)
 
 -- import Fuzz exposing (Fuzzer, constant, int, intRange, oneOf)
 
+import Expect exposing (Expectation)
 import Test exposing (..)
+import Time.DateTime as DateTime exposing (..)
 
 
 date1 : DateTime
@@ -17,28 +15,28 @@ date1 : DateTime
 
 
 date1 =
-    DateTime.fromTuple
-        ( 1970
-        , 1
-        , 1
-        , 0
-        , 0
-        , 0
-        , 0
-        )
+    DateTime.dateTime
+        { year = 1970
+        , month = 1
+        , day = 1
+        , hour = 0
+        , minute = 0
+        , second = 0
+        , millisecond = 0
+        }
 
 
 date2 : DateTime
 date2 =
-    DateTime.fromTuple
-        ( 1969
-        , 12
-        , 31
-        , 23
-        , 59
-        , 59
-        , 999
-        )
+    DateTime.dateTime
+        { year = 1969
+        , month = 12
+        , day = 31
+        , hour = 23
+        , minute = 59
+        , second = 59
+        , millisecond = 999
+        }
 
 
 expectedDelta : DateTimeDelta

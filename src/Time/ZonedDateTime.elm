@@ -1,41 +1,9 @@
-module Time.ZonedDateTime
-    exposing
-        ( ZonedDateTime
-        , abbreviation
-        , addDays
-        , addHours
-        , addMilliseconds
-        , addMinutes
-        , addMonths
-        , addSeconds
-        , addYears
-        , asTimeZone
-        , day
-        , fromDateTime
-        , fromTimestamp
-        , hour
-        , millisecond
-        , minute
-        , month
-        , second
-        , setDate
-        , setDay
-        , setHour
-        , setMillisecond
-        , setMinute
-        , setMonth
-        , setSecond
-        , setYear
-        , timeZone
-        , toDateTime
-        , toTimestamp
-        , utcOffset
-        , utcOffsetString
-        , weekday
-        , year
-        , zero
-        , zonedDateTime
-        )
+module Time.ZonedDateTime exposing
+    ( ZonedDateTime
+    , zero, zonedDateTime, fromDateTime, toDateTime, fromPosix, toPosix
+    , timeZone, year, month, day, weekday, hour, minute, second, millisecond, abbreviation, utcOffset, utcOffsetString
+    , asTimeZone, setDate, setYear, setMonth, setDay, setHour, setMinute, setSecond, setMillisecond, addYears, addMonths, addDays, addHours, addMinutes, addSeconds, addMilliseconds
+    )
 
 {-| This module defines a time representation based on a Date, the
 time of day and a time zone.
@@ -52,7 +20,7 @@ surface of `ZonedDateTimes` is extremely limited.
 
 # Constructing ZonedDateTimes
 
-@docs zero, zonedDateTime, fromDateTime, toDateTime, fromTimestamp, toTimestamp
+@docs zero, zonedDateTime, fromDateTime, toDateTime, fromPosix, toPosix
 
 
 # Inspecting ZonedDateTimes
@@ -66,7 +34,7 @@ surface of `ZonedDateTimes` is extremely limited.
 
 -}
 
-import Time exposing (Time)
+import Time exposing (Posix)
 import Time.Date exposing (Date, Weekday)
 import Time.DateTime as DateTime exposing (DateTime)
 import Time.Internal exposing (..)
@@ -89,8 +57,10 @@ current era. Use it to build `ZonedDateTime` values:
     -- 0-01-01T00:00:00+02:00
     zonedDateTime (europe_bucharest ()) zero
 
+
     -- 2016-01-01T00:00:00+02:00
     zonedDateTime (europe_bucharest ()) { zero | year = 2016 }
+
 
     -- 2016-05-29T13:00:00+02:00
     zonedDateTime (europe_bucharest ()) { zero | year = 2016, month = 5, day = 29, hour = 13 }
@@ -106,9 +76,9 @@ date and a time. Invalid values are clamped to the nearest valid date
 and time.
 -}
 zonedDateTime : TimeZone -> DateTimeData -> ZonedDateTime
-zonedDateTime timeZone dateTimeData =
+zonedDateTime tz dateTimeData =
     ZonedDateTime
-        { timeZone = timeZone
+        { timeZone = tz
         , dateTime = DateTime.dateTime dateTimeData
         }
 
@@ -117,62 +87,62 @@ zonedDateTime timeZone dateTimeData =
 a DateTime.
 -}
 fromDateTime : TimeZone -> DateTime -> ZonedDateTime
-fromDateTime timeZone dateTime =
+fromDateTime tz dateTime =
     let
-        timestamp =
-            DateTime.toTimestamp dateTime
+        posix =
+            DateTime.toPosix dateTime
 
         offset =
-            TimeZone.offset timestamp timeZone
+            TimeZone.offset posix tz
     in
-        ZonedDateTime
-            { timeZone = timeZone
-            , dateTime = DateTime.addMilliseconds -offset dateTime
-            }
+    ZonedDateTime
+        { timeZone = tz
+        , dateTime = DateTime.addMilliseconds -offset dateTime
+        }
 
 
 {-| toDateTime converts a ZonedDateTime to a UTC DateTime value.
 -}
 toDateTime : ZonedDateTime -> DateTime
-toDateTime ((ZonedDateTime { dateTime }) as zonedDateTime) =
-    utcOffset zonedDateTime
-        |> flip DateTime.addMilliseconds dateTime
+toDateTime ((ZonedDateTime { dateTime }) as zdt) =
+    utcOffset zdt
+        |> (\a -> DateTime.addMilliseconds a dateTime)
 
 
-{-| fromTimestamp converts the millisecond representation of a UNIX
+{-| fromPosix converts the elm/time POSIX representation of a UNIX
 timestamp into a ZonedDateTime value. This is equivalent to calling
-`DateTime.fromTimestamp` and then converting the resulting `DateTime`
+`DateTime.fromPosix` and then converting the resulting `DateTime`
 value to a `ZonedDateTime`.
 -}
-fromTimestamp : TimeZone -> Time -> ZonedDateTime
-fromTimestamp timeZone timestamp =
-    DateTime.fromTimestamp timestamp
-        |> fromDateTime timeZone
+fromPosix : TimeZone -> Posix -> ZonedDateTime
+fromPosix tz posix =
+    DateTime.fromPosix posix
+        |> fromDateTime tz
 
 
-{-| toTimestamp converts a ZonedDateTime to its UNIX timestamp
-representation in milliseconds.
+{-| toPosix converts a ZonedDateTime to its UNIX timestamp
+representation, as an elm/time Posix time.
 -}
-toTimestamp : ZonedDateTime -> Time
-toTimestamp (ZonedDateTime { timeZone, dateTime }) =
-    DateTime.toTimestamp dateTime
-        |> flip TimeZone.offset timeZone
-        |> flip DateTime.addMilliseconds dateTime
-        |> DateTime.toTimestamp
+toPosix : ZonedDateTime -> Posix
+toPosix (ZonedDateTime data) =
+    DateTime.toPosix data.dateTime
+        |> (\a -> TimeZone.offset a data.timeZone)
+        |> (\a -> DateTime.addMilliseconds a data.dateTime)
+        |> DateTime.toPosix
 
 
 {-| timeZone returns a ZonedDatetime's TimeZone.
 -}
 timeZone : ZonedDateTime -> TimeZone
-timeZone (ZonedDateTime { timeZone }) =
-    timeZone
+timeZone (ZonedDateTime data) =
+    data.timeZone
 
 
 {-| asTimeZone converts a ZonedDateTime to another TimeZone.
 -}
 asTimeZone : TimeZone -> ZonedDateTime -> ZonedDateTime
-asTimeZone timeZone =
-    fromDateTime timeZone << toDateTime
+asTimeZone tz =
+    fromDateTime tz << toDateTime
 
 
 {-| year returns a ZonedDateTime's year.
@@ -345,24 +315,24 @@ addMilliseconds =
 {-| abbreviation returns a ZonedDateTime's abbreviation at that time.
 -}
 abbreviation : ZonedDateTime -> String
-abbreviation ((ZonedDateTime { timeZone }) as zonedDateTime) =
-    toTimestamp zonedDateTime
-        |> flip TimeZone.abbreviation timeZone
+abbreviation ((ZonedDateTime data) as zdt) =
+    toPosix zdt
+        |> (\a -> TimeZone.abbreviation a data.timeZone)
 
 
 {-| utcOffset returns a ZonedDateTime's offset from UTC in
 milliseconds at that time.
 -}
 utcOffset : ZonedDateTime -> Int
-utcOffset ((ZonedDateTime { timeZone }) as zonedDateTime) =
-    toTimestamp zonedDateTime
-        |> flip TimeZone.offset timeZone
+utcOffset ((ZonedDateTime data) as zdt) =
+    toPosix zdt
+        |> (\a -> TimeZone.offset a data.timeZone)
 
 
 {-| utcOffsetString returns a ZonedDateTime's UTC offset at that time
 as a string.
 -}
 utcOffsetString : ZonedDateTime -> String
-utcOffsetString ((ZonedDateTime { timeZone }) as zonedDateTime) =
-    toTimestamp zonedDateTime
-        |> flip TimeZone.offsetString timeZone
+utcOffsetString ((ZonedDateTime data) as zdt) =
+    toPosix zdt
+        |> (\a -> TimeZone.offsetString a data.timeZone)

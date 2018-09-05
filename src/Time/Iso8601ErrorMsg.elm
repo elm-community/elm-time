@@ -1,8 +1,7 @@
-module Time.Iso8601ErrorMsg
-    exposing
-        ( reflow
-        , renderText
-        )
+module Time.Iso8601ErrorMsg exposing
+    ( renderText
+    , reflow
+    )
 
 {-| A renderer to format error messages resulting from
 ISO8601 parsing errors.
@@ -24,7 +23,7 @@ is famous for.
 
 -}
 
-import Parser exposing (Parser, Problem(Fail))
+import Parser exposing (Parser, Problem(..))
 
 
 {-| Invoking the renderer. This returns an 'elm compiler-style formatted' error string
@@ -43,12 +42,12 @@ import Parser exposing (Parser, Problem(Fail))
         "            ^\n\n" ++
         failString
 
-    parserError : Parser.Error
+    parserError : Parser.Problem
     parserError =
         { row = 1
         , col = 11
         , source = "1991-02-29T12:25:12.0Z"
-        , problem = Parser.Fail failString
+        , problem = Parser.Problem failString
         , context = [{ row = 1, col = 11, description = "leap-year" }]
         }
 
@@ -56,7 +55,7 @@ import Parser exposing (Parser, Problem(Fail))
     --> renderedString
 
 -}
-renderText : Parser.Error -> String
+renderText : Parser.Problem -> String
 renderText error =
     let
         -- Hack: special handling of the leap year.
@@ -65,6 +64,7 @@ renderText error =
         tweakCol ctx =
             if ctx.description == "leap-year" then
                 ctx.col - 2
+
             else
                 ctx.col
 
@@ -79,13 +79,13 @@ renderText error =
                     , tweakCol ctx
                     )
     in
-        diagnosis
-            ++ "\n\n    "
-            ++ relevantSource error
-            ++ "\n    "
-            ++ marker col
-            ++ "\n\n"
-            ++ (reflow <| describeProblem source error.problem)
+    diagnosis
+        ++ "\n\n    "
+        ++ relevantSource error
+        ++ "\n    "
+        ++ marker col
+        ++ "\n\n"
+        ++ (reflow <| describeProblem source error.problem)
 
 
 {-| A convenience function to auto-wrap long strings
@@ -102,8 +102,8 @@ reflow : String -> String
 reflow s =
     let
         flowLine : String -> String
-        flowLine s =
-            String.words s
+        flowLine str =
+            String.words str
                 |> makeSentences
                 |> String.join "\n"
 
@@ -117,23 +117,24 @@ reflow s =
                                 Nothing ->
                                     word
 
-                                Just s ->
-                                    s ++ " " ++ word
+                                Just str ->
+                                    str ++ " " ++ word
                     in
-                        if String.length combined > 72 then
-                            ( Just word, sentence :: acc )
-                        else
-                            ( Just combined, acc )
+                    if String.length combined > 72 then
+                        ( Just word, sentence :: acc )
+
+                    else
+                        ( Just combined, acc )
                 )
                 ( Nothing, [] )
                 words
-                |> uncurry (::)
+                |> (\( a, b ) -> (::) a b)
                 |> reverseFilterMap identity
     in
-        s
-            |> String.lines
-            |> List.map flowLine
-            |> String.join "\n"
+    s
+        |> String.lines
+        |> List.map flowLine
+        |> String.join "\n"
 
 
 reverseFilterMap : (a -> Maybe b) -> List a -> List b
@@ -151,7 +152,7 @@ reverseFilterMap toMaybe list =
         list
 
 
-relevantSource : Parser.Error -> String
+relevantSource : Parser.Problem -> String
 relevantSource { row, source } =
     String.lines source
         |> List.drop (row - 1)
@@ -192,18 +193,14 @@ describeProblem probableCause problem =
         Parser.ExpectingClosing s ->
             "Expecting a closing `" ++ s ++ "` here."
 
-        Parser.Fail s ->
+        Parser.Problem s ->
             s
 
-        Parser.BadOneOf problems ->
-            "Encountering multiple problems:\n\n"
-                ++ (List.map (describeProblem probableCause) problems |> String.join "\n\n")
 
-
-adjustMarker : Parser.Error -> Parser.Context -> Int
+adjustMarker : Parser.Problem -> Parser.Context -> Int
 adjustMarker error context =
     case error.problem of
-        Fail msg ->
+        Problem msg ->
             context.col
 
         _ ->
@@ -222,15 +219,16 @@ forContext { description } problem =
         segment =
             if description == "leap-year" then
                 "day-of-month"
+
             else
                 description
     in
-        case problem of
-            Fail msg ->
-                "The '" ++ segment ++ "' segment is invalid:"
+    case problem of
+        Problem msg ->
+            "The '" ++ segment ++ "' segment is invalid:"
 
-            _ ->
-                "Failed to parse the '" ++ segment ++ "' segment:"
+        _ ->
+            "Failed to parse the '" ++ segment ++ "' segment:"
 
 
 noContext : String

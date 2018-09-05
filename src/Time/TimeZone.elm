@@ -1,13 +1,9 @@
-module Time.TimeZone
-    exposing
-        ( TimeZone
-        , name
-        , abbreviation
-        , offset
-        , offsetString
-        , setName
-        , unpack
-        )
+module Time.TimeZone exposing
+    ( TimeZone, name, abbreviation, offset, offsetString
+    , setName
+    , unpack
+    , errorZone
+    )
 
 {-| This module defines a representations for Timezone information.
 
@@ -33,28 +29,25 @@ import Debug
     exposing
         ( log
         )
+import List.Extra
 import Parser
     exposing
         ( (|.)
         , (|=)
-        , Count(..)
-        , Error
+        , DeadEnd
         , Parser
         , andThen
-        , delayedCommit
+        , chompIf
+        , chompWhile
         , end
-        , fail
-        , ignore
-        , inContext
-        , keep
+        , getChompedString
         , map
         , oneOf
-        , oneOrMore
+        , problem
         , run
         , succeed
-        , zeroOrMore
         )
-import Time exposing (Time)
+import Time exposing (Posix)
 import Time.Internal exposing (..)
 
 
@@ -71,6 +64,11 @@ type TimeZone
         }
 
 
+errorZone : String -> TimeZone
+errorZone errors =
+    TimeZone { name = "error: " ++ errors, spans = [] }
+
+
 {-| Spans represent variations within a TimeZone. A Time has an
 associated Span if `.from <= t < .until`.
 
@@ -78,8 +76,8 @@ associated Span if `.from <= t < .until`.
 
 -}
 type alias Span =
-    { from : Time
-    , until : Time
+    { from : Posix
+    , until : Posix
     , abbreviation : String
     , offset : Int
     }
@@ -88,7 +86,7 @@ type alias Span =
 {-| Given an arbitrary Time and a TimeZone, abbreviation returns the
 TimeZone's abbreviation at that Time.
 -}
-abbreviation : Time -> TimeZone -> String
+abbreviation : Posix -> TimeZone -> String
 abbreviation time (TimeZone { spans }) =
     find time spans |> .abbreviation
 
@@ -96,7 +94,7 @@ abbreviation time (TimeZone { spans }) =
 {-| Given an arbitrary Time and a TimeZone, offset returns the
 TimeZone's UTC offset in milliseconds at that Time.
 -}
-offset : Time -> TimeZone -> Int
+offset : Posix -> TimeZone -> Int
 offset time (TimeZone { spans }) =
     find time spans |> .offset
 
@@ -104,7 +102,7 @@ offset time (TimeZone { spans }) =
 {-| Given an arbitrary Time and TimeZone, offsetString returns an
 ISO8601-formatted UTC offset for at that Time.
 -}
-offsetString : Time -> TimeZone -> String
+offsetString : Posix -> TimeZone -> String
 offsetString time timeZone =
     let
         utcOffset =
@@ -114,46 +112,48 @@ offsetString time timeZone =
             abs utcOffset // 60
 
         minutes =
-            abs utcOffset % 60
+            modBy 60 (abs utcOffset)
 
         string =
             padded hours ++ ":" ++ padded minutes
     in
-        if utcOffset <= 0 then
-            "+" ++ string
-        else
-            "-" ++ string
+    if utcOffset <= 0 then
+        "+" ++ string
+
+    else
+        "-" ++ string
 
 
-find : Time -> List Span -> Span
+find : Posix -> List Span -> Span
 find time spans =
     let
         go xs =
             case xs of
                 [] ->
-                    Debug.crash "find: invalid span list"
+                    Debug.todo "find: invalid span list"
 
-                x :: xs ->
-                    if time >= x.from && time < x.until then
+                x :: ys ->
+                    if Time.posixToMillis time >= Time.posixToMillis x.from && Time.posixToMillis time < Time.posixToMillis x.until then
                         x
+
                     else
-                        go xs
+                        go ys
     in
-        go spans
+    go spans
 
 
 {-| setName updates a TimeZone's name.
 -}
 setName : String -> TimeZone -> TimeZone
-setName name (TimeZone tz) =
-    TimeZone { tz | name = name }
+setName newName (TimeZone tz) =
+    TimeZone { tz | name = newName }
 
 
 {-| name returns a TimeZone's name.
 -}
 name : TimeZone -> String
-name (TimeZone { name }) =
-    name
+name (TimeZone tz) =
+    tz.name
 
 
 {-| unpackNew decodes a packed zone data object into a TimeZone value.
@@ -161,7 +161,7 @@ name (TimeZone { name }) =
 See also <http://momentjs.com/timezone/docs/#/data-formats/packed-format/>
 
 -}
-unpack : String -> Result Error TimeZone
+unpack : String -> Result (List DeadEnd) TimeZone
 unpack data =
     run packedTimeZone data
 
@@ -172,8 +172,9 @@ the data format invariants hold.
 packedTimeZone : Parser TimeZone
 packedTimeZone =
     let
+        decode : Parser PackedTimeZone
         decode =
-            (succeed PackedTimeZone
+            succeed PackedTimeZone
                 |= parseName
                 |. pipe
                 |= parseAbbrevs
@@ -183,8 +184,8 @@ packedTimeZone =
                 |= parseIndices
                 |. pipe
                 |= parseDiffs
-            )
 
+        validate : PackedTimeZone -> Parser PackedTimeZone
         validate data =
             let
                 abbrevs =
@@ -197,25 +198,30 @@ packedTimeZone =
                     List.maximum data.indices
                         |> Maybe.withDefault 0
             in
-                if abbrevs /= offsets then
-                    fail "abbrevs and offsets have different lengths"
-                else if maxIndex >= abbrevs then
-                    fail "highest index is longer than both abbrevs and offsets"
-                else
-                    succeed data
+            if abbrevs /= offsets then
+                problem "abbrevs and offsets have different lengths"
 
+            else if maxIndex >= abbrevs then
+                problem "highest index is longer than both abbrevs and offsets"
+
+            else
+                succeed data
+
+        span : List Float -> PackedTimeZone -> Int -> Int -> Span
         span times data i idx =
-            { from = times !! i
-            , until = times !! (i + 1)
-            , abbreviation = data.abbrevs !! idx
-            , offset = round (data.offsets !! idx * minuteMs)
+            { from = Time.millisToPosix <| round <| getIndex times i
+            , until = Time.millisToPosix <| round <| getIndex times (i + 1)
+            , abbreviation = getIndex data.abbrevs idx
+            , offset = round (getIndex data.offsets idx * minuteMs)
             }
 
+        convert : PackedTimeZone -> TimeZone
         convert data =
             let
                 times =
                     if not <| List.isEmpty data.diffs then
-                        List.scanl (+) (data.diffs !! 0) (List.drop 1 data.diffs)
+                        List.Extra.scanl (+) (getIndex data.diffs 0) (List.drop 1 data.diffs)
+
                     else
                         []
 
@@ -223,14 +229,14 @@ packedTimeZone =
                 paddedTimes =
                     [ -1 / 0 ] ++ times ++ [ 1 / 0 ]
             in
-                TimeZone
-                    { name = data.name
-                    , spans = List.indexedMap (span paddedTimes data) data.indices
-                    }
+            TimeZone
+                { name = data.name
+                , spans = List.indexedMap (span paddedTimes data) data.indices
+                }
     in
-        decode
-            |> andThen validate
-            |> map convert
+    decode
+        |> andThen validate
+        |> map convert
 
 
 type alias PackedTimeZone =
@@ -246,9 +252,9 @@ type alias PackedTimeZone =
 -}
 parseName : Parser String
 parseName =
-    inContext "name" <|
+    getChompedString <|
         succeed identity
-            |= keep oneOrMore ((/=) '|')
+            |. chompWhile ((/=) '|')
 
 
 {-| Parse the first abbrev and then use `abbrevsHelp` to find
@@ -259,7 +265,8 @@ parseAbbrevs =
     let
         abbrev : Parser String
         abbrev =
-            keep oneOrMore (\c -> c /= ' ' && c /= '|')
+            getChompedString <|
+                chompWhile (\c -> c /= ' ' && c /= '|')
 
         helper : List String -> Parser (List String)
         helper revTerms =
@@ -275,17 +282,16 @@ parseAbbrevs =
                 |. parseSpace
                 |= abbrev
     in
-        inContext "abbrevs" <|
-            succeed identity
-                |= andThen (\s -> helper [ s ]) abbrev
+    succeed identity
+        |= andThen (\s -> helper [ s ]) abbrev
 
 
 parseOffsets : Parser (List Float)
 parseOffsets =
     let
-        offset : Parser Float
-        offset =
-            (succeed (,,)
+        offset_ : Parser Float
+        offset_ =
+            (succeed (\a b c -> ( a, b, c ))
                 |= parseSign
                 |= parseWhole
                 |= parseFrac
@@ -295,7 +301,8 @@ parseOffsets =
         convertBase60 : ( Int, String, String ) -> Parser Float
         convertBase60 ( sign, whole, frac ) =
             if whole == "" && frac == "" then
-                fail "expected an alphanumeric character or ."
+                problem "expected an alphanumeric character or ."
+
             else
                 succeed <| unsafeBase60 sign whole frac
 
@@ -315,11 +322,10 @@ parseOffsets =
         next =
             succeed identity
                 |. parseSpace
-                |= offset
+                |= offset_
     in
-        inContext "offsets" <|
-            succeed identity
-                |= andThen (\f -> helper [ f ]) offset
+    succeed identity
+        |= andThen (\f -> helper [ f ]) offset_
 
 
 parseIndices : Parser (List Int)
@@ -340,21 +346,20 @@ parseIndices =
 
         index : Parser Int
         index =
-            keep (Exactly 1) (\c -> Char.isDigit c)
+            getChompedString (chompIf (\c -> Char.isDigit c))
                 |> andThen convertDecimal
 
         convertDecimal : String -> Parser Int
         convertDecimal digit =
             case String.toInt digit of
-                Err msg ->
-                    fail msg
+                Nothing ->
+                    problem <| "failed to parse int from " ++ digit
 
-                Ok value ->
+                Just value ->
                     succeed value
     in
-        inContext "indices" <|
-            succeed identity
-                |= andThen (\i -> helper [ i ]) index
+    succeed identity
+        |= andThen (\i -> helper [ i ]) index
 
 
 parseDiffs : Parser (List Float)
@@ -390,7 +395,7 @@ parseDiffs =
 
         diff : Parser Float
         diff =
-            (succeed (,,)
+            (succeed (\a b c -> ( a, b, c ))
                 |= parseSign
                 |= parseWhole
                 |= parseFrac
@@ -400,26 +405,26 @@ parseDiffs =
         convertBase60Times60000 : ( Int, String, String ) -> Parser Float
         convertBase60Times60000 ( sign, whole, frac ) =
             if whole == "" && frac == "" then
-                fail "expected an alphanumeric character or ."
+                problem "expected an alphanumeric character or ."
+
             else
                 succeed <| (*) 60000 (unsafeBase60 sign whole frac)
     in
-        inContext "diffs" <|
-            oneOf
-                [ emptyDiffs
-                , diffsEnd
-                , andThen (\f -> helper [ f ]) diff
-                ]
+    oneOf
+        [ emptyDiffs
+        , diffsEnd
+        , andThen (\f -> helper [ f ]) diff
+        ]
 
 
 pipe : Parser ()
 pipe =
-    ignore (Exactly 1) ((==) '|')
+    chompIf ((==) '|')
 
 
 parseSpace : Parser ()
 parseSpace =
-    ignore (Exactly 1) ((==) ' ')
+    chompIf ((==) ' ')
 
 
 parseSign : Parser Int
@@ -427,18 +432,22 @@ parseSign =
     let
         minusOne : String -> Parser Int
         minusOne hyphen =
-            succeed -1
+            if hyphen == "-" then
+                succeed -1
+
+            else
+                problem "failed to chomp minus"
     in
-        oneOf
-            [ keep (Exactly 1) (\c -> c == '-')
-                |> andThen minusOne
-            , succeed 1
-            ]
+    oneOf
+        [ getChompedString (chompIf (\c -> c == '-')) |> andThen minusOne
+        , succeed 1
+        ]
 
 
 parseWhole : Parser String
 parseWhole =
-    keep zeroOrMore (\c -> unsafeBase60Digit c)
+    getChompedString <|
+        chompWhile (\c -> unsafeBase60Digit c)
 
 
 parseFrac : Parser String
@@ -456,10 +465,10 @@ unsafeBase60Digit c =
 
 parseSuccessfulFrac : Parser String
 parseSuccessfulFrac =
-    (succeed identity
-        |. ignore (Exactly 1) (\c -> c == '.')
-        |= keep oneOrMore (\c -> unsafeBase60Digit c)
-    )
+    getChompedString <|
+        succeed identity
+            |. chompIf (\c -> c == '.')
+            |. chompWhile (\c -> unsafeBase60Digit c)
 
 
 unsafeBase60 : Int -> String -> String -> Float
@@ -470,43 +479,45 @@ unsafeBase60 sign whole frac =
                 n =
                     Char.toCode c |> toFloat
             in
-                if n > 96 then
-                    n - 87
-                else if n > 64 then
-                    n - 29
-                else
-                    n - 48
+            if n > 96 then
+                n - 87
+
+            else if n > 64 then
+                n - 29
+
+            else
+                n - 48
 
         toWhole cs acc =
             case cs of
                 [] ->
                     acc
 
-                c :: cs ->
-                    toWhole cs (60 * acc + toNum c)
+                c :: cs_ ->
+                    toWhole cs_ (60 * acc + toNum c)
 
         toFrac cs mul acc =
             let
                 mul_ =
                     mul / 60
             in
-                case cs of
-                    [] ->
-                        acc
+            case cs of
+                [] ->
+                    acc
 
-                    c :: cs ->
-                        toFrac cs mul_ (acc + mul_ * toNum c)
+                c :: cs_ ->
+                    toFrac cs_ mul_ (acc + mul_ * toNum c)
     in
-        toWhole (String.toList whole) 0
-            |> toFrac (String.toList frac) 1
-            |> ((*) (toFloat sign))
+    toWhole (String.toList whole) 0
+        |> toFrac (String.toList frac) 1
+        |> (*) (toFloat sign)
 
 
-(!!) : List a -> Int -> a
-(!!) xs i =
+getIndex : List a -> Int -> a
+getIndex xs i =
     case List.head (List.drop i xs) of
         Nothing ->
-            Debug.crash ("index too large: xs=" ++ toString xs ++ " i=" ++ toString i)
+            Debug.todo ("index too large: xs=" ++ Debug.toString xs ++ " i=" ++ String.fromInt i)
 
         Just x ->
             x

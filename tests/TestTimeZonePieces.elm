@@ -1,12 +1,10 @@
-module TestTimeZonePieces exposing (..)
-
---import Lazy exposing (force)
+module TestTimeZonePieces exposing (source, unpackTest)
 
 import Debug
 import Expect exposing (Expectation, equal, fail)
+import Parser exposing (run)
 import Test exposing (..)
 import Time.TimeZone exposing (TimeZone)
-import Parser exposing (run)
 
 
 source =
@@ -24,8 +22,8 @@ unpackTest =
                             v =
                                 value
                         in
-                            Expect.pass
+                        Expect.pass
 
                     Err msg ->
-                        fail (toString msg)
+                        fail (Debug.toString msg)
         ]
