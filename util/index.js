@@ -39,7 +39,6 @@ for (let name in zones) {
   timeZoneData.push(`
 ${name}_l =
     unpack "${zone}"
-
 `);
   timeZones.push({name, fullName, link: false});
   tests.push(`
@@ -80,18 +79,25 @@ for (let i = 0; i < timeZones.length; i++) {
   let timeZone = timeZones[i];
 
   docs.push(timeZone.name);
-  all.push(`("${timeZone.fullName}", ${timeZone.name})`);
+  all.push(`( "${timeZone.fullName}", ${timeZone.name} )`);
+  const commentName = timeZone.fullName.replace(/_/g, '\\_');
 
   if (timeZone.link) {
     fns.push(`
-{-| ${timeZone.fullName} -}
+{-| ${commentName}
+-}
 ${timeZone.name} : TimeZone
-${timeZone.name} = link "${timeZone.fullName}" ${timeZone.timeZone}_l`);
+${timeZone.name} =
+    link "${timeZone.fullName}" ${timeZone.timeZone}_l
+`);
   } else {
     fns.push(`
-{-| ${timeZone.fullName} -}
+{-| ${commentName}
+-}
 ${timeZone.name} : TimeZone
-${timeZone.name} = ${timeZone.name}_l`);
+${timeZone.name} =
+    ${timeZone.name}_l
+`);
   }
 }
 
@@ -159,14 +165,18 @@ import Time.TimeZone exposing (TimeZone)
 import Time.TimeZoneData exposing (..)
 
 
+
 -- TimeZones
 -- ---------
+
 ${fns.join("\n")}
 
 
 -- Utils
 -- -----
-{-| A mapping from TimeZone names to their respective functions.  Use
+
+
+{-| A mapping from TimeZone names to their respective functions. Use
 this to look up TimeZones by name.
 -}
 all : Dict String TimeZone
@@ -181,7 +191,7 @@ all =
 -}
 fromName : String -> Maybe TimeZone
 fromName name =
-  Dict.get name all
+    Dict.get name all
 `.trim();
 
   fs.write(fd, content, (err) => {
