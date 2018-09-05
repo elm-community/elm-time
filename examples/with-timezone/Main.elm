@@ -1,19 +1,20 @@
-module Main exposing (..)
+module Main exposing (main)
 
+import Browser
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import Json.Decode as JD
-import Time exposing (Time)
+import Time exposing (Posix)
 import Time.DateTime as DT exposing (DateTime)
+import Time.Iso8601
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
-import Time.Iso8601
 import Time.ZonedDateTime
 
 
 type alias Flags =
-    { now : Time }
+    { now : Int }
 
 
 type alias Model =
@@ -23,13 +24,14 @@ type alias Model =
 
 
 type Msg
-    = Tick Time
+    = Tick Posix
     | ChangeZone String
+    | NoOp
 
 
 main : Program Flags Model Msg
 main =
-    H.programWithFlags
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -39,34 +41,40 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init { now } =
-    { now = DT.fromTimestamp now
-    , zone = TimeZones.utc ()
-    }
-        ! []
+    ( { now = now |> Time.millisToPosix |> DT.fromPosix
+      , zone = TimeZones.utc
+      }
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick now ->
-            { model | now = DT.fromTimestamp now } ! []
+            ( { model | now = DT.fromPosix now }
+            , Cmd.none
+            )
 
         ChangeZone zoneString ->
             let
                 zone =
                     case zoneString of
                         "Europe/Bucharest" ->
-                            TimeZones.europe_bucharest ()
+                            TimeZones.europe_bucharest
 
                         "US/Central" ->
-                            TimeZones.us_central ()
+                            TimeZones.us_central
 
                         _ ->
-                            TimeZones.utc ()
+                            TimeZones.utc
             in
-                ( { model | zone = zone }
-                , Cmd.none
-                )
+            ( { model | zone = zone }
+            , Cmd.none
+            )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -86,4 +94,4 @@ view { now, zone } =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Time.every Time.second Tick ]
+    Sub.batch [ Time.every 1000 Tick ]

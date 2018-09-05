@@ -1,12 +1,14 @@
-module Main exposing (..)
+module Main exposing (main)
 
+import Browser
 import Html as H exposing (Html)
-import Time exposing (Time)
+import Time exposing (Posix)
 import Time.DateTime as DateTime exposing (DateTime)
+import Time.Iso8601
 
 
 type alias Flags =
-    { now : Time }
+    { now : Int }
 
 
 type alias Model =
@@ -15,12 +17,12 @@ type alias Model =
 
 
 type Msg
-    = Tick Time
+    = Tick Posix
 
 
 main : Program Flags Model Msg
 main =
-    H.programWithFlags
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -30,16 +32,17 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init { now } =
-    { now = DateTime.fromTimestamp now
-    }
-        ! []
+    ( { now = now |> Time.millisToPosix |> DateTime.fromPosix
+      }
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick now ->
-            ( { model | now = DateTime.fromTimestamp now }
+            ( { model | now = DateTime.fromPosix now }
             , Cmd.none
             )
 
@@ -47,11 +50,11 @@ update msg model =
 view : Model -> Html Msg
 view { now } =
     H.div []
-        [ DateTime.toISO8601 now
+        [ Time.Iso8601.fromDateTime now
             |> H.text
         ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Time.every Time.second Tick ]
+    Sub.batch [ Time.every 1000 Tick ]

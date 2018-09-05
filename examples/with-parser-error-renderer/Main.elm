@@ -10,13 +10,15 @@ the `elm-time` library.
 
 -}
 
-import Color exposing (..)
+import Browser
+import Browser.Dom
+import Browser.Events
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Element.Input as Input
 import Html exposing (Html)
-import Keyboard exposing (KeyCode)
-import Parser exposing (Error)
+import Json.Decode as JD
+import Parser.Advanced exposing (DeadEnd)
 import Style exposing (..)
 import Style.Border as Border
 import Style.Color
@@ -27,8 +29,6 @@ import Time.DateTime
         ( DateTime
         , dateTime
         , day
-        , fromTimestamp
-        , fromTuple
         , hour
         , millisecond
         , minute
@@ -36,15 +36,15 @@ import Time.DateTime
         , second
         , year
         )
-import Time.Iso8601 exposing (toDateTime)
+import Time.Iso8601 exposing (Problem, toDateTime)
 import Time.Iso8601ErrorMsg exposing (reflow, renderText)
-import Window
 
 
 type Msg
     = ChangeText String
-    | Resize Window.Size
-    | KeyDown Keyboard.KeyCode
+    | Resize Int Int
+    | EnterPressed
+    | NoOp
 
 
 type Styles
@@ -55,6 +55,18 @@ type Styles
     | DateTimeRow
     | Box
     | Error
+
+
+black =
+    Style.rgb 0 0 0
+
+
+red =
+    Style.rgb 1 0 0
+
+
+lightGray =
+    Style.rgb 0.8 0.8 0.8
 
 
 stylesheet : StyleSheet Styles variation
@@ -87,10 +99,10 @@ stylesheet =
 
 {-| The "entry"
 -}
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
-        { init = init
+    Browser.element
+        { init = \_ -> init
         , update = update
         , view = view
         , subscriptions = subscriptions
@@ -99,7 +111,7 @@ main =
 
 type alias Model =
     { iso8601input : String
-    , dateTime : Result Error DateTime
+    , dateTime : Result (List (DeadEnd String Problem)) DateTime
     , device : Device
     }
 
@@ -120,12 +132,15 @@ init =
                 , second = 12
                 , millisecond = 0
                 }
+
+        getViewport =
+            Task.perform (\vp -> Resize (round vp.viewport.width) (round vp.viewport.height)) Browser.Dom.getViewport
     in
     ( { iso8601input = initInput
       , dateTime = Ok initDateTime
-      , device = classifyDevice (Window.Size 0 0)
+      , device = classifyDevice { width = 0, height = 0 }
       }
-    , Task.perform Resize Window.size
+    , getViewport
     )
 
 
@@ -139,19 +154,18 @@ update msg model =
             , Cmd.none
             )
 
-        Resize size ->
+        Resize width height ->
             ( { model
-                | device = classifyDevice size
+                | device = classifyDevice { width = width, height = height }
               }
             , Cmd.none
             )
 
-        KeyDown keyCode ->
-            if enterKeyCode == keyCode then
-                runParse model
+        EnterPressed ->
+            runParse model
 
-            else
-                ( model, Cmd.none )
+        NoOp ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -176,15 +190,28 @@ view model =
                         renderDateTimeSuccess v
 
                     Err err ->
-                        renderDateTimeFail err
+                        renderDateTimeFail model.iso8601input err
                 ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        decoder : JD.Decoder Msg
+        decoder =
+            JD.field "key" JD.string
+                |> JD.map
+                    (\key ->
+                        if key == "Enter" then
+                            EnterPressed
+
+                        else
+                            NoOp
+                    )
+    in
     Sub.batch
-        [ Window.resizes Resize
-        , Keyboard.downs KeyDown
+        [ Browser.Events.onResize Resize
+        , Browser.Events.onKeyDown decoder
         ]
 
 
@@ -244,11 +271,9 @@ renderDateTimeSuccess dt =
 --    el Success [] (text <| Debug.toString dateTime)
 
 
-renderDateTimeFail : Error -> Element Styles a b
-renderDateTimeFail err =
-    el Error [] (text <| renderText err ++ "\n\n---\n\n" ++ reflow "The Elm error returned by parser:\n\n" ++ reflow (Debug.toString err))
-
-
-enterKeyCode : KeyCode
-enterKeyCode =
-    13
+renderDateTimeFail : String -> List (DeadEnd String Problem) -> Element Styles a b
+renderDateTimeFail input errors =
+    List.map (renderText input) errors
+        |> String.join "\n\n---\n\n"
+        |> text
+        |> el Error []

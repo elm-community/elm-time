@@ -9,8 +9,9 @@
     <script src="index.js"></script>
     <script>
       var el = document.getElementById("app");
-      var app = Elm.Main.embed(el, {
-        now: (new Date()).getTime()
+      var app = Elm.Main.init({
+        node: el,
+        flags: { now: (new Date()).getTime() }
       });
     </script>
   </body>

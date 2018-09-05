@@ -10,7 +10,6 @@ checkAllValid : Test
 checkAllValid =
     describe "Time.TimeZoneData" <|
         [ test "skip" <| \() -> Expect.true "skip" True
-        
         , test "time zone africa_abidjan" <|
             \() ->
                 let
@@ -20,7 +19,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_accra" <|
             \() ->
                 let
@@ -30,7 +28,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_nairobi" <|
             \() ->
                 let
@@ -40,7 +37,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_algiers" <|
             \() ->
                 let
@@ -50,7 +46,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_lagos" <|
             \() ->
                 let
@@ -60,7 +55,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_bissau" <|
             \() ->
                 let
@@ -70,7 +64,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_maputo" <|
             \() ->
                 let
@@ -80,7 +73,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_cairo" <|
             \() ->
                 let
@@ -90,7 +82,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_casablanca" <|
             \() ->
                 let
@@ -100,7 +91,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_ceuta" <|
             \() ->
                 let
@@ -110,7 +100,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_el_aaiun" <|
             \() ->
                 let
@@ -120,7 +109,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_johannesburg" <|
             \() ->
                 let
@@ -130,7 +118,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_khartoum" <|
             \() ->
                 let
@@ -140,7 +127,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_monrovia" <|
             \() ->
                 let
@@ -150,7 +136,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_ndjamena" <|
             \() ->
                 let
@@ -160,7 +145,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_tripoli" <|
             \() ->
                 let
@@ -170,7 +154,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_tunis" <|
             \() ->
                 let
@@ -180,7 +163,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone africa_windhoek" <|
             \() ->
                 let
@@ -190,7 +172,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_adak" <|
             \() ->
                 let
@@ -200,7 +181,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_anchorage" <|
             \() ->
                 let
@@ -210,7 +190,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_port_of_spain" <|
             \() ->
                 let
@@ -220,7 +199,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_araguaina" <|
             \() ->
                 let
@@ -230,7 +208,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_buenos_aires" <|
             \() ->
                 let
@@ -240,7 +217,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_catamarca" <|
             \() ->
                 let
@@ -250,7 +226,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_cordoba" <|
             \() ->
                 let
@@ -260,7 +235,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_jujuy" <|
             \() ->
                 let
@@ -270,7 +244,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_la_rioja" <|
             \() ->
                 let
@@ -280,7 +253,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_mendoza" <|
             \() ->
                 let
@@ -290,7 +262,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_rio_gallegos" <|
             \() ->
                 let
@@ -300,7 +271,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_salta" <|
             \() ->
                 let
@@ -310,7 +280,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_san_juan" <|
             \() ->
                 let
@@ -320,7 +289,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_san_luis" <|
             \() ->
                 let
@@ -330,7 +298,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_tucuman" <|
             \() ->
                 let
@@ -340,7 +307,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_argentina_ushuaia" <|
             \() ->
                 let
@@ -350,7 +316,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_curacao" <|
             \() ->
                 let
@@ -360,7 +325,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_asuncion" <|
             \() ->
                 let
@@ -370,7 +334,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_atikokan" <|
             \() ->
                 let
@@ -380,7 +343,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_bahia" <|
             \() ->
                 let
@@ -390,7 +352,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_bahia_banderas" <|
             \() ->
                 let
@@ -400,7 +361,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_barbados" <|
             \() ->
                 let
@@ -410,7 +370,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_belem" <|
             \() ->
                 let
@@ -420,7 +379,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_belize" <|
             \() ->
                 let
@@ -430,7 +388,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_blanc_sablon" <|
             \() ->
                 let
@@ -440,7 +397,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_boa_vista" <|
             \() ->
                 let
@@ -450,7 +406,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_bogota" <|
             \() ->
                 let
@@ -460,7 +415,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_boise" <|
             \() ->
                 let
@@ -470,7 +424,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_cambridge_bay" <|
             \() ->
                 let
@@ -480,7 +433,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_campo_grande" <|
             \() ->
                 let
@@ -490,7 +442,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_cancun" <|
             \() ->
                 let
@@ -500,7 +451,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_caracas" <|
             \() ->
                 let
@@ -510,7 +460,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_cayenne" <|
             \() ->
                 let
@@ -520,7 +469,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_panama" <|
             \() ->
                 let
@@ -530,7 +478,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_chicago" <|
             \() ->
                 let
@@ -540,7 +487,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_chihuahua" <|
             \() ->
                 let
@@ -550,7 +496,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_costa_rica" <|
             \() ->
                 let
@@ -560,7 +505,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_creston" <|
             \() ->
                 let
@@ -570,7 +514,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_cuiaba" <|
             \() ->
                 let
@@ -580,7 +523,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_danmarkshavn" <|
             \() ->
                 let
@@ -590,7 +532,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_dawson" <|
             \() ->
                 let
@@ -600,7 +541,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_dawson_creek" <|
             \() ->
                 let
@@ -610,7 +550,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_denver" <|
             \() ->
                 let
@@ -620,7 +559,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_detroit" <|
             \() ->
                 let
@@ -630,7 +568,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_edmonton" <|
             \() ->
                 let
@@ -640,7 +577,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_eirunepe" <|
             \() ->
                 let
@@ -650,7 +586,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_el_salvador" <|
             \() ->
                 let
@@ -660,7 +595,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_tijuana" <|
             \() ->
                 let
@@ -670,7 +604,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_fort_nelson" <|
             \() ->
                 let
@@ -680,7 +613,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_fort_wayne" <|
             \() ->
                 let
@@ -690,7 +622,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_fortaleza" <|
             \() ->
                 let
@@ -700,7 +631,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_glace_bay" <|
             \() ->
                 let
@@ -710,7 +640,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_godthab" <|
             \() ->
                 let
@@ -720,7 +649,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_goose_bay" <|
             \() ->
                 let
@@ -730,7 +658,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_grand_turk" <|
             \() ->
                 let
@@ -740,7 +667,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_guatemala" <|
             \() ->
                 let
@@ -750,7 +676,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_guayaquil" <|
             \() ->
                 let
@@ -760,7 +685,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_guyana" <|
             \() ->
                 let
@@ -770,7 +694,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_halifax" <|
             \() ->
                 let
@@ -780,7 +703,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_havana" <|
             \() ->
                 let
@@ -790,7 +712,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_hermosillo" <|
             \() ->
                 let
@@ -800,7 +721,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_indiana_knox" <|
             \() ->
                 let
@@ -810,7 +730,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_indiana_marengo" <|
             \() ->
                 let
@@ -820,7 +739,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_indiana_petersburg" <|
             \() ->
                 let
@@ -830,7 +748,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_indiana_tell_city" <|
             \() ->
                 let
@@ -840,7 +757,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_indiana_vevay" <|
             \() ->
                 let
@@ -850,7 +766,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_indiana_vincennes" <|
             \() ->
                 let
@@ -860,7 +775,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_indiana_winamac" <|
             \() ->
                 let
@@ -870,7 +784,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_inuvik" <|
             \() ->
                 let
@@ -880,7 +793,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_iqaluit" <|
             \() ->
                 let
@@ -890,7 +802,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_jamaica" <|
             \() ->
                 let
@@ -900,7 +811,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_juneau" <|
             \() ->
                 let
@@ -910,7 +820,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_kentucky_louisville" <|
             \() ->
                 let
@@ -920,7 +829,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_kentucky_monticello" <|
             \() ->
                 let
@@ -930,7 +838,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_la_paz" <|
             \() ->
                 let
@@ -940,7 +847,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_lima" <|
             \() ->
                 let
@@ -950,7 +856,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_los_angeles" <|
             \() ->
                 let
@@ -960,7 +865,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_maceio" <|
             \() ->
                 let
@@ -970,7 +874,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_managua" <|
             \() ->
                 let
@@ -980,7 +883,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_manaus" <|
             \() ->
                 let
@@ -990,7 +892,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_martinique" <|
             \() ->
                 let
@@ -1000,7 +901,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_matamoros" <|
             \() ->
                 let
@@ -1010,7 +910,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_mazatlan" <|
             \() ->
                 let
@@ -1020,7 +919,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_menominee" <|
             \() ->
                 let
@@ -1030,7 +928,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_merida" <|
             \() ->
                 let
@@ -1040,7 +937,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_metlakatla" <|
             \() ->
                 let
@@ -1050,7 +946,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_mexico_city" <|
             \() ->
                 let
@@ -1060,7 +955,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_miquelon" <|
             \() ->
                 let
@@ -1070,7 +964,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_moncton" <|
             \() ->
                 let
@@ -1080,7 +973,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_monterrey" <|
             \() ->
                 let
@@ -1090,7 +982,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_montevideo" <|
             \() ->
                 let
@@ -1100,7 +991,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_toronto" <|
             \() ->
                 let
@@ -1110,7 +1000,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_nassau" <|
             \() ->
                 let
@@ -1120,7 +1009,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_new_york" <|
             \() ->
                 let
@@ -1130,7 +1018,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_nipigon" <|
             \() ->
                 let
@@ -1140,7 +1027,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_nome" <|
             \() ->
                 let
@@ -1150,7 +1036,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_noronha" <|
             \() ->
                 let
@@ -1160,7 +1045,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_north_dakota_beulah" <|
             \() ->
                 let
@@ -1170,7 +1054,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_north_dakota_center" <|
             \() ->
                 let
@@ -1180,7 +1063,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_north_dakota_new_salem" <|
             \() ->
                 let
@@ -1190,7 +1072,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_ojinaga" <|
             \() ->
                 let
@@ -1200,7 +1081,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_pangnirtung" <|
             \() ->
                 let
@@ -1210,7 +1090,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_paramaribo" <|
             \() ->
                 let
@@ -1220,7 +1099,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_phoenix" <|
             \() ->
                 let
@@ -1230,7 +1108,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_port_au_prince" <|
             \() ->
                 let
@@ -1240,7 +1117,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_rio_branco" <|
             \() ->
                 let
@@ -1250,7 +1126,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_porto_velho" <|
             \() ->
                 let
@@ -1260,7 +1135,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_puerto_rico" <|
             \() ->
                 let
@@ -1270,7 +1144,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_rainy_river" <|
             \() ->
                 let
@@ -1280,7 +1153,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_rankin_inlet" <|
             \() ->
                 let
@@ -1290,7 +1162,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_recife" <|
             \() ->
                 let
@@ -1300,7 +1171,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_regina" <|
             \() ->
                 let
@@ -1310,7 +1180,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_resolute" <|
             \() ->
                 let
@@ -1320,7 +1189,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_santarem" <|
             \() ->
                 let
@@ -1330,7 +1198,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_santiago" <|
             \() ->
                 let
@@ -1340,7 +1207,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_santo_domingo" <|
             \() ->
                 let
@@ -1350,7 +1216,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_sao_paulo" <|
             \() ->
                 let
@@ -1360,7 +1225,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_scoresbysund" <|
             \() ->
                 let
@@ -1370,7 +1234,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_sitka" <|
             \() ->
                 let
@@ -1380,7 +1243,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_st_johns" <|
             \() ->
                 let
@@ -1390,7 +1252,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_swift_current" <|
             \() ->
                 let
@@ -1400,7 +1261,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_tegucigalpa" <|
             \() ->
                 let
@@ -1410,7 +1270,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_thule" <|
             \() ->
                 let
@@ -1420,7 +1279,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_thunder_bay" <|
             \() ->
                 let
@@ -1430,7 +1288,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_vancouver" <|
             \() ->
                 let
@@ -1440,7 +1297,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_whitehorse" <|
             \() ->
                 let
@@ -1450,7 +1306,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_winnipeg" <|
             \() ->
                 let
@@ -1460,7 +1315,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_yakutat" <|
             \() ->
                 let
@@ -1470,7 +1324,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone america_yellowknife" <|
             \() ->
                 let
@@ -1480,7 +1333,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_casey" <|
             \() ->
                 let
@@ -1490,7 +1342,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_davis" <|
             \() ->
                 let
@@ -1500,7 +1351,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_dumontdurville" <|
             \() ->
                 let
@@ -1510,7 +1360,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_macquarie" <|
             \() ->
                 let
@@ -1520,7 +1369,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_mawson" <|
             \() ->
                 let
@@ -1530,7 +1378,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_auckland" <|
             \() ->
                 let
@@ -1540,7 +1387,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_palmer" <|
             \() ->
                 let
@@ -1550,7 +1396,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_rothera" <|
             \() ->
                 let
@@ -1560,7 +1405,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_syowa" <|
             \() ->
                 let
@@ -1570,7 +1414,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_troll" <|
             \() ->
                 let
@@ -1580,7 +1423,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone antarctica_vostok" <|
             \() ->
                 let
@@ -1590,7 +1432,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_oslo" <|
             \() ->
                 let
@@ -1600,7 +1441,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_riyadh" <|
             \() ->
                 let
@@ -1610,7 +1450,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_almaty" <|
             \() ->
                 let
@@ -1620,7 +1459,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_amman" <|
             \() ->
                 let
@@ -1630,7 +1468,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_anadyr" <|
             \() ->
                 let
@@ -1640,7 +1477,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_aqtau" <|
             \() ->
                 let
@@ -1650,7 +1486,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_aqtobe" <|
             \() ->
                 let
@@ -1660,7 +1495,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_ashgabat" <|
             \() ->
                 let
@@ -1670,7 +1504,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_baghdad" <|
             \() ->
                 let
@@ -1680,7 +1513,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_qatar" <|
             \() ->
                 let
@@ -1690,7 +1522,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_baku" <|
             \() ->
                 let
@@ -1700,7 +1531,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_bangkok" <|
             \() ->
                 let
@@ -1710,7 +1540,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_barnaul" <|
             \() ->
                 let
@@ -1720,7 +1549,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_beirut" <|
             \() ->
                 let
@@ -1730,7 +1558,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_bishkek" <|
             \() ->
                 let
@@ -1740,7 +1567,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_brunei" <|
             \() ->
                 let
@@ -1750,7 +1576,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_kolkata" <|
             \() ->
                 let
@@ -1760,7 +1585,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_chita" <|
             \() ->
                 let
@@ -1770,7 +1594,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_choibalsan" <|
             \() ->
                 let
@@ -1780,7 +1603,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_shanghai" <|
             \() ->
                 let
@@ -1790,7 +1612,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_colombo" <|
             \() ->
                 let
@@ -1800,7 +1621,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_dhaka" <|
             \() ->
                 let
@@ -1810,7 +1630,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_damascus" <|
             \() ->
                 let
@@ -1820,7 +1639,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_dili" <|
             \() ->
                 let
@@ -1830,7 +1648,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_dubai" <|
             \() ->
                 let
@@ -1840,7 +1657,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_dushanbe" <|
             \() ->
                 let
@@ -1850,7 +1666,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_famagusta" <|
             \() ->
                 let
@@ -1860,7 +1675,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_gaza" <|
             \() ->
                 let
@@ -1870,7 +1684,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_hebron" <|
             \() ->
                 let
@@ -1880,7 +1693,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_ho_chi_minh" <|
             \() ->
                 let
@@ -1890,7 +1702,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_hong_kong" <|
             \() ->
                 let
@@ -1900,7 +1711,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_hovd" <|
             \() ->
                 let
@@ -1910,7 +1720,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_irkutsk" <|
             \() ->
                 let
@@ -1920,7 +1729,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_istanbul" <|
             \() ->
                 let
@@ -1930,7 +1738,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_jakarta" <|
             \() ->
                 let
@@ -1940,7 +1747,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_jayapura" <|
             \() ->
                 let
@@ -1950,7 +1756,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_jerusalem" <|
             \() ->
                 let
@@ -1960,7 +1765,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_kabul" <|
             \() ->
                 let
@@ -1970,7 +1774,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_kamchatka" <|
             \() ->
                 let
@@ -1980,7 +1783,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_karachi" <|
             \() ->
                 let
@@ -1990,7 +1792,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_urumqi" <|
             \() ->
                 let
@@ -2000,7 +1801,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_kathmandu" <|
             \() ->
                 let
@@ -2010,7 +1810,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_khandyga" <|
             \() ->
                 let
@@ -2020,7 +1819,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_krasnoyarsk" <|
             \() ->
                 let
@@ -2030,7 +1828,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_kuala_lumpur" <|
             \() ->
                 let
@@ -2040,7 +1837,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_kuching" <|
             \() ->
                 let
@@ -2050,7 +1846,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_macau" <|
             \() ->
                 let
@@ -2060,7 +1855,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_magadan" <|
             \() ->
                 let
@@ -2070,7 +1864,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_makassar" <|
             \() ->
                 let
@@ -2080,7 +1873,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_manila" <|
             \() ->
                 let
@@ -2090,7 +1882,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_nicosia" <|
             \() ->
                 let
@@ -2100,7 +1891,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_novokuznetsk" <|
             \() ->
                 let
@@ -2110,7 +1900,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_novosibirsk" <|
             \() ->
                 let
@@ -2120,7 +1909,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_omsk" <|
             \() ->
                 let
@@ -2130,7 +1918,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_oral" <|
             \() ->
                 let
@@ -2140,7 +1927,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_pontianak" <|
             \() ->
                 let
@@ -2150,7 +1936,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_pyongyang" <|
             \() ->
                 let
@@ -2160,7 +1945,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_qyzylorda" <|
             \() ->
                 let
@@ -2170,7 +1954,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_rangoon" <|
             \() ->
                 let
@@ -2180,7 +1963,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_sakhalin" <|
             \() ->
                 let
@@ -2190,7 +1972,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_samarkand" <|
             \() ->
                 let
@@ -2200,7 +1981,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_seoul" <|
             \() ->
                 let
@@ -2210,7 +1990,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_singapore" <|
             \() ->
                 let
@@ -2220,7 +1999,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_srednekolymsk" <|
             \() ->
                 let
@@ -2230,7 +2008,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_taipei" <|
             \() ->
                 let
@@ -2240,7 +2017,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_tashkent" <|
             \() ->
                 let
@@ -2250,7 +2026,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_tbilisi" <|
             \() ->
                 let
@@ -2260,7 +2035,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_tehran" <|
             \() ->
                 let
@@ -2270,7 +2044,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_thimphu" <|
             \() ->
                 let
@@ -2280,7 +2053,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_tokyo" <|
             \() ->
                 let
@@ -2290,7 +2062,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_tomsk" <|
             \() ->
                 let
@@ -2300,7 +2071,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_ulaanbaatar" <|
             \() ->
                 let
@@ -2310,7 +2080,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_ust_nera" <|
             \() ->
                 let
@@ -2320,7 +2089,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_vladivostok" <|
             \() ->
                 let
@@ -2330,7 +2098,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_yakutsk" <|
             \() ->
                 let
@@ -2340,7 +2107,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_yekaterinburg" <|
             \() ->
                 let
@@ -2350,7 +2116,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone asia_yerevan" <|
             \() ->
                 let
@@ -2360,7 +2125,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_azores" <|
             \() ->
                 let
@@ -2370,7 +2134,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_bermuda" <|
             \() ->
                 let
@@ -2380,7 +2143,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_canary" <|
             \() ->
                 let
@@ -2390,7 +2152,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_cape_verde" <|
             \() ->
                 let
@@ -2400,7 +2161,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_faroe" <|
             \() ->
                 let
@@ -2410,7 +2170,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_madeira" <|
             \() ->
                 let
@@ -2420,7 +2179,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_reykjavik" <|
             \() ->
                 let
@@ -2430,7 +2188,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_south_georgia" <|
             \() ->
                 let
@@ -2440,7 +2197,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone atlantic_stanley" <|
             \() ->
                 let
@@ -2450,7 +2206,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_sydney" <|
             \() ->
                 let
@@ -2460,7 +2215,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_adelaide" <|
             \() ->
                 let
@@ -2470,7 +2224,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_brisbane" <|
             \() ->
                 let
@@ -2480,7 +2233,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_broken_hill" <|
             \() ->
                 let
@@ -2490,7 +2242,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_currie" <|
             \() ->
                 let
@@ -2500,7 +2251,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_darwin" <|
             \() ->
                 let
@@ -2510,7 +2260,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_eucla" <|
             \() ->
                 let
@@ -2520,7 +2269,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_hobart" <|
             \() ->
                 let
@@ -2530,7 +2278,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_lord_howe" <|
             \() ->
                 let
@@ -2540,7 +2287,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_lindeman" <|
             \() ->
                 let
@@ -2550,7 +2296,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_melbourne" <|
             \() ->
                 let
@@ -2560,7 +2305,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone australia_perth" <|
             \() ->
                 let
@@ -2570,7 +2314,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone cet" <|
             \() ->
                 let
@@ -2580,7 +2323,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone cst6cdt" <|
             \() ->
                 let
@@ -2590,7 +2332,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_easter" <|
             \() ->
                 let
@@ -2600,7 +2341,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone eet" <|
             \() ->
                 let
@@ -2610,7 +2350,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone est" <|
             \() ->
                 let
@@ -2620,7 +2359,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone est5edt" <|
             \() ->
                 let
@@ -2630,7 +2368,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_dublin" <|
             \() ->
                 let
@@ -2640,7 +2377,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_0" <|
             \() ->
                 let
@@ -2650,7 +2386,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_1" <|
             \() ->
                 let
@@ -2660,7 +2395,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_10" <|
             \() ->
                 let
@@ -2670,7 +2404,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_11" <|
             \() ->
                 let
@@ -2680,7 +2413,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_12" <|
             \() ->
                 let
@@ -2690,7 +2422,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_2" <|
             \() ->
                 let
@@ -2700,7 +2431,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_3" <|
             \() ->
                 let
@@ -2710,7 +2440,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_4" <|
             \() ->
                 let
@@ -2720,7 +2449,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_5" <|
             \() ->
                 let
@@ -2730,7 +2458,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_6" <|
             \() ->
                 let
@@ -2740,7 +2467,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_7" <|
             \() ->
                 let
@@ -2750,7 +2476,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_8" <|
             \() ->
                 let
@@ -2760,7 +2485,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_plus_9" <|
             \() ->
                 let
@@ -2770,7 +2494,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_1" <|
             \() ->
                 let
@@ -2780,7 +2503,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_10" <|
             \() ->
                 let
@@ -2790,7 +2512,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_11" <|
             \() ->
                 let
@@ -2800,7 +2521,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_12" <|
             \() ->
                 let
@@ -2810,7 +2530,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_13" <|
             \() ->
                 let
@@ -2820,7 +2539,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_14" <|
             \() ->
                 let
@@ -2830,7 +2548,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_2" <|
             \() ->
                 let
@@ -2840,7 +2557,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_3" <|
             \() ->
                 let
@@ -2850,7 +2566,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_4" <|
             \() ->
                 let
@@ -2860,7 +2575,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_5" <|
             \() ->
                 let
@@ -2870,7 +2584,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_6" <|
             \() ->
                 let
@@ -2880,7 +2593,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_7" <|
             \() ->
                 let
@@ -2890,7 +2602,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_8" <|
             \() ->
                 let
@@ -2900,7 +2611,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_gmt_minus_9" <|
             \() ->
                 let
@@ -2910,7 +2620,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_uct" <|
             \() ->
                 let
@@ -2920,7 +2629,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone etc_utc" <|
             \() ->
                 let
@@ -2930,7 +2638,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_amsterdam" <|
             \() ->
                 let
@@ -2940,7 +2647,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_andorra" <|
             \() ->
                 let
@@ -2950,7 +2656,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_astrakhan" <|
             \() ->
                 let
@@ -2960,7 +2665,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_athens" <|
             \() ->
                 let
@@ -2970,7 +2674,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_london" <|
             \() ->
                 let
@@ -2980,7 +2683,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_belgrade" <|
             \() ->
                 let
@@ -2990,7 +2692,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_berlin" <|
             \() ->
                 let
@@ -3000,7 +2701,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_prague" <|
             \() ->
                 let
@@ -3010,7 +2710,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_brussels" <|
             \() ->
                 let
@@ -3020,7 +2719,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_bucharest" <|
             \() ->
                 let
@@ -3030,7 +2728,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_budapest" <|
             \() ->
                 let
@@ -3040,7 +2737,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_zurich" <|
             \() ->
                 let
@@ -3050,7 +2746,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_chisinau" <|
             \() ->
                 let
@@ -3060,7 +2755,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_copenhagen" <|
             \() ->
                 let
@@ -3070,7 +2764,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_gibraltar" <|
             \() ->
                 let
@@ -3080,7 +2773,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_helsinki" <|
             \() ->
                 let
@@ -3090,7 +2782,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_kaliningrad" <|
             \() ->
                 let
@@ -3100,7 +2791,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_kiev" <|
             \() ->
                 let
@@ -3110,7 +2800,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_kirov" <|
             \() ->
                 let
@@ -3120,7 +2809,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_lisbon" <|
             \() ->
                 let
@@ -3130,7 +2818,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_luxembourg" <|
             \() ->
                 let
@@ -3140,7 +2827,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_madrid" <|
             \() ->
                 let
@@ -3150,7 +2836,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_malta" <|
             \() ->
                 let
@@ -3160,7 +2845,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_minsk" <|
             \() ->
                 let
@@ -3170,7 +2854,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_monaco" <|
             \() ->
                 let
@@ -3180,7 +2863,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_moscow" <|
             \() ->
                 let
@@ -3190,7 +2872,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_paris" <|
             \() ->
                 let
@@ -3200,7 +2881,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_riga" <|
             \() ->
                 let
@@ -3210,7 +2890,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_rome" <|
             \() ->
                 let
@@ -3220,7 +2899,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_samara" <|
             \() ->
                 let
@@ -3230,7 +2908,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_simferopol" <|
             \() ->
                 let
@@ -3240,7 +2917,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_sofia" <|
             \() ->
                 let
@@ -3250,7 +2926,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_stockholm" <|
             \() ->
                 let
@@ -3260,7 +2935,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_tallinn" <|
             \() ->
                 let
@@ -3270,7 +2944,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_tirane" <|
             \() ->
                 let
@@ -3280,7 +2953,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_ulyanovsk" <|
             \() ->
                 let
@@ -3290,7 +2962,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_uzhgorod" <|
             \() ->
                 let
@@ -3300,7 +2971,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_vienna" <|
             \() ->
                 let
@@ -3310,7 +2980,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_vilnius" <|
             \() ->
                 let
@@ -3320,7 +2989,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_volgograd" <|
             \() ->
                 let
@@ -3330,7 +2998,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_warsaw" <|
             \() ->
                 let
@@ -3340,7 +3007,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone europe_zaporozhye" <|
             \() ->
                 let
@@ -3350,7 +3016,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone hst" <|
             \() ->
                 let
@@ -3360,7 +3025,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_chagos" <|
             \() ->
                 let
@@ -3370,7 +3034,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_christmas" <|
             \() ->
                 let
@@ -3380,7 +3043,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_cocos" <|
             \() ->
                 let
@@ -3390,7 +3052,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_kerguelen" <|
             \() ->
                 let
@@ -3400,7 +3061,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_mahe" <|
             \() ->
                 let
@@ -3410,7 +3070,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_maldives" <|
             \() ->
                 let
@@ -3420,7 +3079,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_mauritius" <|
             \() ->
                 let
@@ -3430,7 +3088,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone indian_reunion" <|
             \() ->
                 let
@@ -3440,7 +3097,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_kwajalein" <|
             \() ->
                 let
@@ -3450,7 +3106,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone met" <|
             \() ->
                 let
@@ -3460,7 +3115,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone mst" <|
             \() ->
                 let
@@ -3470,7 +3124,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone mst7mdt" <|
             \() ->
                 let
@@ -3480,7 +3133,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_chatham" <|
             \() ->
                 let
@@ -3490,7 +3142,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pst8pdt" <|
             \() ->
                 let
@@ -3500,7 +3151,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_apia" <|
             \() ->
                 let
@@ -3510,7 +3160,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_bougainville" <|
             \() ->
                 let
@@ -3520,7 +3169,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_chuuk" <|
             \() ->
                 let
@@ -3530,7 +3178,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_efate" <|
             \() ->
                 let
@@ -3540,7 +3187,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_enderbury" <|
             \() ->
                 let
@@ -3550,7 +3196,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_fakaofo" <|
             \() ->
                 let
@@ -3560,7 +3205,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_fiji" <|
             \() ->
                 let
@@ -3570,7 +3214,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_funafuti" <|
             \() ->
                 let
@@ -3580,7 +3223,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_galapagos" <|
             \() ->
                 let
@@ -3590,7 +3232,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_gambier" <|
             \() ->
                 let
@@ -3600,7 +3241,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_guadalcanal" <|
             \() ->
                 let
@@ -3610,7 +3250,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_guam" <|
             \() ->
                 let
@@ -3620,7 +3259,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_honolulu" <|
             \() ->
                 let
@@ -3630,7 +3268,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_kiritimati" <|
             \() ->
                 let
@@ -3640,7 +3277,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_kosrae" <|
             \() ->
                 let
@@ -3650,7 +3286,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_majuro" <|
             \() ->
                 let
@@ -3660,7 +3295,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_marquesas" <|
             \() ->
                 let
@@ -3670,7 +3304,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_pago_pago" <|
             \() ->
                 let
@@ -3680,7 +3313,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_nauru" <|
             \() ->
                 let
@@ -3690,7 +3322,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_niue" <|
             \() ->
                 let
@@ -3700,7 +3331,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_norfolk" <|
             \() ->
                 let
@@ -3710,7 +3340,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_noumea" <|
             \() ->
                 let
@@ -3720,7 +3349,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_palau" <|
             \() ->
                 let
@@ -3730,7 +3358,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_pitcairn" <|
             \() ->
                 let
@@ -3740,7 +3367,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_pohnpei" <|
             \() ->
                 let
@@ -3750,7 +3376,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_port_moresby" <|
             \() ->
                 let
@@ -3760,7 +3385,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_rarotonga" <|
             \() ->
                 let
@@ -3770,7 +3394,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_tahiti" <|
             \() ->
                 let
@@ -3780,7 +3403,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_tarawa" <|
             \() ->
                 let
@@ -3790,7 +3412,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_tongatapu" <|
             \() ->
                 let
@@ -3800,7 +3421,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_wake" <|
             \() ->
                 let
@@ -3810,7 +3430,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone pacific_wallis" <|
             \() ->
                 let
@@ -3820,7 +3439,6 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         , test "time zone wet" <|
             \() ->
                 let
@@ -3830,5 +3448,4 @@ checkAllValid =
                 tzName
                     |> String.contains "error"
                     |> Expect.false (tzName ++ " should not include error")
-
         ]
