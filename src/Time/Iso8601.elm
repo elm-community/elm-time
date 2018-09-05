@@ -1,6 +1,7 @@
 module Time.Iso8601 exposing
     ( fromDate, fromDateTime, fromZonedDateTime
     , toDate, toDateTime, toZonedDateTime
+    , Problem(..)
     )
 
 {-|
@@ -18,17 +19,18 @@ module Time.Iso8601 exposing
 -}
 
 import Char
-import Parser
+import Parser.Advanced
     exposing
         ( (|.)
         , (|=)
+        , DeadEnd
         , Parser
-        , Problem(..)
+        , Token(..)
         , andThen
         , chompIf
         , chompWhile
         , getChompedString
-          -- , inContext
+        , inContext
         , oneOf
         , problem
         , run
@@ -67,6 +69,30 @@ import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZDT exposing (ZonedDateTime)
 
 
+type alias Context =
+    String
+
+
+type Problem
+    = ExpectingDigit
+    | ExpectingRange Int Int Int
+    | ExpectingDot
+    | ExpectingZ
+    | ExpectingSign
+    | BadInt
+    | InvalidDate ( Int, Int, Int )
+    | ExpectingNDigits Int String
+    | Other String
+
+
+type alias IsoParser value =
+    Parser Context Problem value
+
+
+type alias IsoDeadEnd =
+    DeadEnd Context Problem
+
+
 
 -- Shared parsers
 -- --------------
@@ -98,10 +124,10 @@ fromDate date =
 
 {-| fromDateTime renders a DateTime in ISO8601 format.
 
-    import Time.DateTime exposing (..)
+    import Time.DateTime
 
-    epoch
-    |> addMilliseconds 61000
+    Time.DateTime.epoch
+    |> Time.DateTime.addMilliseconds 61000
     |> fromDateTime
     --> "1970-01-01T00:01:01.000Z"
 
@@ -164,7 +190,7 @@ ZonedDateTime object, adjusting for its offset.
     --> Ok (Time.ZonedDateTime.fromDateTime (america_new_york ()) epoch)
 
 -}
-toZonedDateTime : TimeZone -> String -> Result (List Parser.DeadEnd) ZonedDateTime
+toZonedDateTime : TimeZone -> String -> Result (List IsoDeadEnd) ZonedDateTime
 toZonedDateTime timeZone input =
     toDateTime input
         |> Result.map (ZDT.fromDateTime timeZone)
@@ -181,13 +207,13 @@ toZonedDateTime timeZone input =
     --> Ok (Time.Date.date 1970 12 1)
 
 -}
-toDate : String -> Result (List Parser.DeadEnd) Date
+toDate : String -> Result (List IsoDeadEnd) Date
 toDate input =
     run parseDate input
 
 
 {-| -}
-parseDate : Parser Date
+parseDate : IsoParser Date
 parseDate =
     (succeed (\a b c -> ( a, b, c ))
         |= parseYear
@@ -199,51 +225,54 @@ parseDate =
         |> andThen convertDate
 
 
-parseYear : Parser Int
+parseYear : IsoParser Int
 parseYear =
-    -- inContext "year" <|
-    (getChompedString <|
-        succeed ()
-            |. chompIf Char.isDigit
-            |. chompIf Char.isDigit
-            |. chompIf Char.isDigit
-            |. chompIf Char.isDigit
-    )
-        |> andThen (digits 4)
+    inContext "year" <|
+        ((getChompedString <|
+            succeed ()
+                |. chompIf Char.isDigit ExpectingDigit
+                |. chompIf Char.isDigit ExpectingDigit
+                |. chompIf Char.isDigit ExpectingDigit
+                |. chompIf Char.isDigit ExpectingDigit
+         )
+            |> andThen (digits 4)
+        )
 
 
-parseMonth : Parser Int
+parseMonth : IsoParser Int
 parseMonth =
     digitsInRange "month" 1 12
 
 
-parseDay : Parser Int
+parseDay : IsoParser Int
 parseDay =
     digitsInRange "day-in-month" 1 31
 
 
-digits : Int -> String -> Parser Int
+digits : Int -> String -> IsoParser Int
 digits digitsCount chomped =
     if String.length chomped == digitsCount then
         String.toInt chomped |> fromMaybe
 
     else
-        problem <| "expected " ++ String.fromInt digitsCount ++ " digits, got " ++ chomped
+        -- messge:  "expected " ++ String.fromInt digitsCount ++ " digits, got " ++ chomped
+        problem <| ExpectingNDigits digitsCount chomped
 
 
-convertDate : ( Int, Int, Int ) -> Parser Date
+convertDate : ( Int, Int, Int ) -> IsoParser Date
 convertDate ( year, month, day ) =
     if isValidDate year month day then
         succeed (Date.date year month day)
 
     else
-        complainInvalid ( year, month, day )
+        inContext "leap-year" <|
+            problem (InvalidDate ( year, month, day ))
 
 
-complainInvalid : ( Int, Int, Int ) -> Parser Date
+complainInvalid : ( Int, Int, Int ) -> IsoParser Date
 complainInvalid ( year, month, day ) =
-    -- inContext "leap-year" <|
     let
+        -- TODO: move to the errormsg module
         maxDays =
             Maybe.withDefault 31 (daysInMonth year month)
 
@@ -258,21 +287,22 @@ complainInvalid ( year, month, day ) =
                 ++ String.fromInt month
                 ++ "."
     in
-    problem msg
+    problem <| InvalidDate ( year, month, day )
 
 
-digitsInRange : String -> Int -> Int -> Parser Int
+digitsInRange : String -> Int -> Int -> IsoParser Int
 digitsInRange name lo hi =
-    -- inContext name <|
-    (getChompedString <|
-        succeed ()
-            |. chompIf (\c -> Char.isDigit c)
-            |. chompIf (\c -> Char.isDigit c)
-    )
-        |> andThen (intRange lo hi << String.toInt)
+    inContext name <|
+        ((getChompedString <|
+            succeed ()
+                |. chompIf Char.isDigit ExpectingDigit
+                |. chompIf Char.isDigit ExpectingDigit
+         )
+            |> andThen (intRange lo hi << String.toInt)
+        )
 
 
-intRange : Int -> Int -> Maybe Int -> Parser Int
+intRange : Int -> Int -> Maybe Int -> IsoParser Int
 intRange lo hi result =
     case result of
         Just n ->
@@ -280,36 +310,28 @@ intRange lo hi result =
                 succeed n
 
             else
-                problem
-                    ("Expecting the value "
-                        ++ String.fromInt n
-                        ++ " to be in the range "
-                        ++ String.fromInt lo
-                        ++ " to "
-                        ++ String.fromInt hi
-                        ++ "."
-                    )
+                problem (ExpectingRange n lo hi)
 
         Nothing ->
-            problem <| "failed to parse int"
+            problem BadInt
 
 
-fromMaybe : Maybe Int -> Parser Int
+fromMaybe : Maybe Int -> IsoParser Int
 fromMaybe =
-    Maybe.map succeed >> Maybe.withDefault (problem "failed to parse int")
+    Maybe.map succeed >> Maybe.withDefault (problem BadInt)
 
 
-fromResult : Result String Int -> Parser Int
+fromResult : Result String Int -> IsoParser Int
 fromResult result =
     case result of
         Ok i ->
             succeed i
 
         Err msg ->
-            problem msg
+            problem <| Other msg
 
 
-optional : Char -> Parser ()
+optional : Char -> IsoParser ()
 optional char =
     chompWhile (\c -> c == char)
 
@@ -317,12 +339,12 @@ optional char =
 {-| toDateTime parses an ISO8601-formatted date time string into a
 DateTime object, adjusting for its timezone offset.
 -}
-toDateTime : String -> Result (List Parser.DeadEnd) DateTime
+toDateTime : String -> Result (List IsoDeadEnd) DateTime
 toDateTime input =
     run parseDateTime input
 
 
-parseDateTime : Parser DateTime
+parseDateTime : IsoParser DateTime
 parseDateTime =
     (succeed (\a b c -> ( a, b, c ))
         |= parseDate
@@ -341,7 +363,7 @@ type alias IntermediateOffset =
     }
 
 
-parseOffset : Parser Milliseconds
+parseOffset : IsoParser Milliseconds
 parseOffset =
     (succeed IntermediateOffset
         |= digitsInRange "hours" 0 23
@@ -354,7 +376,7 @@ parseOffset =
         |> andThen convertTime
 
 
-convertDateTime : ( Date, Milliseconds, Milliseconds ) -> Parser DateTime
+convertDateTime : ( Date, Milliseconds, Milliseconds ) -> IsoParser DateTime
 convertDateTime ( date, offset, tZOffset_ ) =
     succeed
         (makeDateTime
@@ -364,7 +386,7 @@ convertDateTime ( date, offset, tZOffset_ ) =
         )
 
 
-convertTime : IntermediateOffset -> Parser Milliseconds
+convertTime : IntermediateOffset -> IsoParser Milliseconds
 convertTime intermediate =
     succeed
         (offsetFromTimeData
@@ -376,7 +398,7 @@ convertTime intermediate =
         )
 
 
-fraction : Parser Milliseconds
+fraction : IsoParser Milliseconds
 fraction =
     oneOf
         [ optionalFraction
@@ -384,14 +406,15 @@ fraction =
         ]
 
 
-optionalFraction : Parser Milliseconds
+optionalFraction : IsoParser Milliseconds
 optionalFraction =
-    -- inContext "fraction" <|
-    (getChompedString <|
-        symbol "."
-            |. chompWhile Char.isDigit
-    )
-        |> andThen (fromResult << getFraction << String.dropLeft 1)
+    inContext "fraction" <|
+        ((getChompedString <|
+            symbol (Token "." ExpectingDot)
+                |. chompWhile Char.isDigit
+         )
+            |> andThen (fromResult << getFraction << String.dropLeft 1)
+        )
 
 
 getFraction : String -> Result String Milliseconds
@@ -406,7 +429,7 @@ getFraction fractionString =
     Ok (round (Time.Internal.secondMs * toFloat numerator / toFloat denominator))
 
 
-tZOffset : Parser Milliseconds
+tZOffset : IsoParser Milliseconds
 tZOffset =
     oneOf
         [ utc
@@ -415,41 +438,43 @@ tZOffset =
         ]
 
 
-utc : Parser Milliseconds
+utc : IsoParser Milliseconds
 utc =
-    succeed 0 |. symbol "Z"
+    succeed 0 |. symbol (Token "Z" ExpectingZ)
 
 
-optionalTZOffset : Parser Milliseconds
+optionalTZOffset : IsoParser Milliseconds
 optionalTZOffset =
-    -- inContext "offset" <|
-    (succeed (\a b c -> ( a, b, c ))
-        |= polarity
-        |= digitsInRange "timezone hours" 0 23
-        |. optional ':'
-        |= digitsInRange "timezone minutes" 0 59
-    )
-        |> andThen (fromResult << getTZOffset)
+    inContext "offset" <|
+        ((succeed (\a b c -> ( a, b, c ))
+            |= polarity
+            |= digitsInRange "timezone hours" 0 23
+            |. optional ':'
+            |= digitsInRange "timezone minutes" 0 59
+         )
+            |> andThen (fromResult << getTZOffset)
+        )
 
 
-polarity : Parser Int
+polarity : IsoParser Int
 polarity =
-    -- inContext "timezone polarity" <|
-    (getChompedString <|
-        succeed ()
-            |. chompIf (\c -> c == '+' || c == '-' || c == '−')
-    )
-        |> andThen
-            (fromResult
-                << -- Code has to do opposite of sign char
-                   (\sign ->
-                        if sign == "+" then
-                            Ok -1
+    inContext "timezone polarity" <|
+        ((getChompedString <|
+            succeed ()
+                |. chompIf (\c -> c == '+' || c == '-' || c == '−') ExpectingSign
+         )
+            |> andThen
+                (fromResult
+                    << -- Code has to do opposite of sign char
+                       (\sign ->
+                            if sign == "+" then
+                                Ok -1
 
-                        else
-                            Ok 1
-                   )
-            )
+                            else
+                                Ok 1
+                       )
+                )
+        )
 
 
 getTZOffset : ( Int, Int, Int ) -> Result String Milliseconds
