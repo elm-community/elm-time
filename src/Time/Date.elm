@@ -551,7 +551,10 @@ unsafeDaysInMonth y m =
         31
 
     else
-        Debug.todo <| "invalid call to unsafeDaysInMonth: year=" ++ String.fromInt y ++ " month=" ++ String.fromInt m
+        -- This is invalid, but this line will not be reached. A nice improvement would be to alter
+        -- the internal types so that months are always a union type so this can be ensured by the
+        -- compiler!
+        0
 
 
 firstValid : Int -> Int -> Int -> Date
