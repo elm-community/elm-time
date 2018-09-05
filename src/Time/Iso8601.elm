@@ -274,7 +274,7 @@ complainInvalid ( year, month, day ) =
     let
         -- TODO: move to the errormsg module
         maxDays =
-            Maybe.withDefault 31 (daysInMonth year month)
+            daysInMonth year month
 
         msg =
             "Expecting the value "

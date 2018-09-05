@@ -49,7 +49,7 @@ are guaranteed to represent valid proleptic Gregorian calendar dates.
 type Date
     = Date
         { year : Int
-        , month : Int
+        , month : Month
         , day : Int
         }
 
@@ -64,6 +64,23 @@ type Weekday
     | Fri
     | Sat
     | Sun
+
+
+{-| Data type used to represent months.
+-}
+type Month
+    = Jan
+    | Feb
+    | Mar
+    | Apr
+    | May
+    | Jun
+    | Jul
+    | Aug
+    | Sep
+    | Oct
+    | Nov
+    | Dec
 
 
 {-| DateDelta represents a delta between two dates.
@@ -112,7 +129,7 @@ range [1, 12].
 -}
 month : Date -> Int
 month (Date inner) =
-    inner.month
+    monthToInt inner.month
 
 
 {-| day returns a Date's year as an Int. Guaranteed to be valid for
@@ -145,48 +162,53 @@ weekday : Date -> Weekday
 weekday (Date inner) =
     let
         m =
-            if inner.month == 1 then
-                0
+            case inner.month of
+                Jan ->
+                    0
 
-            else if inner.month == 2 then
-                3
+                Feb ->
+                    3
 
-            else if inner.month == 3 then
-                2
+                Mar ->
+                    2
 
-            else if inner.month == 4 then
-                5
+                Apr ->
+                    5
 
-            else if inner.month == 5 then
-                0
+                May ->
+                    0
 
-            else if inner.month == 6 then
-                3
+                Jun ->
+                    3
 
-            else if inner.month == 7 then
-                5
+                Jul ->
+                    5
 
-            else if inner.month == 8 then
-                1
+                Aug ->
+                    1
 
-            else if inner.month == 9 then
-                4
+                Sep ->
+                    4
 
-            else if inner.month == 10 then
-                6
+                Oct ->
+                    6
 
-            else if inner.month == 11 then
-                2
+                Nov ->
+                    2
 
-            else
-                4
+                Dec ->
+                    4
 
         y =
-            if inner.month < 3 then
-                inner.year - 1
+            case inner.month of
+                Jan ->
+                    inner.year - 1
 
-            else
-                inner.year
+                Feb ->
+                    inner.year - 1
+
+                _ ->
+                    inner.year
 
         d =
             modBy 7 (y + y // 4 - y // 100 + y // 400 + m + inner.day)
@@ -300,7 +322,7 @@ addMonths : Int -> Date -> Date
 addMonths months (Date d) =
     let
         ms =
-            d.year * 12 + d.month - 1 + months
+            d.year * 12 + monthToInt d.month - 1 + months
 
         yo =
             if ms < 0 then
@@ -391,11 +413,51 @@ by last example below.
 delta : Date -> Date -> DateDelta
 delta (Date d1) (Date d2) =
     { years = d1.year - d2.year
-    , months = (abs d1.year * 12 + d1.month) - (abs d2.year * 12 + d2.month)
+    , months = (abs d1.year * 12 + monthToInt d1.month) - (abs d2.year * 12 + monthToInt d2.month)
     , days =
         daysFromYearMonthDay d1.year d1.month d1.day
             - daysFromYearMonthDay d2.year d2.month d2.day
     }
+
+
+monthToInt : Month -> Int
+monthToInt m =
+    case m of
+        Jan ->
+            1
+
+        Feb ->
+            2
+
+        Mar ->
+            3
+
+        Apr ->
+            4
+
+        May ->
+            5
+
+        Jun ->
+            6
+
+        Jul ->
+            7
+
+        Aug ->
+            8
+
+        Sep ->
+            9
+
+        Oct ->
+            10
+
+        Nov ->
+            11
+
+        Dec ->
+            12
 
 
 {-| toTuple converts a Date value into a (year, month, day) tuple.
@@ -408,7 +470,7 @@ This is useful if you want to use Dates as Dict keys.
 -}
 toTuple : Date -> ( Int, Int, Int )
 toTuple (Date d) =
-    ( d.year, d.month, d.day )
+    ( d.year, monthToInt d.month, d.day )
 
 
 {-| fromTuple converts a (year, month, day) tuple into a Date value.
@@ -448,9 +510,7 @@ abort creating a "bad" `Date`.
 -}
 isValidDate : Int -> Int -> Int -> Bool
 isValidDate year_ month_ day_ =
-    daysInMonth year_ month_
-        |> Maybe.map (\days -> day_ >= 1 && day_ <= days)
-        |> Maybe.withDefault False
+    day_ >= 1 && day_ <= daysInMonth year_ month_
 
 
 {-| isLeapYear returns True if the given year is a leap year. The
@@ -490,84 +550,53 @@ year, taking leap years into account.
 
   - A leap year has 366 days and the corresponding February has 29 days.
 
-    daysInMonth 2016 2
+    daysInMonth 2016 Feb
     --> Just 29
 
-    daysInMonth 2018 2
+    daysInMonth 2018 Feb
     --> Just 28
 
-    daysInMonth 2018 13 -- month out of range
-    --> Nothing
-
 -}
-daysInMonth : Int -> Int -> Maybe Int
+daysInMonth : Int -> Int -> Int
 daysInMonth y m =
-    if m >= 1 && m <= 12 then
-        Just <| unsafeDaysInMonth y m
+    case clampMonth m of
+        Feb ->
+            if isLeapYear y then
+                29
 
-    else
-        Nothing
+            else
+                28
 
+        Apr ->
+            30
 
-unsafeDaysInMonth : Int -> Int -> Int
-unsafeDaysInMonth y m =
-    if m == 1 then
-        31
+        Jun ->
+            30
 
-    else if m == 2 && isLeapYear y then
-        29
+        Sep ->
+            30
 
-    else if m == 2 then
-        28
+        Nov ->
+            30
 
-    else if m == 3 then
-        31
-
-    else if m == 4 then
-        30
-
-    else if m == 5 then
-        31
-
-    else if m == 6 then
-        30
-
-    else if m == 7 then
-        31
-
-    else if m == 8 then
-        31
-
-    else if m == 9 then
-        30
-
-    else if m == 10 then
-        31
-
-    else if m == 11 then
-        30
-
-    else if m == 12 then
-        31
-
-    else
-        -- This is invalid, but this line will not be reached. A nice improvement would be to alter
-        -- the internal types so that months are always a union type so this can be ensured by the
-        -- compiler!
-        0
+        _ ->
+            31
 
 
-firstValid : Int -> Int -> Int -> Date
+firstValid : Int -> Month -> Int -> Date
 firstValid year_ month_ day_ =
     let
+        monthInt =
+            monthToInt month_
+
         ( y, m, d ) =
-            if isValidDate year_ month_ day_ then
+            if isValidDate year_ monthInt day_ then
                 ( year_, month_, day_ )
 
-            else if isValidDate year_ month_ (day_ - 1) then
+            else if isValidDate year_ monthInt (day_ - 1) then
                 ( year_, month_, day_ - 1 )
 
-            else if isValidDate year_ month_ (day_ - 2) then
+            else if isValidDate year_ monthInt (day_ - 2) then
                 ( year_, month_, day_ - 2 )
 
             else
@@ -576,7 +605,7 @@ firstValid year_ month_ day_ =
     Date { year = y, month = m, day = d }
 
 
-daysFromYearMonthDay : Int -> Int -> Int -> Int
+daysFromYearMonthDay : Int -> Month -> Int -> Int
 daysFromYearMonthDay year_ month_ day_ =
     let
         yds =
@@ -591,17 +620,59 @@ daysFromYearMonthDay year_ month_ day_ =
     yds + mds + dds
 
 
-daysFromYearMonth : Int -> Int -> Int
+daysFromYearMonth : Int -> Month -> Int
 daysFromYearMonth year_ month_ =
     let
+        go : Int -> Maybe Month -> Int -> Int
         go y m acc =
-            if m == 0 then
-                acc
+            case m of
+                Nothing ->
+                    acc
 
-            else
-                go y (m - 1) (acc + unsafeDaysInMonth y m)
+                Just m_ ->
+                    go y (prevMonth m_) (acc + daysInMonth y (monthToInt m_))
     in
-    go year_ (month_ - 1) 0
+    go year_ (prevMonth month_) 0
+
+
+prevMonth : Month -> Maybe Month
+prevMonth m =
+    case m of
+        Jan ->
+            Nothing
+
+        Feb ->
+            Just Jan
+
+        Mar ->
+            Just Feb
+
+        Apr ->
+            Just Mar
+
+        May ->
+            Just Apr
+
+        Jun ->
+            Just May
+
+        Jul ->
+            Just Jun
+
+        Aug ->
+            Just Jul
+
+        Sep ->
+            Just Aug
+
+        Oct ->
+            Just Sep
+
+        Nov ->
+            Just Oct
+
+        Dec ->
+            Just Nov
 
 
 daysFromYear : Int -> Int
@@ -666,40 +737,40 @@ dateFromDays ds =
 
         ( month_, day_ ) =
             if doy < 31 then
-                ( 1, doy + 1 )
+                ( Jan, doy + 1 )
 
             else if doy < leap 59 then
-                ( 2, doy - 31 + 1 )
+                ( Feb, doy - 31 + 1 )
 
             else if doy < leap 90 then
-                ( 3, doy - leap 59 + 1 )
+                ( Mar, doy - leap 59 + 1 )
 
             else if doy < leap 120 then
-                ( 4, doy - leap 90 + 1 )
+                ( Apr, doy - leap 90 + 1 )
 
             else if doy < leap 151 then
-                ( 5, doy - leap 120 + 1 )
+                ( May, doy - leap 120 + 1 )
 
             else if doy < leap 181 then
-                ( 6, doy - leap 151 + 1 )
+                ( Jun, doy - leap 151 + 1 )
 
             else if doy < leap 212 then
-                ( 7, doy - leap 181 + 1 )
+                ( Jul, doy - leap 181 + 1 )
 
             else if doy < leap 243 then
-                ( 8, doy - leap 212 + 1 )
+                ( Aug, doy - leap 212 + 1 )
 
             else if doy < leap 273 then
-                ( 9, doy - leap 243 + 1 )
+                ( Sep, doy - leap 243 + 1 )
 
             else if doy < leap 304 then
-                ( 10, doy - leap 273 + 1 )
+                ( Oct, doy - leap 273 + 1 )
 
             else if doy < leap 334 then
-                ( 11, doy - leap 304 + 1 )
+                ( Nov, doy - leap 304 + 1 )
 
             else
-                ( 12, doy - leap 334 + 1 )
+                ( Dec, doy - leap 334 + 1 )
     in
     Date
         { year = year_ + y400 * 400
@@ -708,9 +779,44 @@ dateFromDays ds =
         }
 
 
-clampMonth : Int -> Int
+clampMonth : Int -> Month
 clampMonth month_ =
-    clamp 1 12 month_
+    case month_ of
+        1 ->
+            Jan
+
+        2 ->
+            Feb
+
+        3 ->
+            Mar
+
+        4 ->
+            Apr
+
+        5 ->
+            May
+
+        6 ->
+            Jun
+
+        7 ->
+            Jul
+
+        8 ->
+            Aug
+
+        9 ->
+            Sep
+
+        10 ->
+            Oct
+
+        11 ->
+            Nov
+
+        _ ->
+            Dec
 
 
 clampDay : Int -> Int

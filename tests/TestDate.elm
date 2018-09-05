@@ -1,7 +1,7 @@
 module TestDate exposing (adders, constructing, datesEqual, fuzzDate, leapYearMonths, leapYears, monthDays, someDate, standardYearMonths, toFromTuple, validLeapYears)
 
 import Expect exposing (Expectation)
-import Fuzz exposing (int, intRange)
+import Fuzz exposing (Fuzzer, int, intRange)
 import Test exposing (..)
 import Time.Date exposing (..)
 
@@ -90,7 +90,7 @@ leapYears =
             [ fuzz2 (intRange -400 2020) (intRange 1 12) "is correct given any year, month pair" <|
                 \year month ->
                     daysInMonth year month
-                        |> Expect.equal (Just <| monthDays year month)
+                        |> Expect.equal (monthDays year month)
             ]
         ]
 
