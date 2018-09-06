@@ -1,6 +1,6 @@
 {
     "version": "3.0.5",
-    "summary": "A pure Elm date and time library.",
+    "summary": "Deprecated: A pure Elm date and time library.",
     "repository": "https://github.com/elm-community/elm-time.git",
     "license": "BSD3",
     "source-directories": [
