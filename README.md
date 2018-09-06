@@ -6,7 +6,8 @@ elm package install elm-community/elm-time
 
 ## This Package is Released to Elm 0.19 -- Also Deprecated!
 
-Isaac Seymour has ported **elm-community/elm-time** to
+Isaac Seymour has ported
+**[elm-community/elm-time](https://package.elm-lang.org/packages/elm-community/elm-time/3.0.4/)** to
 **[isaacseymour/deprecated-time](https://package.elm-lang.org/packages/isaacseymour/deprecated-time/latest)**.
 With the change in **elm/time** to use Posix, and a consensus to break this package up so that you don't have to
 "include everything" to use it, we decided that this was a good time to deprecate.
